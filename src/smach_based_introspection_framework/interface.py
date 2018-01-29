@@ -16,39 +16,9 @@ from constant import (
     RECOVERY_JUST_DONE,
 )
 import copy
-
-def execute_decorator(original_execute):
-    def f(self, userdata): 
-        if get_event_flag() == RECOVERY_JUST_DONE:
-            set_event_flag(ANOMALY_NOT_DETECTED)
-            rospy.loginfo("RECOVERY_JUST_DONE")
-            send_image('green.jpg')
-            return "Successful"
-        else:
-            if not hasattr(self, 'state_no'):
-                state_no = 0 
-            else:
-                state_no = self.state_no
-
-            if not hasattr(self, 'depend_on_prev_state'):
-                depend_on_prev_state = False 
-            else:
-                depend_on_prev_state = True 
-            write_exec_hist(self, type(self).__name__, userdata, depend_on_prev_state )
-
-            if get_event_flag() != ANOMALY_DETECTION_BLOCKED:
-                send_image('green.jpg')
-                hmm_state_switch_client(state_no)
-
-            ret = original_execute(self, userdata)
-
-            hmm_state_switch_client(0)
-            if get_event_flag() == ANOMALY_DETECTION_BLOCKED:
-                set_event_flag(ANOMALY_NOT_DETECTED)
-                rospy.loginfo("UnBlock anomlay detection")
-                send_image('green.jpg')
-            return ret
-    return f
+from smach_execute_decorator import smach_execute_decorator
+import types
+import ipdb
 
 def modify_user_defined_sm(sm):
     import smach
@@ -57,6 +27,13 @@ def modify_user_defined_sm(sm):
 
         # redirect all NeedRecovery to their respective anomay diagnosis
         for user_state in raw_user_states:
+            # Get old definition of exeute, note we only want a
+            # unbound pure function, not a bound method.
+            original_exec = sm._states[user_state].execute.__func__
+            new_exec = smach_execute_decorator(original_exec)
+            obj = sm._states[user_state]
+            obj.execute = types.MethodType(new_exec, obj)
+
             state_name = user_state 
             state_transitions = sm._transitions[state_name]
             if "NeedRecovery" in state_transitions:
