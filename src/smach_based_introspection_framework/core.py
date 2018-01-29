@@ -8,6 +8,10 @@ import smach
 import os
 import rospy
 import ipdb
+from _robot_screen_visualization import(
+    show_anomaly_detected,
+    show_everyhing_is_good,
+)
 
 mode_no_state_trainsition_report = False 
 event_flag = 1
@@ -43,25 +47,6 @@ def write_exec_hist(state_instance, current_state_name, current_userdata, depend
         }
     )
 
-def send_image(path):
-    import cv2
-    import cv_bridge
-    from sensor_msgs.msg import (
-        Image,
-    )
-    """
-    Send the image located at the specified path to the head
-    display on Baxter.
-
-    @param path: path to the image file to load and send
-    """
-    img = cv2.imread(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'image', path))
-    msg = cv_bridge.CvBridge().cv2_to_imgmsg(img, encoding="bgr8")
-    pub = rospy.Publisher('/robot/xdisplay', Image, latch=True, queue_size=1)
-    pub.publish(msg)
-    # Sleep to allow for image to be published.
-
-
 def hmm_state_switch_client(state):
     global mode_no_state_trainsition_report
     if mode_no_state_trainsition_report:
@@ -88,7 +73,7 @@ class AnomalyDiagnosis(smach.State):
         global latest_anomaly_t
 
         hmm_state_switch_client(-1)
-        send_image('red.jpg')
+        show_anomaly_detected()
         rospy.sleep(5)
 
         from AnomalyClassification import AnomalyClassification

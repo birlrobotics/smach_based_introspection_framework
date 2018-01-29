@@ -6,7 +6,6 @@ from core import (
     RollBackRecovery,
     write_exec_hist,
     hmm_state_switch_client,
-    send_image,
     listen_HMM_anomaly_signal,
 )
 import copy

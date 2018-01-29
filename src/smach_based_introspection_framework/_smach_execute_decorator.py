@@ -9,7 +9,10 @@ from core import (
     set_event_flag,
     write_exec_hist,
     hmm_state_switch_client,
-    send_image,
+)
+from _robot_screen_visualization import(
+    show_anomaly_detected,
+    show_everyhing_is_good,
 )
 
 def smach_execute_decorator(original_execute):
@@ -17,7 +20,7 @@ def smach_execute_decorator(original_execute):
         if get_event_flag() == RECOVERY_JUST_DONE:
             set_event_flag(ANOMALY_NOT_DETECTED)
             rospy.loginfo("RECOVERY_JUST_DONE")
-            send_image('green.jpg')
+            show_everyhing_is_good()
             return "Successful"
         else:
             if not hasattr(self, 'state_no'):
@@ -32,7 +35,7 @@ def smach_execute_decorator(original_execute):
             write_exec_hist(self, type(self).__name__, userdata, depend_on_prev_state )
 
             if get_event_flag() != ANOMALY_DETECTION_BLOCKED:
-                send_image('green.jpg')
+                show_everyhing_is_good()
                 hmm_state_switch_client(state_no)
 
             ret = original_execute(self, userdata)
@@ -41,6 +44,6 @@ def smach_execute_decorator(original_execute):
             if get_event_flag() == ANOMALY_DETECTION_BLOCKED:
                 set_event_flag(ANOMALY_NOT_DETECTED)
                 rospy.loginfo("UnBlock anomlay detection")
-                send_image('green.jpg')
+                show_everyhing_is_good()
             return ret
     return f
