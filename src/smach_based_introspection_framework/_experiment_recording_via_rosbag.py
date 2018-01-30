@@ -20,6 +20,6 @@ class RosbagRecord(object):
         ppid = self.process.pid 
         parent = psutil.Process(ppid)
         for child in parent.children(recursive=True):
-            child.kill()
-        parent.kill()
+            child.send_signal(signal.SIGINT)
+        parent.send_signal(signal.SIGINT)
         self.started = False 
