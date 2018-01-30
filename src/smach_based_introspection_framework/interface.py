@@ -12,6 +12,10 @@ import copy
 from _smach_execute_decorator import smach_execute_decorator
 import types
 import ipdb
+import os
+import datetime
+
+dir_of_this_script = os.path.dirname(os.path.realpath(__file__))
 
 def modify_user_defined_sm(sm):
     import smach
@@ -72,15 +76,38 @@ def modify_user_defined_sm(sm):
     return sm
 
 def start_instrospection(
+    task_id=None,
     no_state_trainsition_report=False, 
     no_anomaly_detection=False , 
-    use_manual_anomaly_signal=False
+    use_manual_anomaly_signal=False,
+    introspection_data_folder=None,
 ):
     import core
     core.mode_no_state_trainsition_report = no_state_trainsition_report
     if not no_anomaly_detection:
         listen_HMM_anomaly_signal(use_manual_anomaly_signal)
 
-    import _experiment_recording_via_rosbag
+    if introspection_data_folder is None:
+        introspection_data_folder = os.path.join(
+            dir_of_this_script, 
+            '..',
+            '..',
+            "introspection_data_folder")
+    if not os.path.isdir(introspection_data_folder):
+        os.makedirs(introspection_data_folder)
 
+    from _constant import folder_time_fmt
+    experiment_folder = os.path.join(
+        introspection_data_folder,
+        'experiment_at_%s'%datetime.datetime.now().strftime(folder_time_fmt),
+    )
+    if not os.path.isdir(experiment_folder):
+        os.makedirs(experiment_folder)
+
+    import _experiment_recording_via_rosbag
+    o = _experiment_recording_via_rosbag.RosbagRecord(
+        os.path.join(experiment_folder, "record.bag"),
+        ['/tag_multimodal']
+    )
+    o.start()
 
