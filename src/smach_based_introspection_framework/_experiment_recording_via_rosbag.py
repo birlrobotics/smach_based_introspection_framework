@@ -21,5 +21,7 @@ class RosbagRecord(object):
         parent = psutil.Process(ppid)
         for child in parent.children(recursive=True):
             child.send_signal(signal.SIGINT)
+            child.wait()
         parent.send_signal(signal.SIGINT)
+        parent.wait()
         self.started = False 

@@ -80,3 +80,7 @@ def start_instrospection(
     core.mode_no_state_trainsition_report = no_state_trainsition_report
     if not no_anomaly_detection:
         listen_HMM_anomaly_signal(use_manual_anomaly_signal)
+
+    import _experiment_recording_via_rosbag
+
+
