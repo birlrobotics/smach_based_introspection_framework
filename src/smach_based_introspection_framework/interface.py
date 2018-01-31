@@ -1,4 +1,4 @@
-from core import (
+from _core import (
     get_event_flag,
     set_event_flag,
     AnomalyDiagnosis,
@@ -80,19 +80,17 @@ def start_instrospection(
     no_state_trainsition_report=False, 
     no_anomaly_detection=False , 
     use_manual_anomaly_signal=False,
-    introspection_data_folder=None,
 ):
-    import core
-    core.mode_no_state_trainsition_report = no_state_trainsition_report
+    import _core
+    _core.mode_no_state_trainsition_report = no_state_trainsition_report
     if not no_anomaly_detection:
         listen_HMM_anomaly_signal(use_manual_anomaly_signal)
 
-    if introspection_data_folder is None:
-        introspection_data_folder = os.path.join(
-            dir_of_this_script, 
-            '..',
-            '..',
-            "introspection_data_folder")
+    introspection_data_folder = os.path.join(
+        dir_of_this_script, 
+        '..',
+        '..',
+        "introspection_data_folder")
     if not os.path.isdir(introspection_data_folder):
         os.makedirs(introspection_data_folder)
 

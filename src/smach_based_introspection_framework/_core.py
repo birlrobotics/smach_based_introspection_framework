@@ -1,4 +1,4 @@
-from constant import (
+from _constant import (
     ANOMALY_DETECTED,
     ANOMALY_DETECTION_BLOCKED, 
     ANOMALY_NOT_DETECTED,

@@ -1,6 +1,6 @@
 import struct
 import rospy
-from constant import (
+from _constant import (
     ANOMALY_DETECTED,
     ANOMALY_DETECTION_BLOCKED, 
     ANOMALY_NOT_DETECTED,
@@ -29,7 +29,7 @@ from control_msgs.msg import (
 from trajectory_msgs.msg import (
     JointTrajectoryPoint,
 )
-from core import (
+from _core import (
     get_event_flag,
 )
 class BreakOnAnomalyTrajectoryClient(object):
