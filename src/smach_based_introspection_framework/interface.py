@@ -86,11 +86,7 @@ def start_instrospection(
     if not no_anomaly_detection:
         listen_HMM_anomaly_signal(use_manual_anomaly_signal)
 
-    introspection_data_folder = os.path.join(
-        dir_of_this_script, 
-        '..',
-        '..',
-        "introspection_data_folder")
+    from _constant import introspection_data_folder
     if not os.path.isdir(introspection_data_folder):
         os.makedirs(introspection_data_folder)
 

@@ -82,6 +82,7 @@
   <exec_depend>smach</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>trajectory_msgs</exec_depend>
+  <exec_depend>birl_sensory_data_manager</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
