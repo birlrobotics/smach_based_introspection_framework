@@ -86,13 +86,13 @@ def start_instrospection(
     if not no_anomaly_detection:
         listen_HMM_anomaly_signal(use_manual_anomaly_signal)
 
-    from _constant import introspection_data_folder
-    if not os.path.isdir(introspection_data_folder):
-        os.makedirs(introspection_data_folder)
+    from _constant import experiment_record_folder
+    if not os.path.isdir(experiment_record_folder):
+        os.makedirs(experiment_record_folder)
 
     from _constant import folder_time_fmt
     experiment_folder = os.path.join(
-        introspection_data_folder,
+        experiment_record_folder,
         'experiment_at_%s'%datetime.datetime.now().strftime(folder_time_fmt),
     )
     if not os.path.isdir(experiment_folder):
@@ -101,7 +101,7 @@ def start_instrospection(
     import _experiment_recording_via_rosbag
     o = _experiment_recording_via_rosbag.RosbagRecord(
         os.path.join(experiment_folder, "record.bag"),
-        ['/tag_multimodal']
+        ['/tag_multimodal', '/anomaly_detection_signal']
     )
     o.start()
 

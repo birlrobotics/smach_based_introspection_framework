@@ -3,6 +3,8 @@ from _constant import (
     ANOMALY_DETECTION_BLOCKED, 
     ANOMALY_NOT_DETECTED,
     RECOVERY_JUST_DONE,
+    ROLLBACK_RECOVERY_TAG,
+    RECOVERY_DEMONSTRATED_BY_HUMAN_TAG,
 )
 import smach
 import os
@@ -85,14 +87,14 @@ class AnomalyDiagnosis(smach.State):
         else:
             while True:
                 rospy.loginfo("input a number to proceed:")
-                rospy.loginfo("-2 -- roll back recovery")
-                rospy.loginfo("-3 -- human teaching recovery")
+                rospy.loginfo("%s -- roll back recovery"%ROLLBACK_RECOVERY_TAG)
+                rospy.loginfo("%s -- human teaching recovery"%RECOVERY_DEMONSTRATED_BY_HUMAN_TAG)
                 rospy.loginfo("-4 -- dry-run classifier and dmp")
                 rospy.loginfo("-5 -- run classifier and dmp")
                 i = raw_input()
-                if i == '-2':
+                if i == str(ROLLBACK_RECOVERY_TAG):
                     return 'GoToRollBackRecovery'
-                elif i == '-3':
+                elif i == str(RECOVERY_DEMONSTRATED_BY_HUMAN_TAG):
                     return 'GoToHumanTeachingRecovery'
 
 
@@ -100,14 +102,14 @@ class HumanTeachingRecovery(smach.State):
     def __init__(self, outcomes):
         smach.State.__init__(self, outcomes)
     def execute(self, userdata):
-        hmm_state_switch_client(-3)
+        hmm_state_switch_client(RECOVERY_DEMONSTRATED_BY_HUMAN_TAG)
 
         while True:
             rospy.loginfo("enter \"s\" to start teaching, \"f\" to finish")
             i = raw_input()
             if i == 's':
                 rospy.loginfo("start")
-                hmm_state_switch_client(-3)
+                hmm_state_switch_client(RECOVERY_DEMONSTRATED_BY_HUMAN_TAG)
                 break
         while True:
             rospy.loginfo("enter \"f\" to finish")
@@ -126,7 +128,7 @@ class RollBackRecovery(smach.State):
         
     def execute(self, userdata):
         global execution_history
-        hmm_state_switch_client(-2)
+        hmm_state_switch_client(ROLLBACK_RECOVERY_TAG)
 
         rospy.loginfo("Enter RollBackRecovery State...")
         rospy.loginfo("Block anomlay detection")
