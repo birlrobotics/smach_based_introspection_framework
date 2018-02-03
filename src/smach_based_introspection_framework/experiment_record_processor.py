@@ -17,7 +17,17 @@ from _constant import (
 )
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
-from smach_based_introspection_framework._constant import experiment_record_folder, skill_sensory_data_folder_folder
+from smach_based_introspection_framework._constant import (
+    experiment_record_folder, 
+    skill_sensory_data_folder_folder,
+    anomaly_label_file,
+)
+
+def get_anomaly_labels(exp_dir):
+    txt_path = os.path.join(exp_dir, anomaly_label_file)
+    lines = open(txt_path, 'r').readlines()
+    labels = [i.strip() for i in lines]
+    return [i for i in labels if i != ""]
 
 def get_tag_range(df):
     ret = [] 
@@ -54,7 +64,6 @@ def run():
             raise Exception("Failed to get /tag_multimodal from record.bag in %s"%exp_dir)
         bag_path, tag_df = ret[0]
         list_of_tag_range = [i for i in get_tag_range(tag_df) if i[0] != 0]
-        print list_of_tag_range
 
         stat = {
             SUCCESSULLY_EXECUTED_SKILL: [],
@@ -77,6 +86,7 @@ def run():
                         "incomplete_skill": tr_tuple,
                         "human_dem_recovery_tr_tuple": None,
                         "extracted_anomaly": None,
+                        "anomaly_label": None
                     })
             elif tag == RECOVERY_DEMONSTRATED_BY_HUMAN_TAG:
                 stat[UNSUCCESSFULLY_EXECUTED_SKILL][-1]['recovery_tr_tuple'] = tr_tuple
@@ -98,9 +108,15 @@ def run():
 
         if len(list_of_anomaly) != len(stat[UNSUCCESSFULLY_EXECUTED_SKILL]):
             raise Exception("Anomalies amount does NOT match incomplete skill amount.")
+
+        list_of_anomaly_label = get_anomaly_labels(exp_dir)
+        if len(list_of_anomaly) != len(list_of_anomaly_label):
+            raise Exception("Anomalies amount does NOT match anomaly label amount.")
+        
     
         for idx, anomaly_tuple in enumerate(list_of_anomaly):
-            stat[UNSUCCESSFULLY_EXECUTED_SKILL][idx]["extracted_anomaly"] = anomaly_tuple
+            stat[UNSUCCESSFULLY_EXECUTED_SKILL][idx]["extracted_anomaly"] = anomaly_tuple[0]
+            stat[UNSUCCESSFULLY_EXECUTED_SKILL][idx]["anomaly_label"] = list_of_anomaly_label[idx]
                
-
+        pp.pprint(stat)
     

@@ -20,6 +20,8 @@ skill_sensory_data_folder_folder = os.path.join(
     introspection_data_folder,
     "skill_sensory_data_folder_folder")
 
+anomaly_label_file = "anomaly_labels.txt"
+
 SUCCESSULLY_EXECUTED_SKILL = 0
 UNSUCCESSFULLY_EXECUTED_SKILL = 1
 
