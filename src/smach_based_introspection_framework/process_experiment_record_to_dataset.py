@@ -56,7 +56,7 @@ def get_latest_dataset_dir():
     if os.path.isdir(latest_dataset_dir):
        shutil.move(
             latest_dataset_dir,  
-            os.path.join(dataset_folder, "data_set_dir.old.%s"%datetime.datetime.now().strftime(folder_time_fmt))
+            os.path.join(dataset_folder, "dataset_folder.old.%s"%datetime.datetime.now().strftime(folder_time_fmt))
         )
         
     os.makedirs(latest_dataset_dir)

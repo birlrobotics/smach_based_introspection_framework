@@ -20,6 +20,10 @@ dataset_folder = os.path.join(
     introspection_data_folder,
     "dataset_folder")
 
+model_folder = os.path.join(
+    introspection_data_folder,
+    "model_folder")
+
 skill_sensory_data_folder_folder = os.path.join(
     introspection_data_folder,
     "skill_sensory_data_folder_folder")
