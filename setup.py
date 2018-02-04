@@ -6,7 +6,6 @@ from catkin_pkg.python_setup import generate_distutils_setup
 setup_args = generate_distutils_setup(
     packages=[
         'smach_based_introspection_framework',
-        'introspection_model_handler',
     ],
     package_dir={'': 'src'}
 )

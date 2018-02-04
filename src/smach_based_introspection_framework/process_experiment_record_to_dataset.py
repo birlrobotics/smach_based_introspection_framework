@@ -16,15 +16,13 @@ from _constant import (
     RECOVERY_DEMONSTRATED_BY_HUMAN_TAG,
     folder_time_fmt,
     RECOVERY_SKILL_BEGINS_AT,
-)
-import pprint
-pp = pprint.PrettyPrinter(indent=4)
-from smach_based_introspection_framework._constant import (
     experiment_record_folder, 
     dataset_folder,
     skill_sensory_data_folder_folder,
     anomaly_label_file,
 )
+import pprint
+pp = pprint.PrettyPrinter(indent=4)
 import shutil
 import datetime
 import json
