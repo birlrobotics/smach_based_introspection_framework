@@ -9,12 +9,14 @@ from _constant import (
 )
 import re
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from birl_hmm.hmm_training import train_model, hmm_util
 from sklearn.externals import joblib
 import shutil
 import datetime
 import json
+import numpy as np
+import train_introspection_model
+import train_anomaly_classifier
+import ipdb
 
 data_fields_store = {
     "endpoint_pose": [
@@ -68,6 +70,7 @@ def run():
     if not os.path.isdir(latest_dataset_dir):
         raise Exception("Not found %s"%latest_dataset_dir)
 
+    '''
     prog = re.compile(r'tag_(\d+)')
     for i in glob.glob(os.path.join(latest_dataset_dir, "skill_data", '*')):
         tag = prog.match(os.path.basename(i)).group(1)
@@ -76,50 +79,73 @@ def run():
         for j in glob.glob(os.path.join(i, "*")):
             df = pd.read_csv(j, sep=',')
             list_of_mat.append(df[interested_data_fields].values)
-    
-        list_of_train_mat, list_of_test_mat = train_test_split(list_of_mat, test_size=0.25)
-        
-        if len(list_of_train_mat) == 0:
-            print 'Skill with tag %s contains 0 train samples, failed to train introspection model for it'%tag
-            continue
-        else:
-            print 'Skill with tag %s contains %s train samples'%(tag, len(list_of_train_mat))
-            
 
-        if len(list_of_test_mat) == 0:
-            print 'Skill with tag %s contains 0 test samples, failed to train introspection model for it'%tag
+        try:
+            result = train_introspection_model.run(list_of_mat, model_type, model_config, score_metric)
+        except Exception as e:
+            print "Failed to train introspection model for tag %s: %s"%(tag, e)  
             continue
-        else:
-            print 'Skill with tag %s contains %s test samples'%(tag, len(list_of_test_mat))
+        print "Successfully trained introspection model for tag %s"%(tag)  
     
-
-        sorted_model_list = train_model.run(
-            list_of_train_mat=list_of_train_mat, 
-            list_of_test_mat=list_of_test_mat,
-            model_type=model_type,
-            model_config=model_config,
-            score_metric=score_metric,
-        )
-        best = sorted_model_list[0]
             
         d = os.path.join(get_latest_model_dir(), 'tag_%s'%tag)
         if not os.path.isdir(d):
             os.makedirs(d)
         joblib.dump(
-            best['model'],
+            result['model'],
             os.path.join(d, 'introspection_model')
         )
     
-        train_report = [{hmm_util.get_model_config_id(i['now_model_config']): i['score']} for i in sorted_model_list]
+        model_info = { 
+            'data_type_chosen': data_type_chosen,
+            'model_type': model_type,
+            'find_best_model_in_this_config': model_config,
+            'score_metric': score_metric,
+        }
+        model_info.update(result['model_info']),
         json.dump(
-            [ 
-                {'data_type_chosen': data_type_chosen},
-                {'model_type': model_type},
-                {'model_config': model_config},
-                {'score_metric': score_metric},
-                {'best': best['now_model_config']},
-                {'train_report': train_report},
-            ],
+            model_info,
+            open(os.path.join(d, 'model_info'), 'w'),
+            indent=4,
+        )
+    '''
+
+    prog = re.compile(r'nominal_skill_(\d+)_anomaly_type_(.*)')
+    for i in glob.glob(os.path.join(latest_dataset_dir, "anomaly_data", '*')):
+        m = prog.match(os.path.basename(i))
+        tag = m.group(1)
+        anomaly_type = m.group(2)
+        print tag, anomaly_type
+        if anomaly_type == 'Unlabeled':
+            print "Skip Unlabeled anomalies in skill %s"%tag
+            continue
+        list_of_mat = []
+        for j in glob.glob(os.path.join(i, "*")):
+            df = pd.read_csv(j, sep=',')
+            list_of_mat.append(df[interested_data_fields].values)
+        try:
+            result = train_anomaly_classifier.run(list_of_mat, model_type, model_config, score_metric)
+        except Exception as e:
+            print "Failed to train train_anomaly_classifier for anomaly_type %s in skill %s: %s"%(anomaly_type, tag, e)  
+            continue
+        print "Successfully trained classifier for anomaly type %s in skill %s"%(anomaly_type, tag)  
+
+        d = os.path.join(get_latest_model_dir(), os.path.basename(i))
+        if not os.path.isdir(d):
+            os.makedirs(d)
+        joblib.dump(
+            result['model'],
+            os.path.join(d, 'classifer_model')
+        )
+        model_info = { 
+            'data_type_chosen': data_type_chosen,
+            'model_type': model_type,
+            'find_best_model_in_this_config': model_config,
+            'score_metric': score_metric,
+        }
+        model_info.update(result['model_info']),
+        json.dump(
+            model_info,
             open(os.path.join(d, 'model_info'), 'w'),
             indent=4,
         )
