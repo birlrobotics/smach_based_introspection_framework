@@ -6,6 +6,7 @@ from _constant import (
     dataset_folder,
     anomaly_label_file,
     model_folder,
+    RECOVERY_SKILL_BEGINS_AT
 )
 import re
 import pandas as pd
@@ -16,7 +17,18 @@ import json
 import numpy as np
 import train_introspection_model
 import train_anomaly_classifier
+import birl_baxter_dmp.dmp_train 
 import ipdb
+
+dmp_cmd_fields = [
+    '.endpoint_state.pose.position.x',
+    '.endpoint_state.pose.position.y',
+    '.endpoint_state.pose.position.z',
+    '.endpoint_state.pose.orientation.x',
+    '.endpoint_state.pose.orientation.y',
+    '.endpoint_state.pose.orientation.z',
+    '.endpoint_state.pose.orientation.w',
+]
 
 data_fields_store = {
     "endpoint_pose": [
@@ -70,7 +82,6 @@ def run():
     if not os.path.isdir(latest_dataset_dir):
         raise Exception("Not found %s"%latest_dataset_dir)
 
-    '''
     prog = re.compile(r'tag_(\d+)')
     for i in glob.glob(os.path.join(latest_dataset_dir, "skill_data", '*')):
         tag = prog.match(os.path.basename(i)).group(1)
@@ -105,10 +116,9 @@ def run():
         model_info.update(result['model_info']),
         json.dump(
             model_info,
-            open(os.path.join(d, 'model_info'), 'w'),
+            open(os.path.join(d, 'introspection_model_info'), 'w'),
             indent=4,
         )
-    '''
 
     prog = re.compile(r'nominal_skill_(\d+)_anomaly_type_(.*)')
     for i in glob.glob(os.path.join(latest_dataset_dir, "anomaly_data", '*')):
@@ -146,6 +156,52 @@ def run():
         model_info.update(result['model_info']),
         json.dump(
             model_info,
-            open(os.path.join(d, 'model_info'), 'w'),
+            open(os.path.join(d, 'classifier_model_info'), 'w'),
             indent=4,
         )
+
+
+    prog = re.compile(r'tag_(\d+)')
+    for i in glob.glob(os.path.join(latest_dataset_dir, "skill_data", '*')):
+        tag = prog.match(os.path.basename(i)).group(1)
+        if int(tag) < RECOVERY_SKILL_BEGINS_AT:
+            print "Skip nominal skill %s"%tag
+            continue
+        print "Gonna build dmp model for skill %s"%tag
+        list_of_mat = []
+        for j in glob.glob(os.path.join(i, "*")):
+            df = pd.read_csv(j, sep=',')
+            list_of_mat.append(df[dmp_cmd_fields].values)
+
+
+
+        basis_weight, basis_function_type = birl_baxter_dmp.dmp_train.train(list_of_mat)
+        print "Built dmp model for skill %s"%tag
+        model = {
+            "basis_weight": basis_weight,
+            "basis_function_type": basis_function_type,
+        }
+        d = os.path.join(get_latest_model_dir(), os.path.basename(i))
+        if not os.path.isdir(d):
+            os.makedirs(d)
+        joblib.dump(
+            model,
+            os.path.join(d, 'dmp_model')
+        )
+        model_info = { 
+            'dmp_cmd_fields': dmp_cmd_fields,
+        }
+        json.dump(
+            model_info,
+            open(os.path.join(d, 'dmp_model_info'), 'w'),
+            indent=4,
+        )
+
+
+
+
+
+
+
+
+
