@@ -15,8 +15,8 @@ import shutil
 import datetime
 import json
 import numpy as np
-import train_introspection_model
-import train_anomaly_classifier
+from model_training import train_introspection_model
+from model_training import train_anomaly_classifier
 import birl_baxter_dmp.dmp_train 
 import ipdb
 
