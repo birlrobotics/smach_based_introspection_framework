@@ -9,7 +9,7 @@ from birl_offline_data_handler.rosbag_handler import (
 from birl_offline_data_handler.rosbag_anomaly_extractor import (
     RosbagAnomalyExtractor
 )
-from _constant import (
+from smach_based_introspection_framework._constant import (
     SUCCESSULLY_EXECUTED_SKILL,
     UNSUCCESSFULLY_EXECUTED_SKILL,
     ROLLBACK_RECOVERY_TAG,

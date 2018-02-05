@@ -1,7 +1,7 @@
 import process_experiment_record_to_dataset as e2d
 import glob
 import os
-from _constant import (
+from smach_based_introspection_framework._constant import (
     folder_time_fmt,
     dataset_folder,
     anomaly_label_file,

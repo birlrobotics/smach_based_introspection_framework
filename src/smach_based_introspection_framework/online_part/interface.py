@@ -86,11 +86,11 @@ def start_instrospection(
     if not no_anomaly_detection:
         listen_HMM_anomaly_signal(use_manual_anomaly_signal)
 
-    from _constant import experiment_record_folder
+    from smach_based_introspection_framework._constant import experiment_record_folder
     if not os.path.isdir(experiment_record_folder):
         os.makedirs(experiment_record_folder)
 
-    from _constant import folder_time_fmt
+    from smach_based_introspection_framework._constant import folder_time_fmt
     experiment_folder = os.path.join(
         experiment_record_folder,
         'experiment_at_%s'%datetime.datetime.now().strftime(folder_time_fmt),

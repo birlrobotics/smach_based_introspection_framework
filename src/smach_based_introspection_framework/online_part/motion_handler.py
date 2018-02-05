@@ -1,6 +1,6 @@
 import struct
 import rospy
-from _constant import (
+from smach_based_introspection_framework._constant import (
     ANOMALY_DETECTED,
     ANOMALY_DETECTION_BLOCKED, 
     ANOMALY_NOT_DETECTED,
