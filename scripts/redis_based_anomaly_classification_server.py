@@ -1,7 +1,7 @@
 import rospy
 from std_srvs.srv import SetBool, SetBoolResponse
-from smach_based_introspection_framework.online_part.process_runner.redis_process import (
-    RedisRecord
+from smach_based_introspection_framework.online_part.process_runner.redis_based_anomaly_classification_process import (
+    RedisBasedAnomalyClassification, 
 )
 from smach_based_introspection_framework._constant import (
     latest_experiment_record_folder,
@@ -20,15 +20,15 @@ def cb(req):
             if rr is None:
                 if not os.path.isdir(latest_experiment_record_folder):
                     os.makedirs(latest_experiment_record_folder)
-                rr = RedisRecord()
+                rr = RedisBasedAnomalyClassification()
                 rr.start()
-                rospy.loginfo("Redis recording started")
+                rospy.loginfo("redis_based_anomaly_classification started")
             else:
                 raise Exception("Already started")
         else:
             if rr is not None:
                 rr.stop()
-                rospy.loginfo("Redis recording stopped")
+                rospy.loginfo("redis_based_anomaly_classification stopped")
                 rr = None
             else:
                 raise Exception("Never started")
@@ -41,11 +41,11 @@ def cb(req):
         
 
 if __name__ == '__main__':
-    rospy.init_node("smach_based_introspection_framework_redis_node")
+    rospy.init_node("redis_based_anomaly_classification_node")
     server = rospy.Service(
-        "smach_based_introspection_framework_redis_service", 
+        "redis_based_anomaly_classification_service", 
         SetBool,
         cb,
     )
-    rospy.loginfo("Redis server started")
+    rospy.loginfo("redis_based_anomaly_classification server started")
     rospy.spin()
