@@ -4,16 +4,17 @@ from smach_based_introspection_framework._constant import (
     ANOMALY_NOT_DETECTED,
     RECOVERY_JUST_DONE,
 )
-from _core import (
+from smach_based_introspection_framework.online_part.framework_core.states import (
     get_event_flag,
     set_event_flag,
     write_exec_hist,
     hmm_state_switch_client,
 )
-from _robot_screen_visualization import(
+from smach_based_introspection_framework.online_part.framework_core._robot_screen_visualization import(
     show_anomaly_detected,
     show_everyhing_is_good,
 )
+import copy
 
 def smach_execute_decorator(original_execute):
     def f(self, userdata): 

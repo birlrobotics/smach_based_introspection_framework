@@ -29,9 +29,10 @@ from control_msgs.msg import (
 from trajectory_msgs.msg import (
     JointTrajectoryPoint,
 )
-from _core import (
+from smach_based_introspection_framework.online_part.framework_core.states import (
     get_event_flag,
 )
+
 class BreakOnAnomalyTrajectoryClient(object):
 
     def __init__(self, limb,verbose = False):
