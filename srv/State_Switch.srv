@@ -1,0 +1,8 @@
+# change the hidden state of data
+int32 state
+
+---
+
+# finish flag
+
+std_msgs/Bool finish
