@@ -1,6 +1,6 @@
 import rospy
 from std_srvs.srv import SetBool, SetBoolResponse
-from smach_based_introspection_framework.online_part.data_collection.experiment_recording_via_redis import (
+from smach_based_introspection_framework.online_part.process_runner.redis_process import (
     RedisRecord
 )
 from smach_based_introspection_framework._constant import (

@@ -1,6 +1,6 @@
 import rospy
 from std_srvs.srv import SetBool, SetBoolResponse
-from smach_based_introspection_framework.online_part.data_collection.experiment_recording_via_rosbag import (
+from smach_based_introspection_framework.online_part.process_runner.rosbag_process import (
     RosbagRecord
 )
 from smach_based_introspection_framework._constant import (
