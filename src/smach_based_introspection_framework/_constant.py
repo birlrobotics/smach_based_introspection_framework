@@ -15,6 +15,10 @@ introspection_data_folder = os.path.join(
 experiment_record_folder = os.path.join(
     introspection_data_folder,
     "experiment_record_folder")
+latest_experiment_record_folder = os.path.join(
+    experiment_record_folder,
+    'latest',
+)
 
 dataset_folder = os.path.join(
     introspection_data_folder,
@@ -23,10 +27,6 @@ dataset_folder = os.path.join(
 model_folder = os.path.join(
     introspection_data_folder,
     "model_folder")
-
-skill_sensory_data_folder_folder = os.path.join(
-    introspection_data_folder,
-    "skill_sensory_data_folder_folder")
 
 anomaly_label_file = "anomaly_labels.txt"
 
@@ -37,3 +37,5 @@ ROLLBACK_RECOVERY_TAG = -2
 RECOVERY_DEMONSTRATED_BY_HUMAN_TAG = -3
 
 RECOVERY_SKILL_BEGINS_AT = 1000
+
+

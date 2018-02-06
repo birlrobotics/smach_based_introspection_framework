@@ -18,7 +18,6 @@ from smach_based_introspection_framework._constant import (
     RECOVERY_SKILL_BEGINS_AT,
     experiment_record_folder, 
     dataset_folder,
-    skill_sensory_data_folder_folder,
     anomaly_label_file,
 )
 import pprint
