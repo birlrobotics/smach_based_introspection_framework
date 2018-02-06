@@ -1,7 +1,6 @@
 import multiprocessing
 import Queue
-import data_stream_handler_process
-import birl.HMM.hmm_for_baxter_using_only_success_trials.hmm_online_service.constant as constant 
+from smach_based_introspection_framework.online_part.data_collection import data_stream_handler_process
 import birl.robot_introspection_pkg.multi_modal_config as mmc
 from anomaly_classification_proxy.srv import (
     AnomalyClassificationService, 
@@ -34,9 +33,9 @@ class RedisTalker(multiprocessing.Process):
             except KeyboardInterrupt:
                 break
 
-            data_frame = latest_data_tuple[constant.data_frame_idx]
-            smach_state = latest_data_tuple[constant.smach_state_idx]
-            data_header = latest_data_tuple[constant.data_header_idx]
+            data_frame = latest_data_tuple[data_stream_handler_process.data_frame_idx]
+            smach_state = latest_data_tuple[data_stream_handler_process.smach_state_idx]
+            data_header = latest_data_tuple[data_stream_handler_process.data_header_idx]
 
             score = data_header.stamp.to_sec()
             value = data_frame
