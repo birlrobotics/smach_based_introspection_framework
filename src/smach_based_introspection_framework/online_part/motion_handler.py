@@ -50,11 +50,9 @@ class BreakOnAnomalyTrajectoryClient(object):
         ## please rosrun baxter_interface joint_trajectory_server
         server_up = self._client.wait_for_server(timeout=rospy.Duration(10.0))
         if not server_up:
-            rospy.logerr("Timed out waiting for Joint Trajectory"
+            raise Exception("Timed out waiting for Joint Trajectory"
                          " Action Server to connect. Start the action server"
                          " before running example.")
-            rospy.signal_shutdown("Timed out waiting for Action Server")
-            sys.exit(1)
 
         #clear all  JointTrajectoryPoint
         self.clear(limb)

@@ -85,7 +85,10 @@ def main():
         tag_multimodal.wrench_stamped = copy.deepcopy(shared_wrench_stamped)
         pub.publish(tag_multimodal)
 
-        r.sleep()
+        try:
+            r.sleep()
+        except rospy.exceptions.ROSInterruptException:
+            pass
 
 if __name__ == '__main__':
-    sys.exit(main())
+    main()

@@ -19,6 +19,7 @@ from smach_based_introspection_framework.online_part.process_runner.tag_multimod
 )
 import shutil
 import datetime
+import signal
 
 def shutdown():
     rospy.loginfo("Shuting down, PID: %s"%os.getpid())
@@ -28,7 +29,7 @@ rosbag_proc = None
 ac_proc = None
 tmt_proc = None
 sis = None
-def toggle_introspection(start):
+def toggle_introspection(start, sm=None):
     global rosbag_proc, ac_proc, tmt_proc, sis
     if start:
         if not os.path.isdir(latest_experiment_record_folder):
@@ -47,18 +48,22 @@ def toggle_introspection(start):
         rospy.sleep(2)
     else:
         rospy.sleep(2)
-        rosbag_proc.stop()
-        ac_proc.stop()
-        tmt_proc.stop()
-        sis.stop()
-        rospy.sleep(2)
-        shutil.move(
-            latest_experiment_dir, 
-            os.path.join(
-                experiment_record_folder,
-                'experiment_at_%s'%datetime.datetime.now().strftime(folder_time_fmt),
+        if rosbag_proc:
+            rosbag_proc.stop()
+            rospy.sleep(2)
+            shutil.move(
+                latest_experiment_record_folder, 
+                os.path.join(
+                    experiment_record_folder,
+                    'experiment_at_%s'%datetime.datetime.now().strftime(folder_time_fmt),
+                )
             )
-        )
+        if ac_proc:
+            ac_proc.stop()
+        if tmt_proc:
+            tmt_proc.stop()
+        if sis:
+            sis.stop()
 
 def run(sm):
     try: 
@@ -69,7 +74,7 @@ def run(sm):
         sm = modify_user_sm.run(sm)
 
         try:
-            toggle_introspection(True)
+            toggle_introspection(True, sm)
         except Exception as e:
             toggle_introspection(False)
             rospy.loginfo(str(e))
@@ -84,4 +89,5 @@ def run(sm):
         rospy.loginfo("introspection down.")
 
     except:
-        os.killpg(os.getpid())
+        os.killpg(os.getpid(), signal.SIGINT)
+        raise
