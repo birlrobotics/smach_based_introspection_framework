@@ -18,6 +18,7 @@ from smach_based_introspection_framework._constant import (
     RECOVERY_SKILL_BEGINS_AT,
     experiment_record_folder, 
     dataset_folder,
+    latest_dataset_folder,
     anomaly_label_file,
 )
 import pprint
@@ -52,19 +53,18 @@ def get_tag_range(df):
 
     return ret
 
-def get_latest_dataset_dir():
-    if hasattr(get_latest_dataset_dir, "latest_dataset_dir"):
-        return get_latest_dataset_dir.latest_dataset_dir
-    latest_dataset_dir = os.path.join(dataset_folder, 'latest')
-    if os.path.isdir(latest_dataset_dir):
+def get_latest_dataset_folder():
+    if hasattr(get_latest_dataset_folder, "latest_dataset_folder"):
+        return get_latest_dataset_folder.latest_dataset_folder
+    if os.path.isdir(latest_dataset_folder):
        shutil.move(
-            latest_dataset_dir,  
+            latest_dataset_folder,  
             os.path.join(dataset_folder, "dataset_folder.old.%s"%datetime.datetime.now().strftime(folder_time_fmt))
         )
         
-    os.makedirs(latest_dataset_dir)
-    get_latest_dataset_dir.latest_dataset_dir = latest_dataset_dir
-    return latest_dataset_dir
+    os.makedirs(latest_dataset_folder)
+    get_latest_dataset_folder.latest_dataset_folder = latest_dataset_folder
+    return latest_dataset_folder
     
 def get_recovery_skill_tag(nominal_skill_tag, anomaly_type):
     if anomaly_type == "count":
@@ -72,7 +72,7 @@ def get_recovery_skill_tag(nominal_skill_tag, anomaly_type):
     if hasattr(get_recovery_skill_tag, "lookup_dict"):
         lookup_dict = get_recovery_skill_tag.lookup_dict
     else:
-        p = os.path.join(get_latest_dataset_dir(), "recovery_tag_lookup_dict.json")
+        p = os.path.join(get_latest_dataset_folder(), "recovery_tag_lookup_dict.json")
         try:
             lookup_dict = json.load(p)
         except:
@@ -85,12 +85,12 @@ def get_recovery_skill_tag(nominal_skill_tag, anomaly_type):
     
     lookup_dict[key] = lookup_dict["count"] 
     lookup_dict["count"] += 1
-    json.dump(lookup_dict, open(os.path.join(get_latest_dataset_dir(), "recovery_tag_lookup_dict.json"),'w'))
+    json.dump(lookup_dict, open(os.path.join(get_latest_dataset_folder(), "recovery_tag_lookup_dict.json"),'w'))
     return lookup_dict[key]
 
 def add_skill_introspection_data(tag, df, name):
     tag_dir = os.path.join(
-        get_latest_dataset_dir(),
+        get_latest_dataset_folder(),
         'skill_data',
         "tag_%s"%tag,
     )
@@ -101,7 +101,7 @@ def add_skill_introspection_data(tag, df, name):
 def add_anomaly_data(nominal_skill_tag, anomaly_type, df, name):
     key = "%s_%s"%(nominal_skill_tag, anomaly_type)
     anomaly_dir = os.path.join(
-        get_latest_dataset_dir(),
+        get_latest_dataset_folder(),
         'anomaly_data',
         "nominal_skill_%s_anomaly_type_%s"%(nominal_skill_tag, anomaly_type)
     )

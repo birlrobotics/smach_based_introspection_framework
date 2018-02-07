@@ -23,10 +23,18 @@ latest_experiment_record_folder = os.path.join(
 dataset_folder = os.path.join(
     introspection_data_folder,
     "dataset_folder")
+latest_dataset_folder = os.path.join(
+    dataset_folder,
+    'latest',
+)
 
 model_folder = os.path.join(
     introspection_data_folder,
     "model_folder")
+latest_model_folder = os.path.join(
+    model_folder,
+    'latest',
+)
 
 anomaly_label_file = "anomaly_labels.txt"
 

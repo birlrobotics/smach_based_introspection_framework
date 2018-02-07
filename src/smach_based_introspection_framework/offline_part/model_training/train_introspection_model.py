@@ -1,6 +1,7 @@
 from sklearn.model_selection import train_test_split
 from birl_hmm.hmm_training import train_model, hmm_util
 import numpy as np
+import ipdb
 
 def run(list_of_mat, model_type, model_config, score_metric):
     list_of_train_mat, list_of_test_mat = train_test_split(list_of_mat, test_size=0.25)
@@ -27,11 +28,16 @@ def run(list_of_mat, model_type, model_config, score_metric):
 
 
     list_of_log_curves = [hmm_util.fast_log_curve_calculation(i, best['model']) for i in list_of_test_mat]
-    np_matrix_traj_by_time = np.matrix(list_of_log_curves)
-    gradient_traj_by_time = np_matrix_traj_by_time[:, 1:]-np_matrix_traj_by_time[:, :-1]
+    max_candidate = []
+    min_candidate = []
+    for curve in list_of_log_curves:
+        arr = np.array(curve)
+        gradient_curve =  arr[1:]-arr[:-1]
+        max_candidate.append(max(gradient_curve))
+        min_candidate.append(min(gradient_curve))
 
-    min_gradient = gradient_traj_by_time.min()
-    max_gradient = gradient_traj_by_time.max()
+    min_gradient = min(min_candidate)
+    max_gradient = max(max_candidate)
     gradient_range = max_gradient-min_gradient
     threshold = min_gradient-gradient_range/2
     

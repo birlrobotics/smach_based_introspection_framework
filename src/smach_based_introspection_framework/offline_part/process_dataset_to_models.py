@@ -3,7 +3,8 @@ import glob
 import os
 from smach_based_introspection_framework._constant import (
     folder_time_fmt,
-    dataset_folder,
+    latest_dataset_folder,
+    latest_model_folder,
     anomaly_label_file,
     model_folder,
     RECOVERY_SKILL_BEGINS_AT
@@ -20,6 +21,7 @@ from model_training import train_anomaly_classifier
 import birl_baxter_dmp.dmp_train 
 import ipdb
 import smach_based_introspection_framework.configurables as configurables 
+import logging
 
 dmp_cmd_fields  = configurables.dmp_cmd_fields  
 data_type_chosen  = configurables.data_type_chosen  
@@ -28,27 +30,37 @@ model_type  = configurables.model_type
 score_metric  = configurables.score_metric  
 model_config  = configurables.model_config  
 
-def get_latest_model_dir():
-    if hasattr(get_latest_model_dir, "latest_model_dir"):
-        return get_latest_model_dir.latest_model_dir
-    latest_model_dir = os.path.join(model_folder, 'latest')
-    if os.path.isdir(latest_model_dir):
+def get_latest_model_folder():
+    if hasattr(get_latest_model_folder, "latest_model_folder"):
+        return get_latest_model_folder.latest_model_folder
+    if os.path.isdir(latest_model_folder):
        shutil.move(
-            latest_model_dir,  
+            latest_model_folder,  
             os.path.join(model_folder, "model_folder.old.%s"%datetime.datetime.now().strftime(folder_time_fmt))
         )
         
-    os.makedirs(latest_model_dir)
-    get_latest_model_dir.latest_model_dir = latest_model_dir
-    return latest_model_dir
+    os.makedirs(latest_model_folder)
+    get_latest_model_folder.latest_model_folder = latest_model_folder
+    return latest_model_folder
 
 def run():
-    latest_dataset_dir = os.path.join(dataset_folder, 'latest')
-    if not os.path.isdir(latest_dataset_dir):
-        raise Exception("Not found %s"%latest_dataset_dir)
+    if not os.path.isdir(latest_dataset_folder):
+        raise Exception("Not found %s"%latest_dataset_folder)
 
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger()
+
+    log_file = os.path.join(get_latest_model_folder(), 'run.log')
+    fileHandler = logging.FileHandler(os.path.realpath(log_file))
+    logger.addHandler(fileHandler)
+
+    consoleHandler = logging.StreamHandler()
+    logger.addHandler(consoleHandler)
+
+    logger.info("Collecting skill_data to build introspection model")
     prog = re.compile(r'tag_(\d+)')
-    for i in glob.glob(os.path.join(latest_dataset_dir, "skill_data", '*')):
+    for i in glob.glob(os.path.join(latest_dataset_folder, "skill_data", '*')):
+        logger.info('Processing %s'%i)
         tag = prog.match(os.path.basename(i)).group(1)
 
         list_of_mat = []
@@ -59,12 +71,12 @@ def run():
         try:
             result = train_introspection_model.run(list_of_mat, model_type, model_config, score_metric)
         except Exception as e:
-            print "Failed to train introspection model for tag %s: %s"%(tag, e)  
+            logger.error("Failed to train introspection model for tag %s: %s"%(tag, e))
             continue
-        print "Successfully trained introspection model for tag %s"%(tag)  
+        logger.info("Successfully trained introspection model for tag %s"%(tag))
     
             
-        d = os.path.join(get_latest_model_dir(), 'tag_%s'%tag)
+        d = os.path.join(get_latest_model_folder(), 'tag_%s'%tag)
         if not os.path.isdir(d):
             os.makedirs(d)
         joblib.dump(
@@ -85,14 +97,16 @@ def run():
             indent=4,
         )
 
+    logger.info("Collecting anomaly_data to build anomaly classifier")
     prog = re.compile(r'nominal_skill_(\d+)_anomaly_type_(.*)')
-    for i in glob.glob(os.path.join(latest_dataset_dir, "anomaly_data", '*')):
+    for i in glob.glob(os.path.join(latest_dataset_folder, "anomaly_data", '*')):
+        logger.info('Processing %s'%i)
         m = prog.match(os.path.basename(i))
         tag = m.group(1)
         anomaly_type = m.group(2)
-        print tag, anomaly_type
+        logger.info(tag, anomaly_type)
         if anomaly_type == 'Unlabeled':
-            print "Skip Unlabeled anomalies in skill %s"%tag
+            logger.info("Skip Unlabeled anomalies in skill %s"%tag)
             continue
         list_of_mat = []
         for j in glob.glob(os.path.join(i, "*")):
@@ -101,11 +115,11 @@ def run():
         try:
             result = train_anomaly_classifier.run(list_of_mat, model_type, model_config, score_metric)
         except Exception as e:
-            print "Failed to train train_anomaly_classifier for anomaly_type %s in skill %s: %s"%(anomaly_type, tag, e)  
+            logger.error("Failed to train train_anomaly_classifier for anomaly_type %s in skill %s: %s"%(anomaly_type, tag, e))
             continue
-        print "Successfully trained classifier for anomaly type %s in skill %s"%(anomaly_type, tag)  
+        logger.info("Successfully trained classifier for anomaly type %s in skill %s"%(anomaly_type, tag))
 
-        d = os.path.join(get_latest_model_dir(), os.path.basename(i))
+        d = os.path.join(get_latest_model_folder(), os.path.basename(i))
         if not os.path.isdir(d):
             os.makedirs(d)
         joblib.dump(
@@ -126,13 +140,14 @@ def run():
         )
 
 
+    logger.info("Collecting skill_data to build dmp")
     prog = re.compile(r'tag_(\d+)')
-    for i in glob.glob(os.path.join(latest_dataset_dir, "skill_data", '*')):
+    for i in glob.glob(os.path.join(latest_dataset_folder, "skill_data", '*')):
         tag = prog.match(os.path.basename(i)).group(1)
         if int(tag) < RECOVERY_SKILL_BEGINS_AT:
-            print "Skip nominal skill %s"%tag
+            logger.info("Skip nominal skill %s"%tag)
             continue
-        print "Gonna build dmp model for skill %s"%tag
+        logger.info("Gonna build dmp model for skill %s"%tag)
         list_of_mat = []
         for j in glob.glob(os.path.join(i, "*")):
             df = pd.read_csv(j, sep=',')
@@ -141,12 +156,12 @@ def run():
 
 
         basis_weight, basis_function_type = birl_baxter_dmp.dmp_train.train(list_of_mat)
-        print "Built dmp model for skill %s"%tag
+        logger.info("Built dmp model for skill %s"%tag)
         model = {
             "basis_weight": basis_weight,
             "basis_function_type": basis_function_type,
         }
-        d = os.path.join(get_latest_model_dir(), os.path.basename(i))
+        d = os.path.join(get_latest_model_folder(), os.path.basename(i))
         if not os.path.isdir(d):
             os.makedirs(d)
         joblib.dump(
@@ -161,6 +176,8 @@ def run():
             open(os.path.join(d, 'dmp_model_info'), 'w'),
             indent=4,
         )
+
+    fileHandler.close()
 
 
 
