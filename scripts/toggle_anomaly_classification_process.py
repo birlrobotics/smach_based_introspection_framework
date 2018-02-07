@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import rospy
 from std_srvs.srv import SetBool, SetBoolResponse
 from smach_based_introspection_framework.online_part.process_runner.anomaly_classification_process import (
