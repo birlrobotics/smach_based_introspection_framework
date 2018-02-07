@@ -19,49 +19,14 @@ from model_training import train_introspection_model
 from model_training import train_anomaly_classifier
 import birl_baxter_dmp.dmp_train 
 import ipdb
+import smach_based_introspection_framework.configurables as configurables 
 
-dmp_cmd_fields = [
-    '.endpoint_state.pose.position.x',
-    '.endpoint_state.pose.position.y',
-    '.endpoint_state.pose.position.z',
-    '.endpoint_state.pose.orientation.x',
-    '.endpoint_state.pose.orientation.y',
-    '.endpoint_state.pose.orientation.z',
-    '.endpoint_state.pose.orientation.w',
-]
-
-data_fields_store = {
-    "endpoint_pose": [
-        '.endpoint_state.pose.position.x',
-        '.endpoint_state.pose.position.y',
-        '.endpoint_state.pose.position.z',
-        '.endpoint_state.pose.orientation.x',
-        '.endpoint_state.pose.orientation.y',
-        '.endpoint_state.pose.orientation.z',
-        '.endpoint_state.pose.orientation.w'
-    ],
-    'wrench': [
-         '.wrench_stamped.wrench.force.x',
-         '.wrench_stamped.wrench.force.y',
-         '.wrench_stamped.wrench.force.z',
-         '.wrench_stamped.wrench.torque.x',
-         '.wrench_stamped.wrench.torque.y',
-         '.wrench_stamped.wrench.torque.z',
-    ] 
-}
-data_type_chosen = 'endpoint_pose_and_wrench'        
-data_type_split = data_type_chosen.split("_and_")
-interested_data_fields = []
-for data_type in data_type_split:
-    interested_data_fields += data_fields_store[data_type]
-model_type = 'hmmlearn\'s HMM'
-score_metric = '_score_metric_sum_of_loglik_'
-model_config = {
-    'hmm_max_train_iteration': 1000,
-    'hmm_max_hidden_state_amount': 7,
-    'gaussianhmm_covariance_type_string': ['diag', 'spherical', 'full', 'tied'],
-}
-
+dmp_cmd_fields  = configurables.dmp_cmd_fields  
+data_type_chosen  = configurables.data_type_chosen  
+interested_data_fields  = configurables.interested_data_fields  
+model_type  = configurables.model_type  
+score_metric  = configurables.score_metric  
+model_config  = configurables.model_config  
 
 def get_latest_model_dir():
     if hasattr(get_latest_model_dir, "latest_model_dir"):

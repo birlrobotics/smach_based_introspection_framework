@@ -4,7 +4,6 @@ from smach_based_introspection_framework.online_part.data_collection.data_stream
     TagMultimodalTopicHandler, 
     RedisZaddProc,
 )
-import birl.robot_introspection_pkg.multi_modal_config as mmc
 from smach_based_introspection_framework.srv import (
     AnomalyClassificationService, 
     AnomalyClassificationServiceResponse,
@@ -15,6 +14,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import time
+from smach_based_introspection_framework.configurables import (
+    anomaly_window_size_in_sec, 
+    anomaly_resample_hz, 
+    interested_data_fields,
+)
+
 
 
 resampled_anomaly_df_queue = Queue.Queue()
@@ -34,8 +39,7 @@ def cb(req):
         return AnomalyClassificationServiceResponse(-1, -1)
 
     import pandas as pd
-    import birl.robot_introspection_pkg.multi_modal_config as mmc
-    dimensions = copy.deepcopy(mmc.interested_data_fields)
+    dimensions = copy.deepcopy(interested_data_fields)
     if '.tag' in dimensions:
         idx_to_del = dimensions.index('.tag')
         del dimensions[idx_to_del]
@@ -74,7 +78,7 @@ def plot_resampled_anomaly_df(resampled_anomaly_df):
 if __name__ == '__main__':
     com_queue_of_receiver = multiprocessing.Queue()
     process_receiver = TagMultimodalTopicHandler(
-        mmc.interested_data_fields,
+        interested_data_fields,
         com_queue_of_receiver,
         node_name="tagMsgReceiverForOnlineRedisRecorder",
     )

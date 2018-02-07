@@ -25,6 +25,10 @@ pp = pprint.PrettyPrinter(indent=4)
 import shutil
 import datetime
 import json
+from smach_based_introspection_framework.configurables import (
+    anomaly_window_size_in_sec, 
+    anomaly_resample_hz, 
+)
 
 def get_anomaly_labels(exp_dir):
     txt_path = os.path.join(exp_dir, anomaly_label_file)
@@ -169,8 +173,8 @@ def run():
         ret = rae.get_anomaly_csv(
             "/tag_multimodal",
             "/anomaly_detection_signal",
-            4,
-            10,
+            anomaly_window_size_in_sec,
+            anomaly_resample_hz,
         )
         if len(ret) != 1:
             raise Exception("Failed to extract anomalies from record.bag in %s"%exp_dir)

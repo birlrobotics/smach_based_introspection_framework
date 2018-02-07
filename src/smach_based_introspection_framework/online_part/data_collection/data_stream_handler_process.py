@@ -19,8 +19,9 @@ class TagMultimodalTopicHandler(multiprocessing.Process):
         interested_data_fields = copy.deepcopy(interested_data_fields)
     
         # we don't need tag when using HMM.score
-        tag_idx = interested_data_fields.index('.tag')
-        del(interested_data_fields[tag_idx])
+        if '.tag' in interested_data_fields:
+            tag_idx = interested_data_fields.index('.tag')
+            del(interested_data_fields[tag_idx])
         self.interested_data_fields = interested_data_fields
         self.com_queue = com_queue
         self.node_name = node_name
