@@ -1,8 +1,10 @@
 import multiprocessing
 import Queue
-from smach_based_introspection_framework.online_part.data_collection.data_stream_handler_process import (
-    TagMultimodalTopicHandler, 
-    RedisZaddProc,
+from smach_based_introspection_framework.online_part.data_collection.StoreVectorToRedisProc import (
+    StoreVectorToRedisProc,
+)
+from smach_based_introspection_framework.online_part.data_collection.ConvertTagTopicToInterestedVectorProc import (
+    ConvertTagTopicToInterestedVectorProc,
 )
 from smach_based_introspection_framework.srv import (
     AnomalyClassificationService, 
@@ -77,7 +79,7 @@ def plot_resampled_anomaly_df(resampled_anomaly_df):
 
 if __name__ == '__main__':
     com_queue_of_receiver = multiprocessing.Queue()
-    process_receiver = TagMultimodalTopicHandler(
+    process_receiver = ConvertTagTopicToInterestedVectorProc(
         interested_data_fields,
         com_queue_of_receiver,
         node_name="tagMsgReceiverForOnlineRedisRecorder",
@@ -86,7 +88,7 @@ if __name__ == '__main__':
     process_receiver.start()
 
     com_queue_of_redis = multiprocessing.Queue()
-    redis_zadd_proc = RedisZaddProc(
+    redis_zadd_proc = StoreVectorToRedisProc(
         com_queue_of_redis, 
         node_name='RedisZaddProc_node_for_anomaly_classification',
     )
