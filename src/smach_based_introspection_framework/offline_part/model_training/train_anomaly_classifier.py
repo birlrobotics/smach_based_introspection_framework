@@ -42,5 +42,7 @@ def run(list_of_mat, model_type, model_config, score_metric):
             'test_set_log_likelihood_mean':mean,
             'test_set_log_likelihood_std':std,
             'train_report': train_report,
+            'size_of_train_set': len(list_of_train_mat),
+            'size_of_test_set': len(list_of_test_mat),
         }
     }

@@ -52,5 +52,7 @@ def run(list_of_mat, model_type, model_config, score_metric):
             'config_of_best_model': best['now_model_config'],
             'threshold_for_introspection':threshold,
             'train_report': train_report,
+            'size_of_train_set': len(list_of_train_mat),
+            'size_of_test_set': len(list_of_test_mat),
         }
     }
