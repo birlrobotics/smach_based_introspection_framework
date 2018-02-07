@@ -1,8 +1,11 @@
 import multiprocessing
 import Queue
-from smach_based_introspection_framework.online_part.data_collection import data_stream_handler_process
+from smach_based_introspection_framework.online_part.data_collection.data_stream_handler_process import (
+    TagMultimodalTopicHandler, 
+    RedisZaddProc,
+)
 import birl.robot_introspection_pkg.multi_modal_config as mmc
-from anomaly_classification_proxy.srv import (
+from smach_based_introspection_framework.srv import (
     AnomalyClassificationService, 
     AnomalyClassificationServiceResponse,
 )
@@ -11,37 +14,11 @@ import copy
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import time
 
-class RedisTalker(multiprocessing.Process):
-    def __init__(
-        self,
-        com_queue, 
-    ):
-        multiprocessing.Process.__init__(self)     
-        self.com_queue = com_queue
-        
-    def run(self):
-        import redis
-        import rospy
-        r = redis.Redis(host='localhost', port=6379, db=0)
-        print 'delete key \"tag_multimodal_msgs\"', r.delete("tag_multimodal_msgs")
-        while not rospy.is_shutdown():
-            try:
-                latest_data_tuple = self.com_queue.get(1)
-            except Queue.Empty:
-                continue
-            except KeyboardInterrupt:
-                break
 
-            data_frame = latest_data_tuple[data_stream_handler_process.data_frame_idx]
-            smach_state = latest_data_tuple[data_stream_handler_process.smach_state_idx]
-            data_header = latest_data_tuple[data_stream_handler_process.data_header_idx]
-
-            score = data_header.stamp.to_sec()
-            value = data_frame
-            r.zadd("tag_multimodal_msgs", value, score)
 resampled_anomaly_df_queue = Queue.Queue()
-def redis_service_callback(req):
+def cb(req):
     global resampled_anomaly_df_queue
     print req
     anomaly_t = req.anomaly_start_time_in_secs
@@ -96,30 +73,36 @@ def plot_resampled_anomaly_df(resampled_anomaly_df):
 
 if __name__ == '__main__':
     com_queue_of_receiver = multiprocessing.Queue()
-    process_receiver = data_stream_handler_process.TagMultimodalTopicHandler(
+    process_receiver = TagMultimodalTopicHandler(
         mmc.interested_data_fields,
         com_queue_of_receiver,
         node_name="tagMsgReceiverForOnlineRedisRecorder",
     )
+    process_receiver.daemon = True
     process_receiver.start()
 
     com_queue_of_redis = multiprocessing.Queue()
-    redis_talker = RedisTalker(com_queue_of_redis)
-    redis_talker.start()
+    redis_zadd_proc = RedisZaddProc(
+        com_queue_of_redis, 
+        node_name='RedisZaddProc_node_for_anomaly_classification',
+    )
+    redis_zadd_proc.daemon = True
+    redis_zadd_proc.start()
 
     import rospy
     rospy.init_node('anomaly_classification_node')
 
-    s = rospy.Service("AnomalyClassificationService", AnomalyClassificationService, redis_service_callback) 
+    rospy.loginfo("anomaly_classification_node starts")
+    s = rospy.Service("AnomalyClassificationService", AnomalyClassificationService, cb) 
 
     while not rospy.is_shutdown():
         if not resampled_anomaly_df_queue.empty():
             plot_resampled_anomaly_df(resampled_anomaly_df_queue.get())
 
         try:
-            latest_data_tuple = com_queue_of_receiver.get(1)
+            latest_data_tuple = com_queue_of_receiver.get(timeout=1)
         except Queue.Empty:
             continue
-        except KeyboardInterrupt:
-            break
         com_queue_of_redis.put(latest_data_tuple)
+
+    rospy.loginfo('redis_based_anomaly_classification.py exits')

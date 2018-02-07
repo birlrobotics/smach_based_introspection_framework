@@ -15,13 +15,11 @@ class ShellProcessRunner(object):
 
         if self.cmd is None:
             raise Exception("Process cmd is None.")
-        self.process = subprocess.Popen(self.cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.process = subprocess.Popen(self.cmd, shell=True)
         time.sleep(1)
         if self.process.poll() is not None:
-            raise Exception("Process died immediately. returncode: %s. stdout: %s. stderr: %s"%(
+            raise Exception("Process died immediately. returncode: %s."%(
                 self.process.returncode,
-                self.process.stdout.read(),
-                self.process.stderr.read(),
             ))
         self.started = True
 
@@ -32,8 +30,11 @@ class ShellProcessRunner(object):
         ppid = self.process.pid 
         parent = psutil.Process(ppid)
         for child in parent.children(recursive=True):
-            child.send_signal(signal.SIGINT)
-            child.wait()
+            try:
+                child.send_signal(signal.SIGINT)
+                child.wait()
+            except psutil.NoSuchProcess:
+                pass
         parent.send_signal(signal.SIGINT)
         parent.wait()
         self.started = False 
