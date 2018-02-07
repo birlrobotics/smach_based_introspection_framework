@@ -1,7 +1,7 @@
 import rospy
 from std_srvs.srv import SetBool, SetBoolResponse
-from smach_based_introspection_framework.online_part.process_runner.anomaly_classification_process import (
-    AnomalyClassificationProc 
+from smach_based_introspection_framework.online_part.process_runner.tag_multimodal_topic_process import (
+   TagMultimodalTopicProc, 
 )
 from smach_based_introspection_framework._constant import (
     latest_experiment_record_folder,
@@ -20,7 +20,7 @@ def cb(req):
             if rr is None:
                 if not os.path.isdir(latest_experiment_record_folder):
                     os.makedirs(latest_experiment_record_folder)
-                rr = AnomalyClassificationProc()
+                rr = TagMultimodalTopicProc()
                 rr.start()
                 rospy.loginfo("Process started")
             else:
@@ -41,9 +41,9 @@ def cb(req):
         
 
 if __name__ == '__main__':
-    rospy.init_node("toggle_anomaly_classification_process_node")
+    rospy.init_node("toggle_tag_multimodal_topic_process_node")
     server = rospy.Service(
-        "toggle_anomaly_classification_process_service", 
+        "toggle_tag_multimodal_topic_process_service", 
         SetBool,
         cb,
     )

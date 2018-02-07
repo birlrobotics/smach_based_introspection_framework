@@ -25,13 +25,13 @@ def cb(req):
                     ['/tag_multimodal', '/anomaly_detection_signal']
                 )
                 rr.start()
-                rospy.loginfo("toggle_rosbag_process started")
+                rospy.loginfo("Process started")
             else:
                 raise Exception("Already started")
         else:
             if rr is not None:
                 rr.stop()
-                rospy.loginfo("toggle_rosbag_process stopped")
+                rospy.loginfo("Process stopped")
                 rr = None
             else:
                 raise Exception("Never started")
@@ -50,5 +50,5 @@ if __name__ == '__main__':
         SetBool,
         cb,
     )
-    rospy.loginfo("toggle_rosbag_process server started")
+    rospy.loginfo("Server started")
     rospy.spin()

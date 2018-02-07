@@ -16,8 +16,10 @@ import copy
 from baxter_core_msgs.msg import EndpointState
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import WrenchStamped
-from birl_baxter_tasks.msg import Tag_MultiModal
-from birl_baxter_tasks.srv import (
+from smach_based_introspection_framework.msg import (
+    Tag_MultiModal,
+)
+from smach_based_introspection_framework.srv import (
     State_Switch,
     State_SwitchResponse
 )
