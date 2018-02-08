@@ -66,7 +66,7 @@ def get_latest_dataset_folder():
     get_latest_dataset_folder.latest_dataset_folder = latest_dataset_folder
     return latest_dataset_folder
     
-def get_recovery_skill_tag(nominal_skill_tag, anomaly_type):
+def get_recovery_skill_tag(nominal_skill_tag, anomaly_type, add_if_not_exist=True):
     if anomaly_type == "count":
         raise Exception("anomaly type CANNOT be \"count\"")
     if hasattr(get_recovery_skill_tag, "lookup_dict"):
@@ -82,6 +82,8 @@ def get_recovery_skill_tag(nominal_skill_tag, anomaly_type):
     key = "nominal_skill_%s_anomaly_type_%s"%(nominal_skill_tag, anomaly_type)
     if key in lookup_dict:
         return lookup_dict[key]
+    elif not add_if_not_exist:
+        return None
     
     lookup_dict[key] = lookup_dict["count"] 
     lookup_dict["count"] += 1

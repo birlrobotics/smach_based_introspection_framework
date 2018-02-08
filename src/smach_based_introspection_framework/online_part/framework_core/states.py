@@ -20,6 +20,10 @@ event_flag = 1
 execution_history = []
 latest_anomaly_t = None
 
+def get_anomaly_t():
+    global latest_anomaly_t
+    return latest_anomaly_t
+
 def get_event_flag():
     global event_flag
     return event_flag

@@ -44,3 +44,5 @@ model_config = {
 
 anomaly_window_size_in_sec = 4
 anomaly_resample_hz = 10
+
+anomaly_classification_confidence_threshold = 0.5
