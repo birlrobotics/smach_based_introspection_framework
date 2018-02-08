@@ -7,7 +7,7 @@ from sensor_msgs.msg import (
 import rospy
 
 dir_of_this_script = os.path.dirname(os.path.realpath(__file__))
-image_dir = os.path.join(dir_of_this_script, '..', '..', 'image')
+image_dir = os.path.join(dir_of_this_script, '..', '..', '..', '..', 'image')
 def send_image(path):
     """
     Send the image located at the specified path to the head
@@ -29,3 +29,5 @@ def show_everyhing_is_good():
 def show_anomaly_detected():
     send_image("red.jpg")
 
+def show_introspection_model_not_found():
+    send_image("yellow.jpg")

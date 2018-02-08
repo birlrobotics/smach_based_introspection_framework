@@ -10,7 +10,7 @@ from smach_based_introspection_framework.online_part.framework_core.states impor
     write_exec_hist,
     hmm_state_switch_client,
 )
-from smach_based_introspection_framework.online_part.framework_core._robot_screen_visualization import(
+from smach_based_introspection_framework.online_part.robot_screen_visualization.setter import(
     show_anomaly_detected,
     show_everyhing_is_good,
 )
