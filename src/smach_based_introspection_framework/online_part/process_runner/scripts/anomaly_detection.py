@@ -105,7 +105,6 @@ class IdSkillThenDetectAnomaly(multiprocessing.Process):
 
             now_skill, anomaly_detected, metric, threshold = self.detector.add_one_smaple_and_identify_skill_and_detect_anomaly(np.array(data_frame).reshape(1,-1), now_skill=smach_state)
 
-            rospy.loginfo("anomaly_detected:%s"%anomaly_detected)
             if anomaly_detected:
                 rospy.loginfo("anomaly_detected:%s"%anomaly_detected)
                 anomaly_detection_signal_pub.publish(data_header) 
@@ -118,6 +117,7 @@ class IdSkillThenDetectAnomaly(multiprocessing.Process):
                 anomaly_detection_threshold_pub.publish(threshold)
 
 if __name__ == '__main__':
+    rospy.loginfo('anomaly_detection.py starts')
     com_queue_of_receiver = multiprocessing.Queue()
     process_receiver = ConvertTagTopicToInterestedVectorProc(
         interested_data_fields,
@@ -142,6 +142,4 @@ if __name__ == '__main__':
         latest_data_tuple = com_queue_of_receiver.get()
         com_queue_of_anomaly_detection.put(latest_data_tuple)
 
-
-    process_receiver.shutdown()
-    process_anomaly_detection.shutdown()
+    rospy.loginfo('anomaly_detection.py exits')

@@ -1,4 +1,6 @@
-import log_likelihood_incremental_calculator
+from log_likelihood_incremental_calculator import (
+    get_calculator,
+)
 import numpy as np
 import ipdb
 
@@ -8,7 +10,7 @@ class BaseDetector(object):
         
         loglik_incre_cal_group_by_state = {}
         for state_no in model_group_by_state:
-            loglik_incre_cal_group_by_state[state_no] = log_likelihood_incremental_calculator.get_calculator(model_group_by_state[state_no])
+            loglik_incre_cal_group_by_state[state_no] = get_calculator(model_group_by_state[state_no])
             
         self.loglik_incre_cal_group_by_state = loglik_incre_cal_group_by_state
 
@@ -80,7 +82,7 @@ class DetectorBasedOnGradientOfLoglikCurve(BaseDetector):
     
         if now_skill != prev_skill:
             print "now_skill != prev_skill, gonna switch model and restart anomaly detection."
-            self.calculator = log_likelihood_incremental_calculator.interface.get_calculator(self.model_group_by_state[now_skill])
+            self.calculator = get_calculator(self.model_group_by_state[now_skill])
             self.prev_loglik = None
 
         now_loglik = self.calculator.add_one_sample_and_get_loglik(sample)

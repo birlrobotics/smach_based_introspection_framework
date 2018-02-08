@@ -14,6 +14,9 @@ from smach_based_introspection_framework.online_part.process_runner.rosbag_proce
 from smach_based_introspection_framework.online_part.process_runner.anomaly_classification_process import (
     AnomalyClassificationProc 
 )
+from smach_based_introspection_framework.online_part.process_runner.AnomalyDetectionProc import (
+    AnomalyDetectionProc
+)
 from smach_based_introspection_framework.online_part.process_runner.tag_multimodal_topic_process import (
    TagMultimodalTopicProc, 
 )
@@ -29,8 +32,9 @@ rosbag_proc = None
 ac_proc = None
 tmt_proc = None
 sis = None
+ad_proc = None
 def toggle_introspection(start, sm=None):
-    global rosbag_proc, ac_proc, tmt_proc, sis
+    global rosbag_proc, ac_proc, tmt_proc, sis, ad_proc
     if start:
         if not os.path.isdir(latest_experiment_record_folder):
             os.makedirs(latest_experiment_record_folder)
@@ -45,6 +49,8 @@ def toggle_introspection(start, sm=None):
         tmt_proc.start()
         sis = smach_ros.IntrospectionServer('MY_SERVER', sm, '/SM_ROOT')
         sis.start()
+        ad_proc = AnomalyDetectionProc()
+        ad_proc.start()
         rospy.sleep(2)
     else:
         rospy.sleep(2)
@@ -64,6 +70,8 @@ def toggle_introspection(start, sm=None):
             tmt_proc.stop()
         if sis:
             sis.stop()
+        if ac_proc:
+            ac_proc.stop()
 
 def run(sm):
     try: 
