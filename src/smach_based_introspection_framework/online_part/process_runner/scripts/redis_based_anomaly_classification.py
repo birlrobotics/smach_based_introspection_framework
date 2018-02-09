@@ -50,7 +50,7 @@ def plot_resampled_anomaly_df(resampled_anomaly_df):
         fig.savefig(os.path.join(realtime_anomaly_plot_dir, (dim+'.png').strip('.')))
         plt.close(fig)
 
-def classify_against_all_types(mat):
+def classify_against_all_types(mat, happen_in_state):
     ret = []
     prog = re.compile(r'nominal_skill_(\d+)_anomaly_type_(.*)')
     for i in glob.glob(os.path.join(latest_model_folder, '*')):
@@ -60,6 +60,9 @@ def classify_against_all_types(mat):
         
         tag = m.group(1)
         anomaly_type = m.group(2)
+        if int(tag) != int(happen_in_state):
+            continue
+
         model = joblib.load(os.path.join(i, 'classifier_model'))
         hmm_model = model['hmm_model']
         threshold_for_classification = model['threshold_for_classification']
@@ -79,6 +82,7 @@ def classify_against_all_types(mat):
 def cb(req):
     rospy.loginfo(req)
     anomaly_t = req.anomaly_start_time_in_secs
+    happen_in_state = req.happen_in_state
     import redis
     r = redis.Redis(host='localhost', port=6379, db=0)
     from birl.robot_introspection_pkg.anomaly_sampling_config import anomaly_window_size_in_sec, anomaly_resample_hz
@@ -106,7 +110,7 @@ def cb(req):
     old_time_index = search_df.index
     resampled_anomaly_df = search_df.reindex(old_time_index.union(new_time_index)).interpolate(method='linear', axis=0).ix[new_time_index]
     plot_resampled_anomaly_df(resampled_anomaly_df)
-    ret = classify_against_all_types(resampled_anomaly_df.values)
+    ret = classify_against_all_types(resampled_anomaly_df.values, happen_in_state)
     if len(ret) == 0:
         return AnomalyClassificationServiceResponse("__NO_CLASSIFIER_FOUND", 0)
     m = max(ret, key=lambda x: x[1]['confidence'])

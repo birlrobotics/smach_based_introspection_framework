@@ -114,7 +114,7 @@ def handle_anomaly(state_obj):
 
         sp = rospy.ServiceProxy('AnomalyClassificationService', AnomalyClassificationService)
         try:
-            resp = sp(anomaly_t)
+            resp = sp(anomaly_t, str(nominal_tag))
         except rospy.ServiceException as exc:
             rospy.logerr("calling AnomalyClassificationService failed: %s"%exc)
             raise Exception("calling AnomalyClassificationService failed: %s"%exc)

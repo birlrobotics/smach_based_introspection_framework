@@ -18,6 +18,14 @@ data_fields_store = {
         '.endpoint_state.pose.orientation.z',
         '.endpoint_state.pose.orientation.w'
     ],
+    "endpoint_twist": [
+        '.endpoint_state.twist.linear.x',
+        '.endpoint_state.twist.linear.y',
+        '.endpoint_state.twist.linear.z',
+        '.endpoint_state.twist.angular.x',
+        '.endpoint_state.twist.angular.y',
+        '.endpoint_state.twist.angular.z',
+    ],
     'wrench': [
          '.wrench_stamped.wrench.force.x',
          '.wrench_stamped.wrench.force.y',
@@ -27,7 +35,7 @@ data_fields_store = {
          '.wrench_stamped.wrench.torque.z',
     ] 
 }
-data_type_chosen = 'endpoint_pose_and_wrench'        
+data_type_chosen = 'endpoint_twist_and_wrench'        
 data_type_split = data_type_chosen.split("_and_")
 interested_data_fields = []
 for data_type in data_type_split:

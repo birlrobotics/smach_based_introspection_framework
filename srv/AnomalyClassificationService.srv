@@ -1,4 +1,5 @@
 float64 anomaly_start_time_in_secs
+string happen_in_state
 ---
 string predicted_label 
 float64 predicted_proba 
