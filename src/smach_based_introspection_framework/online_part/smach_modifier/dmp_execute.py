@@ -45,8 +45,7 @@ def execute(dmp_model, goal):
     command_matrix = dmp_imitate(starting_pose=start, ending_pose=end, weight_mat=dmp_model["basis_weight"], base_fuc=dmp_model["basis_function_type"])
     
     robot, group, plan, fraction = get_moveit_plan(command_matrix, dmp_cmd_fields, 'pose')
-    if fraction < 0.5:
-        raise Exception("moveit plan success rate < 0.5")
+    rospy.loginfo('moveit plan success rate %s'%fraction)
     
     def cb(data):
         cb.result = data

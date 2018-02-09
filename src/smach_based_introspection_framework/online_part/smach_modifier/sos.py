@@ -1,6 +1,7 @@
 from smach_based_introspection_framework.online_part.framework_core.states import (
     hmm_state_switch_client,
     get_anomaly_t,
+    set_event_flag,
 )
 from smach_based_introspection_framework.online_part.robot_screen_visualization.setter import(
     show_anomaly_detected,
@@ -141,7 +142,7 @@ def handle_anomaly(state_obj):
                 break
 
             dmp_model_path = os.path.join(latest_model_folder, 'tag_%s'%dmp_tag, 'dmp_model')
-            if not os.path.isfile(dmp_model):
+            if not os.path.isfile(dmp_model_path):
                 rospy.loginfo("dmp model not found: %s"%dmp_model_path) 
                 need_human = True
                 break
@@ -169,5 +170,5 @@ def handle_anomaly(state_obj):
         alf.write("%s\n"%label)
         return success
     else:
-        return False
+        return True
 
