@@ -147,6 +147,8 @@ if __name__ == '__main__':
             latest_data_tuple = com_queue_of_receiver.get(timeout=1)
         except Queue.Empty:
             continue
+        except KeyboardInterrupt:
+            break
         com_queue_of_redis.put(latest_data_tuple)
 
     rospy.loginfo('redis_based_anomaly_classification.py exits')

@@ -28,6 +28,8 @@ class StoreVectorToRedisProc(multiprocessing.Process):
                     latest_data_tuple = self.com_queue.get(timeout=1)
                 except Queue.Empty:
                     continue
+                except KeyboardInterrupt:
+                    break
 
                 data_frame = latest_data_tuple[data_frame_idx]
                 smach_state = latest_data_tuple[smach_state_idx]

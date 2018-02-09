@@ -80,6 +80,8 @@ class IdSkillThenDetectAnomaly(multiprocessing.Process):
                 latest_data_tuple = self.com_queue.get(timeout=1)
             except Queue.Empty:
                 continue
+            except KeyboardInterrupt:
+                break
 
             smach_state = latest_data_tuple[smach_state_idx]
 
@@ -139,6 +141,8 @@ if __name__ == '__main__':
             latest_data_tuple = com_queue_of_receiver.get(timeout=1)
         except Queue.Empty:
             continue
+        except KeyboardInterrupt:
+            break
         com_queue_of_anomaly_detection.put(latest_data_tuple)
 
     rospy.loginfo('anomaly_detection.py exits')
