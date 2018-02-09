@@ -95,7 +95,7 @@ def human_teach(state_obj):
             rospy.info("input end please.")
     return label, True
 
-def handle_anomaly(state_obj)
+def handle_anomaly(state_obj):
     anomaly_label_file = open(os.path.join(latest_experiment_record_folder, anomaly_label_file) ,'a')
     nominal_tag = state_obj.state_no
     rospy.loginfo("handle_anomaly starts") 
@@ -122,7 +122,7 @@ def handle_anomaly(state_obj)
             raise Exception("calling AnomalyClassificationService failed: returns -1")
 
         rospy.loginfo("anomaly classification resp: %s"%resp) 
-        if predicted_proba > anomaly_classification_confidence_threshold  
+        if predicted_proba > anomaly_classification_confidence_threshold:
 
             dmp_tag = get_recovery_skill_tag(nominal_tag, predicted_label, False)
             rospy.loginfo("dmp_tag : %s"%dmp_tag) 
@@ -142,7 +142,7 @@ def handle_anomaly(state_obj)
             
             anomaly_label_file.write("%s\n"%predicted_label)
             hmm_state_switch_client(dmp_tag)
-            if dmp_execute.execute(dmp_model, state_obj.get_pose_goal())                
+            if dmp_execute.execute(dmp_model, state_obj.get_pose_goal()):
                 hmm_state_switch_client(0)
                 break
             else:

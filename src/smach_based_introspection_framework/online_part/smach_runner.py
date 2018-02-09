@@ -76,8 +76,8 @@ def toggle_introspection(start, sm=None):
             tmt_proc.stop()
         if sis:
             sis.stop()
-        if ac_proc:
-            ac_proc.stop()
+        if ad_proc:
+            ad_proc.stop()
 
 def run(sm):
     try: 

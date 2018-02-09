@@ -5,12 +5,13 @@ from smach_based_introspection_framework.online_part.motion_handler import (
 )
 import sos
 from smach_based_introspection_framework.online_part.framework_core.states import (
-    get_anomaly_t,
     hmm_state_switch_client,
+    write_exec_hist,
 )
 
 def execute(self, userdata):
     hmm_state_switch_client(0)
+    write_exec_hist(self, type(self).__name__, userdata, self.depend_on_prev_state)
     if hasattr(self, "before_motion"):
         self.before_motion()
     limb = 'right'
