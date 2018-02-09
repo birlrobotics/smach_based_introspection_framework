@@ -2,9 +2,6 @@ import struct
 import rospy
 from smach_based_introspection_framework._constant import (
     ANOMALY_DETECTED,
-    ANOMALY_DETECTION_BLOCKED, 
-    ANOMALY_NOT_DETECTED,
-    RECOVERY_JUST_DONE,
 )
 from baxter_core_msgs.srv import (
     SolvePositionIK,

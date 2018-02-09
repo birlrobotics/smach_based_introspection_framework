@@ -1,10 +1,6 @@
 from smach_based_introspection_framework._constant import (
     ANOMALY_DETECTED,
-    ANOMALY_DETECTION_BLOCKED, 
-    ANOMALY_NOT_DETECTED,
-    RECOVERY_JUST_DONE,
     ROLLBACK_RECOVERY_TAG,
-    RECOVERY_DEMONSTRATED_BY_HUMAN_TAG,
 )
 import smach
 import os
@@ -55,9 +51,6 @@ def write_exec_hist(state_instance, current_state_name, current_userdata, depend
 
 def hmm_state_switch_client(state):
     global mode_no_state_trainsition_report
-    if mode_no_state_trainsition_report:
-        print 'mode_no_state_trainsition_report'
-        return
     rospy.wait_for_service('hmm_state_switch')
     try:
 
@@ -68,9 +61,9 @@ def hmm_state_switch_client(state):
         req.state = state
         resp = hmm_state_switch_proxy(req)
         if resp.finish.data:
-            print "Hmm State switch to %d succesfully" %state
+            rospy.loginfo("Hmm State switch to %d succesfully" %state)
     except rospy.ServiceException, e:
-        print "Service call failed: %s"%e
+        rospy.logerr("Service call failed: %s"%e)
 
 class RollBackRecovery(smach.State):
     def __init__(self, outcomes):
@@ -106,8 +99,7 @@ def listen_HMM_anomaly_signal(use_manual_anomaly_signal):
     hmm_state_switch_client(0)
     def callback_hmm(msg):
         global latest_anomaly_t
-        print msg
-        if get_event_flag() != ANOMALY_DETECTION_BLOCKED:
+        if get_event_flag() != ANOMALY_DETECTED:
             rospy.logerr("hmm signaled an anomaly")
             set_event_flag(ANOMALY_DETECTED) 
             anomaly_t = msg.stamp.to_sec()

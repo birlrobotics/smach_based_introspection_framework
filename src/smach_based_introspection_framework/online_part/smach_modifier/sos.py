@@ -28,6 +28,10 @@ from smach_based_introspection_framework._constant import (
 from smach_based_introspection_framework.srv import (
     AnomalyClassificationService,
 )
+from smach_based_introspection_framework._constant import (
+    ANOMALY_NOT_DETECTED,
+    ROLLBACK_RECOVERY_TAG,
+)
 
 def human_teach(state_obj):
     hmm_state_switch_client(-1)
@@ -80,7 +84,7 @@ def human_teach(state_obj):
     while True:
         s = raw_input()
         if s == 'start':
-            hmm_state_switch_client(-3)
+            hmm_state_switch_client(ROLLBACK_RECOVERY_TAG)
             break
         else:
             rospy.info("input start please.")
@@ -143,6 +147,7 @@ def handle_anomaly(state_obj):
             alf.write("%s\n"%predicted_label)
             hmm_state_switch_client(dmp_tag)
             show_everyhing_is_good()
+            set_event_flag(ANOMALY_NOT_DETECTED)
             if dmp_execute.execute(dmp_model, state_obj.get_pose_goal()):
                 hmm_state_switch_client(0)
                 break

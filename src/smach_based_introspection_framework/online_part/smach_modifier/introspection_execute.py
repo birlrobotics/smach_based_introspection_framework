@@ -7,14 +7,19 @@ import sos
 from smach_based_introspection_framework.online_part.framework_core.states import (
     hmm_state_switch_client,
     write_exec_hist,
+    set_event_flag,
 )
 from smach_based_introspection_framework.online_part.robot_screen_visualization.setter import(
     show_everyhing_is_good,
+)
+from smach_based_introspection_framework._constant import (
+    ANOMALY_NOT_DETECTED,
 )
 
 def execute(self, userdata):
     hmm_state_switch_client(0)
     show_everyhing_is_good()
+    set_event_flag(ANOMALY_NOT_DETECTED)
     write_exec_hist(self, type(self).__name__, userdata, self.depend_on_prev_state)
     if hasattr(self, "before_motion"):
         self.before_motion()

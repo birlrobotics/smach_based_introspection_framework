@@ -31,6 +31,25 @@ import glob
 import re
 from sklearn.externals import joblib
 
+def plot_resampled_anomaly_df(resampled_anomaly_df):
+    import datetime
+    realtime_anomaly_plot_dir = os.path.join(realtime_anomaly_plot_folder, str(datetime.datetime.now()))
+
+    if not os.path.isdir(realtime_anomaly_plot_dir):
+        os.makedirs(realtime_anomaly_plot_dir)
+
+    for dim in resampled_anomaly_df.columns:
+        rospy.loginfo("plotting %s"%dim)
+        fig, ax = plt.subplots(nrows=1, ncols=1)
+        time_x = resampled_anomaly_df.index-resampled_anomaly_df.index[0]
+        ax.plot(
+            time_x.tolist(),
+            resampled_anomaly_df[dim].tolist(), 
+        )
+        ax.set_title(dim)
+        fig.savefig(os.path.join(realtime_anomaly_plot_dir, (dim+'.png').strip('.')))
+        plt.close(fig)
+
 def classify_against_all_types(mat):
     ret = []
     prog = re.compile(r'nominal_skill_(\d+)_anomaly_type_(.*)')
@@ -57,9 +76,7 @@ def classify_against_all_types(mat):
         
     return ret
 
-resampled_anomaly_df_queue = Queue.Queue()
 def cb(req):
-    global resampled_anomaly_df_queue
     print req
     anomaly_t = req.anomaly_start_time_in_secs
     import redis
@@ -88,32 +105,13 @@ def cb(req):
     new_time_index = np.linspace(anomaly_t-anomaly_window_size_in_sec/2, anomaly_t+anomaly_window_size_in_sec/2, anomaly_window_size_in_sec*anomaly_resample_hz)
     old_time_index = search_df.index
     resampled_anomaly_df = search_df.reindex(old_time_index.union(new_time_index)).interpolate(method='linear', axis=0).ix[new_time_index]
-    resampled_anomaly_df_queue.put(resampled_anomaly_df)
+    plot_resampled_anomaly_df(resampled_anomaly_df)
     ret = classify_against_all_types(resampled_anomaly_df.values)
     m = max(ret, key=lambda x: x[1]['confidence'])
     print ret
     print m
     return AnomalyClassificationServiceResponse(m[0], m[1]['confidence'])
 
-
-def plot_resampled_anomaly_df(resampled_anomaly_df):
-    import datetime
-    realtime_anomaly_plot_dir = os.path.join(realtime_anomaly_plot_folder, str(datetime.datetime.now()))
-
-    if not os.path.isdir(realtime_anomaly_plot_dir):
-        os.makedirs(realtime_anomaly_plot_dir)
-
-    for dim in resampled_anomaly_df.columns:
-        rospy.loginfo("plotting %s"%dim)
-        fig, ax = plt.subplots(nrows=1, ncols=1)
-        time_x = resampled_anomaly_df.index-resampled_anomaly_df.index[0]
-        ax.plot(
-            time_x.tolist(),
-            resampled_anomaly_df[dim].tolist(), 
-        )
-        ax.set_title(dim)
-        fig.savefig(os.path.join(realtime_anomaly_plot_dir, (dim+'.png').strip('.')))
-        plt.close(fig)
 
 if __name__ == '__main__':
     com_queue_of_receiver = multiprocessing.Queue()
@@ -140,9 +138,6 @@ if __name__ == '__main__':
     s = rospy.Service("AnomalyClassificationService", AnomalyClassificationService, cb) 
 
     while not rospy.is_shutdown():
-        if not resampled_anomaly_df_queue.empty():
-            plot_resampled_anomaly_df(resampled_anomaly_df_queue.get())
-
         try:
             latest_data_tuple = com_queue_of_receiver.get(timeout=1)
         except Queue.Empty:

@@ -94,6 +94,7 @@ class IdSkillThenDetectAnomaly(multiprocessing.Process):
                     continue
 
                 if smach_state not in self.model_group_by_state:
+                    rospy.logwarn("introspection_model_not_found")
                     show_introspection_model_not_found()
                     self.detector.reset()
                     self.skip_this_state = True
