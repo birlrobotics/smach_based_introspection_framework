@@ -117,7 +117,7 @@ def handle_anomaly(state_obj)
         predicted_label = resp.predicted_label
         predicted_proba = resp.predicted_proba
 
-        if predicted_label == -1:
+        if predicted_label == "__ERROR":
             rospy.logerr("calling AnomalyClassificationService failed: returns -1")
             raise Exception("calling AnomalyClassificationService failed: returns -1")
 

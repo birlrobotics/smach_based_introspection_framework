@@ -71,7 +71,7 @@ def cb(req):
     rows = r.zrangebyscore("tag_multimodal_msgs", search_start, search_end, withscores=True)
     if len(rows) == 0:
         rospy.logerr("cannot find exec recrod in redis, redis returned nothing")
-        return AnomalyClassificationServiceResponse(-1, -1)
+        return AnomalyClassificationServiceResponse("__ERROR", 0)
 
     import pandas as pd
     dimensions = copy.deepcopy(interested_data_fields)
@@ -93,7 +93,7 @@ def cb(req):
     m = max(ret, key=lambda x: x[1]['confidence'])
     print ret
     print m
-    return AnomalyClassificationServiceResponse(1, 0.99)
+    return AnomalyClassificationServiceResponse(m[0], m[1]['confidence'])
 
 
 def plot_resampled_anomaly_df(resampled_anomaly_df):
