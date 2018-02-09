@@ -18,14 +18,16 @@ def run(sm):
         for user_state in raw_user_states:
             obj = sm._states[user_state]
             obj.execute = types.MethodType(introspection_execute.execute, obj)
+            obj._outcomes.add("Revert") 
 
             state_name = user_state 
             state_transitions = sm._transitions[state_name]
             state_transitions["Revert"] = RollBackRecovery.__name__ 
 
         # build Recovery states automatically
-        recovery_outcomes = []
+        recovery_outcomes = ['RecoveryFailed']
         recovery_state_transitions = {
+            'RecoveryFailed': 'TaskFailed'
         }
         for user_state in raw_user_states:
             state_name = user_state 

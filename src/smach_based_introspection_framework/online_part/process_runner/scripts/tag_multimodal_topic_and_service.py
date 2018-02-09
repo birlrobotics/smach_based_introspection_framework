@@ -48,7 +48,7 @@ hmm_state = None
 def state_switch_handle(req):
     global hmm_state
     hmm_state = req.state
-    print "state is changed to %d" %req.state
+    rospy.loginfo("tag is changed to %d" %req.state)
     resp = State_SwitchResponse()
     resp.finish.data = True
     return resp

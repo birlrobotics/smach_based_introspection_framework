@@ -77,7 +77,7 @@ def classify_against_all_types(mat):
     return ret
 
 def cb(req):
-    print req
+    rospy.loginfo(req)
     anomaly_t = req.anomaly_start_time_in_secs
     import redis
     r = redis.Redis(host='localhost', port=6379, db=0)
@@ -108,8 +108,7 @@ def cb(req):
     plot_resampled_anomaly_df(resampled_anomaly_df)
     ret = classify_against_all_types(resampled_anomaly_df.values)
     m = max(ret, key=lambda x: x[1]['confidence'])
-    print ret
-    print m
+    rospy.loginfo("classication report: %s"%ret)
     return AnomalyClassificationServiceResponse(m[0], m[1]['confidence'])
 
 

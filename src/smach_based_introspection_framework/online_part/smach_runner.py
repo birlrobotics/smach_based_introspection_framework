@@ -60,10 +60,10 @@ def toggle_introspection(start, sm=None):
         sis.start()
         ad_proc = AnomalyDetectionProc()
         ad_proc.start()
-        rospy.sleep(2)
+        rospy.sleep(10)
         listen_HMM_anomaly_signal(use_manual_anomaly_signal=False)
     else:
-        rospy.sleep(2)
+        rospy.sleep(5)
         if rosbag_proc:
             rospy.loginfo("Tring to tear down rosbag_proc")
             rosbag_proc.stop()

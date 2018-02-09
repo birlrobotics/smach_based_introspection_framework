@@ -74,12 +74,12 @@ class RollBackRecovery(smach.State):
         hmm_state_switch_client(ROLLBACK_RECOVERY_TAG)
 
         rospy.loginfo("Enter RollBackRecovery State...")
-        rospy.loginfo("Block anomlay detection")
 
         history_to_reexecute = None 
         while True:
             if len(execution_history) == 0:
                 rospy.loginfo("no execution_history found")
+                return 'RecoveryFailed'
             elif execution_history[-1]['depend_on_prev_states']:
                 execution_history.pop()
             else:

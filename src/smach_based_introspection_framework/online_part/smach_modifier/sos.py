@@ -164,5 +164,5 @@ def handle_anomaly(state_obj):
         alf.write("%s\n"%label)
         return success
     else:
-        return True
+        return False
 
