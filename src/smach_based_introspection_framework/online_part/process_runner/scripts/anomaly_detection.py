@@ -65,7 +65,7 @@ class IdSkillThenDetectAnomaly(multiprocessing.Process):
 
     def run(self):
 
-        rospy.init_node("anomaly_detection_node", anonymous=True)
+        rospy.init_node("IdSkillThenDetectAnomaly", anonymous=True)
         anomaly_detection_signal_pub = rospy.Publisher("/anomaly_detection_signal", Header, queue_size=100)
         anomaly_detection_metric_pub = rospy.Publisher("/anomaly_detection_metric_%s"%self.anomaly_detection_metric, Float64, queue_size=100)
         anomaly_detection_threshold_pub = rospy.Publisher("/anomaly_detection_threshold_%s"%self.anomaly_detection_metric, Float64, queue_size=100)
@@ -119,22 +119,28 @@ class IdSkillThenDetectAnomaly(multiprocessing.Process):
                 anomaly_detection_threshold_pub.publish(threshold)
 
 if __name__ == '__main__':
-    rospy.loginfo('anomaly_detection.py starts')
     com_queue_of_receiver = multiprocessing.Queue()
     process_receiver = ConvertTagTopicToInterestedVectorProc(
         interested_data_fields,
         com_queue_of_receiver,
     )
+    process_receiver.daemon = True
 
     com_queue_of_anomaly_detection = multiprocessing.Queue()
     process_anomaly_detection = IdSkillThenDetectAnomaly(
         com_queue_of_anomaly_detection,    
     )
+    process_anomaly_detection.daemon = True
 
 
 
     process_receiver.start()
     process_anomaly_detection.start()
+
+
+    rospy.init_node("anomaly_detection_node")
+    rospy.loginfo('anomaly_detection.py starts')
+
 
     while not rospy.is_shutdown():
         try:

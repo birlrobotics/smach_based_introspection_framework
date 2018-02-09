@@ -61,6 +61,7 @@ def toggle_introspection(start, sm=None):
     else:
         rospy.sleep(2)
         if rosbag_proc:
+            rospy.loginfo("Tring to tear down rosbag_proc")
             rosbag_proc.stop()
             rospy.sleep(2)
             shutil.move(
@@ -71,12 +72,16 @@ def toggle_introspection(start, sm=None):
                 )
             )
         if ac_proc:
+            rospy.loginfo("Tring to tear down ac_proc")
             ac_proc.stop()
         if tmt_proc:
+            rospy.loginfo("Tring to tear down tmt_proc")
             tmt_proc.stop()
         if sis:
+            rospy.loginfo("Tring to tear down sis")
             sis.stop()
         if ad_proc:
+            rospy.loginfo("Tring to tear down ad_proc")
             ad_proc.stop()
 
 def run(sm):
