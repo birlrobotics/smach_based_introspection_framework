@@ -13,6 +13,8 @@ from smach_based_introspection_framework.srv import (
 import ipdb
 import copy
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import os
 import time
@@ -21,8 +23,39 @@ from smach_based_introspection_framework.configurables import (
     anomaly_resample_hz, 
     interested_data_fields,
 )
+from smach_based_introspection_framework._constant import (
+    latest_model_folder,
+    realtime_anomaly_plot_folder,
+)
+import glob
+import re
+from sklearn.externals import joblib
 
-
+def classify_against_all_types(mat):
+    ret = []
+    prog = re.compile(r'nominal_skill_(\d+)_anomaly_type_(.*)')
+    for i in glob.glob(os.path.join(latest_model_folder, '*')):
+        m = prog.match(os.path.basename(i))
+        if not m:
+            continue
+        
+        tag = m.group(1)
+        anomaly_type = m.group(2)
+        model = joblib.load(os.path.join(i, 'classifier_model'))
+        hmm_model = model['hmm_model']
+        threshold_for_classification = model['threshold_for_classification']
+        score = hmm_model.score(mat) 
+        confidence = score/threshold_for_classification
+        ret.append((
+            os.path.basename(i), 
+            {
+                "score":score, 
+                "threshold_for_classification":threshold_for_classification, 
+                "confidence":confidence,
+            },
+        ))
+        
+    return ret
 
 resampled_anomaly_df_queue = Queue.Queue()
 def cb(req):
@@ -37,7 +70,7 @@ def cb(req):
 
     rows = r.zrangebyscore("tag_multimodal_msgs", search_start, search_end, withscores=True)
     if len(rows) == 0:
-        rospy.logerr("cannot find exec recrod, redis returned nothing")
+        rospy.logerr("cannot find exec recrod in redis, redis returned nothing")
         return AnomalyClassificationServiceResponse(-1, -1)
 
     import pandas as pd
@@ -56,17 +89,22 @@ def cb(req):
     old_time_index = search_df.index
     resampled_anomaly_df = search_df.reindex(old_time_index.union(new_time_index)).interpolate(method='linear', axis=0).ix[new_time_index]
     resampled_anomaly_df_queue.put(resampled_anomaly_df)
+    ret = classify_against_all_types(resampled_anomaly_df.values)
+    m = max(ret, key=lambda x: x[1]['confidence'])
+    print ret
+    print m
     return AnomalyClassificationServiceResponse(1, 0.99)
 
 
 def plot_resampled_anomaly_df(resampled_anomaly_df):
     import datetime
-    realtime_anomaly_plot_dir = os.path.join('realtime_anomaly_plot_dir', str(datetime.datetime.now()))
+    realtime_anomaly_plot_dir = os.path.join(realtime_anomaly_plot_folder, str(datetime.datetime.now()))
 
     if not os.path.isdir(realtime_anomaly_plot_dir):
         os.makedirs(realtime_anomaly_plot_dir)
 
     for dim in resampled_anomaly_df.columns:
+        rospy.loginfo("plotting %s"%dim)
         fig, ax = plt.subplots(nrows=1, ncols=1)
         time_x = resampled_anomaly_df.index-resampled_anomaly_df.index[0]
         ax.plot(
@@ -74,7 +112,7 @@ def plot_resampled_anomaly_df(resampled_anomaly_df):
             resampled_anomaly_df[dim].tolist(), 
         )
         ax.set_title(dim)
-        fig.savefig(os.path.join(realtime_anomaly_plot_dir, dim+'.png'))
+        fig.savefig(os.path.join(realtime_anomaly_plot_dir, (dim+'.png').strip('.')))
         plt.close(fig)
 
 if __name__ == '__main__':
@@ -98,7 +136,7 @@ if __name__ == '__main__':
     import rospy
     rospy.init_node('anomaly_classification_node')
 
-    rospy.loginfo("anomaly_classification_node starts")
+    rospy.loginfo("redis_based_anomaly_classification.py starts")
     s = rospy.Service("AnomalyClassificationService", AnomalyClassificationService, cb) 
 
     while not rospy.is_shutdown():

@@ -124,7 +124,7 @@ def run():
             os.makedirs(d)
         joblib.dump(
             result['model'],
-            os.path.join(d, 'classifer_model')
+            os.path.join(d, 'classifier_model')
         )
         model_info = { 
             'data_type_chosen': data_type_chosen,

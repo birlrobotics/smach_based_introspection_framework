@@ -66,6 +66,9 @@ def main():
     publishing_rate = 100
     
     rospy.init_node("topic_multimodal", anonymous=True)
+
+    rospy.loginfo("tag_multimodal_topic_and_service.py starts")
+
     rospy.Subscriber("/robot/limb/right/endpoint_state", EndpointState, callback_endpoint_state)
     rospy.Subscriber("/robot/joint_states", JointState, callback_joint_state)
     rospy.Subscriber("/robotiq_force_torque_wrench", WrenchStamped, callback_wrench_stamped)
@@ -88,7 +91,9 @@ def main():
         try:
             r.sleep()
         except rospy.exceptions.ROSInterruptException:
-            pass
+            break
+
+    rospy.loginfo("tag_multimodal_topic_and_service.py exits")
 
 if __name__ == '__main__':
     main()

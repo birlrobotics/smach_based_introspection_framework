@@ -25,6 +25,10 @@ from smach_based_introspection_framework._constant import (
     latest_experiment_record_folder,
     anomaly_label_file,
 )
+from smach_based_introspection_framework.srv import (
+    AnomalyClassificationService,
+)
+
 def human_teach(state_obj):
     hmm_state_switch_client(-1)
     nominal_tag = state_obj.state_no
@@ -107,11 +111,15 @@ def handle_anomaly(state_obj)
         try:
             resp = sp(anomaly_t)
         except rospy.ServiceException as exc:
-            rospy.logerr("calling AnomalyClassificationService failed")
-            raise Exception("calling AnomalyClassificationService failed")
+            rospy.logerr("calling AnomalyClassificationService failed: %s"%exc)
+            raise Exception("calling AnomalyClassificationService failed: %s"%exc)
 
         predicted_label = resp.predicted_label
         predicted_proba = resp.predicted_proba
+
+        if predicted_label == -1:
+            rospy.logerr("calling AnomalyClassificationService failed: returns -1")
+            raise Exception("calling AnomalyClassificationService failed: returns -1")
 
         rospy.loginfo("anomaly classification resp: %s"%resp) 
         if predicted_proba > anomaly_classification_confidence_threshold  
@@ -121,27 +129,34 @@ def handle_anomaly(state_obj)
             if dmp_tag is None:
                 rospy.loginfo("no dmp tag found for this anomaly type in this nominal skill") 
                 need_human = True
+                break
+
             dmp_model_path = os.path.join(latest_model_folder, 'tag_%s'%dmp_tag, 'dmp_model')
             if not os.path.isfile(dmp_model):
                 rospy.loginfo("dmp model not found: %s"%dmp_model_path) 
                 need_human = True
+                break
+
             dmp_model = joblib.load(dmp_model_path)
             
             
             anomaly_label_file.write("%s\n"%predicted_label)
             hmm_state_switch_client(dmp_tag)
             if dmp_execute.execute(dmp_model, state_obj.get_pose_goal())                
-                break
                 hmm_state_switch_client(0)
+                break
             else:
                 rospy.loginfo("anomaly happened during dmp.") 
         else:
             rospy.loginfo("anomaly classification confidence too low") 
             need_human = True
+            break
 
     if not need_human:
         hmm_state_switch_client(-1)
         label, success = human_teach(state_obj)
         anomaly_label_file.write("%s\n"%label)
         return success
+    else:
+        return True
 

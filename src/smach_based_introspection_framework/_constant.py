@@ -36,6 +36,10 @@ latest_model_folder = os.path.join(
     'latest',
 )
 
+realtime_anomaly_plot_folder = os.path.join(
+    introspection_data_folder,
+    "realtime_anomaly_plot_folder")
+
 anomaly_label_file = "anomaly_labels.txt"
 
 SUCCESSULLY_EXECUTED_SKILL = 0
