@@ -107,6 +107,8 @@ def cb(req):
     resampled_anomaly_df = search_df.reindex(old_time_index.union(new_time_index)).interpolate(method='linear', axis=0).ix[new_time_index]
     plot_resampled_anomaly_df(resampled_anomaly_df)
     ret = classify_against_all_types(resampled_anomaly_df.values)
+    if len(ret) == 0:
+        return AnomalyClassificationServiceResponse("__NO_CLASSIFIER_FOUND", 0)
     m = max(ret, key=lambda x: x[1]['confidence'])
     rospy.loginfo("classication report: %s"%ret)
     return AnomalyClassificationServiceResponse(m[0], m[1]['confidence'])

@@ -24,13 +24,14 @@ import re
 from smach_based_introspection_framework._constant import (
     latest_experiment_record_folder,
     anomaly_label_file,
+    latest_dataset_folder,
 )
 from smach_based_introspection_framework.srv import (
     AnomalyClassificationService,
 )
 from smach_based_introspection_framework._constant import (
     ANOMALY_NOT_DETECTED,
-    ROLLBACK_RECOVERY_TAG,
+    RECOVERY_DEMONSTRATED_BY_HUMAN_TAG,
 )
 
 def human_teach(state_obj):
@@ -38,7 +39,7 @@ def human_teach(state_obj):
     nominal_tag = state_obj.state_no
     existing_types = []
     prog = re.compile(r'nominal_skill_(\d+)_anomaly_type_(.*)')
-    for i in glob.glob(latest_dataset_folder, 'anomaly_data', '*'):
+    for i in glob.glob(os.path.join(latest_dataset_folder, 'anomaly_data', '*')):
         m = prog.match(os.path.basename(i))
         tag = m.group(1)
         anomaly_type = m.group(2)
@@ -54,23 +55,23 @@ def human_teach(state_obj):
         elif s == 'yes':
             break
         else:
-            rospy.info("input no or yes.")
-    rospy.info("type in the label")
+            rospy.loginfo("input no or yes.")
+    rospy.loginfo("type in the label")
     while True:
         raw_label_str = raw_input()
-        rospy.info("confirm \"%s\"? yes/no"%raw_label_str)
+        rospy.loginfo("confirm \"%s\"? yes/no"%raw_label_str)
         s = raw_input()
         if s == 'no':
-            rospy.info("try again, type in the label")
+            rospy.loginfo("try again, type in the label")
             continue 
         elif s == 'yes':
             break
         else:
-            rospy.info("input no or yes.")
+            rospy.loginfo("input no or yes.")
     
     label = raw_label_str.strip()
 
-    rospy.loginfo("Want to demonstrate how to recover for anomaly type %s in skill %s?"%(label, nominal_tag))
+    rospy.loginfo("Want to demonstrate how to recover for anomaly type %s in skill %s? yes/no"%(label, nominal_tag))
     while True:
         s = raw_input()
         if s == 'no':
@@ -78,16 +79,16 @@ def human_teach(state_obj):
         elif s == 'yes':
             break
         else:
-            rospy.info("input no or yes.")
+            rospy.loginfo("input no or yes.")
 
     rospy.loginfo("enter \"start\" to begin")
     while True:
         s = raw_input()
         if s == 'start':
-            hmm_state_switch_client(ROLLBACK_RECOVERY_TAG)
+            hmm_state_switch_client(RECOVERY_DEMONSTRATED_BY_HUMAN_TAG)
             break
         else:
-            rospy.info("input start please.")
+            rospy.loginfo("input start please.")
 
     rospy.loginfo("enter \"end\" to end")
     while True:
@@ -96,7 +97,7 @@ def human_teach(state_obj):
             hmm_state_switch_client(0)
             break
         else:
-            rospy.info("input end please.")
+            rospy.loginfo("input end please.")
     return label, True
 
 def handle_anomaly(state_obj):
@@ -124,6 +125,10 @@ def handle_anomaly(state_obj):
         if predicted_label == "__ERROR":
             rospy.logerr("calling AnomalyClassificationService failed: returns -1")
             raise Exception("calling AnomalyClassificationService failed: returns -1")
+        if predicted_label == '__NO_CLASSIFIER_FOUND':
+            rospy.loginfo("__NO_CLASSIFIER_FOUND") 
+            need_human = True
+            break
 
         rospy.loginfo("anomaly classification resp: %s"%resp) 
         if predicted_proba > anomaly_classification_confidence_threshold:
@@ -158,7 +163,7 @@ def handle_anomaly(state_obj):
             need_human = True
             break
 
-    if not need_human:
+    if need_human:
         hmm_state_switch_client(-1)
         label, success = human_teach(state_obj)
         alf.write("%s\n"%label)

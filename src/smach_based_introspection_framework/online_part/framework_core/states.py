@@ -78,7 +78,7 @@ class RollBackRecovery(smach.State):
         history_to_reexecute = None 
         while True:
             if len(execution_history) == 0:
-                rospy.loginfo("no execution_history found")
+                rospy.loginfo("no independent state found")
                 return 'RecoveryFailed'
             elif execution_history[-1]['depend_on_prev_states']:
                 execution_history.pop()
