@@ -96,7 +96,7 @@ def human_teach(state_obj):
     return label, True
 
 def handle_anomaly(state_obj):
-    anomaly_label_file = open(os.path.join(latest_experiment_record_folder, anomaly_label_file) ,'a')
+    alf = open(os.path.join(latest_experiment_record_folder, anomaly_label_file) ,'a')
     nominal_tag = state_obj.state_no
     rospy.loginfo("handle_anomaly starts") 
 
@@ -140,8 +140,9 @@ def handle_anomaly(state_obj):
             dmp_model = joblib.load(dmp_model_path)
             
             
-            anomaly_label_file.write("%s\n"%predicted_label)
+            alf.write("%s\n"%predicted_label)
             hmm_state_switch_client(dmp_tag)
+            show_everyhing_is_good()
             if dmp_execute.execute(dmp_model, state_obj.get_pose_goal()):
                 hmm_state_switch_client(0)
                 break
@@ -155,7 +156,7 @@ def handle_anomaly(state_obj):
     if not need_human:
         hmm_state_switch_client(-1)
         label, success = human_teach(state_obj)
-        anomaly_label_file.write("%s\n"%label)
+        alf.write("%s\n"%label)
         return success
     else:
         return True

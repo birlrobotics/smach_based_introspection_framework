@@ -23,6 +23,9 @@ from smach_based_introspection_framework.online_part.process_runner.tag_multimod
 import shutil
 import datetime
 import signal
+from smach_based_introspection_framework.online_part.framework_core.states import (
+    listen_HMM_anomaly_signal,
+)
 
 def shutdown():
     rospy.loginfo("Shuting down, PID: %s"%os.getpid())
@@ -58,6 +61,7 @@ def toggle_introspection(start, sm=None):
         ad_proc = AnomalyDetectionProc()
         ad_proc.start()
         rospy.sleep(2)
+        listen_HMM_anomaly_signal(use_manual_anomaly_signal=False)
     else:
         rospy.sleep(2)
         if rosbag_proc:

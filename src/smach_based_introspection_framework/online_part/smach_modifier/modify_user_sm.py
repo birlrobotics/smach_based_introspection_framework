@@ -4,6 +4,10 @@ from smach_based_introspection_framework.online_part.framework_core.states impor
     RollBackRecovery,
 )
 import introspection_execute
+from smach_based_introspection_framework.online_part.robot_screen_visualization.setter import(
+    show_anomaly_detected,
+    show_everyhing_is_good,
+)
 
 def run(sm):
     import smach

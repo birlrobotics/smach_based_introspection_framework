@@ -8,9 +8,13 @@ from smach_based_introspection_framework.online_part.framework_core.states impor
     hmm_state_switch_client,
     write_exec_hist,
 )
+from smach_based_introspection_framework.online_part.robot_screen_visualization.setter import(
+    show_everyhing_is_good,
+)
 
 def execute(self, userdata):
     hmm_state_switch_client(0)
+    show_everyhing_is_good()
     write_exec_hist(self, type(self).__name__, userdata, self.depend_on_prev_state)
     if hasattr(self, "before_motion"):
         self.before_motion()

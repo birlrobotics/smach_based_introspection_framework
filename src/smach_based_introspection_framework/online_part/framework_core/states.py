@@ -72,60 +72,6 @@ def hmm_state_switch_client(state):
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
 
-class AnomalyDiagnosis(smach.State):
-    def __init__(self, outcomes):
-        smach.State.__init__(self, outcomes)
-    def execute(self, userdata):
-        global latest_anomaly_t
-
-        hmm_state_switch_client(-1)
-        show_anomaly_detected()
-        rospy.sleep(5)
-
-        from AnomalyClassification import AnomalyClassification
-        ac = AnomalyClassification()
-        anomaly_t = latest_anomaly_t
-        latest_anomaly_t = None
-        if ac.classify_anomaly_at(anomaly_t):
-            pass
-        else:
-            while True:
-                rospy.loginfo("input a number to proceed:")
-                rospy.loginfo("%s -- roll back recovery"%ROLLBACK_RECOVERY_TAG)
-                rospy.loginfo("%s -- human teaching recovery"%RECOVERY_DEMONSTRATED_BY_HUMAN_TAG)
-                rospy.loginfo("-4 -- dry-run classifier and dmp")
-                rospy.loginfo("-5 -- run classifier and dmp")
-                i = raw_input()
-                if i == str(ROLLBACK_RECOVERY_TAG):
-                    return 'GoToRollBackRecovery'
-                elif i == str(RECOVERY_DEMONSTRATED_BY_HUMAN_TAG):
-                    return 'GoToHumanTeachingRecovery'
-
-
-class HumanTeachingRecovery(smach.State):
-    def __init__(self, outcomes):
-        smach.State.__init__(self, outcomes)
-    def execute(self, userdata):
-        hmm_state_switch_client(RECOVERY_DEMONSTRATED_BY_HUMAN_TAG)
-
-        while True:
-            rospy.loginfo("enter \"s\" to start teaching, \"f\" to finish")
-            i = raw_input()
-            if i == 's':
-                rospy.loginfo("start")
-                hmm_state_switch_client(RECOVERY_DEMONSTRATED_BY_HUMAN_TAG)
-                break
-        while True:
-            rospy.loginfo("enter \"f\" to finish")
-            i = raw_input()
-            if i == 'f':
-                rospy.loginfo("end")
-                hmm_state_switch_client(0)
-                break
-
-        set_event_flag(RECOVERY_JUST_DONE)
-        return 'RecoveryDone'
-    
 class RollBackRecovery(smach.State):
     def __init__(self, outcomes):
         smach.State.__init__(self, outcomes)
@@ -153,13 +99,11 @@ class RollBackRecovery(smach.State):
         state_name = history_to_reexecute['state_name']
         next_state = state_name
         rospy.loginfo('Gonna reenter %s'%(next_state,))
-
-        rospy.loginfo("Block anomlay detection for the next state")
-        set_event_flag(ANOMALY_DETECTION_BLOCKED)
         rospy.sleep(5)
         return 'Reenter_'+next_state
 
 def listen_HMM_anomaly_signal(use_manual_anomaly_signal):
+    hmm_state_switch_client(0)
     def callback_hmm(msg):
         global latest_anomaly_t
         print msg
