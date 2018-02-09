@@ -53,18 +53,13 @@ def get_tag_range(df):
 
     return ret
 
-def get_latest_dataset_folder():
-    if hasattr(get_latest_dataset_folder, "latest_dataset_folder"):
-        return get_latest_dataset_folder.latest_dataset_folder
+def setup_latest_dataset_folder():
     if os.path.isdir(latest_dataset_folder):
        shutil.move(
             latest_dataset_folder,  
             os.path.join(dataset_folder, "dataset_folder.old.%s"%datetime.datetime.now().strftime(folder_time_fmt))
         )
-        
     os.makedirs(latest_dataset_folder)
-    get_latest_dataset_folder.latest_dataset_folder = latest_dataset_folder
-    return latest_dataset_folder
     
 def get_recovery_skill_tag(nominal_skill_tag, anomaly_type, add_if_not_exist=True):
     if anomaly_type == "count":
@@ -72,14 +67,15 @@ def get_recovery_skill_tag(nominal_skill_tag, anomaly_type, add_if_not_exist=Tru
     if hasattr(get_recovery_skill_tag, "lookup_dict"):
         lookup_dict = get_recovery_skill_tag.lookup_dict
     else:
-        p = os.path.join(get_latest_dataset_folder(), "recovery_tag_lookup_dict.json")
+        p = os.path.join(latest_dataset_folder, "recovery_tag_lookup_dict.json")
         try:
-            lookup_dict = json.load(p)
+            lookup_dict = json.load(open(p, 'r'))
         except:
             lookup_dict = {'count':RECOVERY_SKILL_BEGINS_AT}
         get_recovery_skill_tag.lookup_dict = lookup_dict
 
     key = "nominal_skill_%s_anomaly_type_%s"%(nominal_skill_tag, anomaly_type)
+    print key, lookup_dict
     if key in lookup_dict:
         return lookup_dict[key]
     elif not add_if_not_exist:
@@ -87,12 +83,12 @@ def get_recovery_skill_tag(nominal_skill_tag, anomaly_type, add_if_not_exist=Tru
     
     lookup_dict[key] = lookup_dict["count"] 
     lookup_dict["count"] += 1
-    json.dump(lookup_dict, open(os.path.join(get_latest_dataset_folder(), "recovery_tag_lookup_dict.json"),'w'))
+    json.dump(lookup_dict, open(os.path.join(latest_dataset_folder, "recovery_tag_lookup_dict.json"),'w'))
     return lookup_dict[key]
 
 def add_skill_introspection_data(tag, df, name):
     tag_dir = os.path.join(
-        get_latest_dataset_folder(),
+        latest_dataset_folder,
         'skill_data',
         "tag_%s"%tag,
     )
@@ -103,7 +99,7 @@ def add_skill_introspection_data(tag, df, name):
 def add_anomaly_data(nominal_skill_tag, anomaly_type, df, name):
     key = "%s_%s"%(nominal_skill_tag, anomaly_type)
     anomaly_dir = os.path.join(
-        get_latest_dataset_folder(),
+        latest_dataset_folder,
         'anomaly_data',
         "nominal_skill_%s_anomaly_type_%s"%(nominal_skill_tag, anomaly_type)
     )
@@ -116,6 +112,8 @@ def run():
     if not os.path.isdir(experiment_record_folder):
         print experiment_record_folder, "not found."
         sys.exit(0)
+
+    setup_latest_dataset_folder()
     
     exp_dirs = [i for i in glob.glob(os.path.join(experiment_record_folder, '*')) if os.path.isdir(i)]
 

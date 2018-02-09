@@ -69,7 +69,7 @@ def classify_against_all_types(mat, happen_in_state):
         score = hmm_model.score(mat) 
         confidence = score/threshold_for_classification
         ret.append((
-            os.path.basename(i), 
+            anomaly_type,
             {
                 "score":score, 
                 "threshold_for_classification":threshold_for_classification, 
