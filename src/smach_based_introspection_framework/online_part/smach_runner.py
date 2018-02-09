@@ -26,6 +26,8 @@ import signal
 from smach_based_introspection_framework.online_part.framework_core.states import (
     listen_HMM_anomaly_signal,
 )
+import moveit_commander
+import sys
 
 def shutdown():
     rospy.loginfo("Shuting down, PID: %s"%os.getpid())
@@ -90,8 +92,9 @@ def toggle_introspection(start, sm=None):
 
 def run(sm):
     try: 
-        rospy.loginfo("PID: %s"%os.getpid())
+        moveit_commander.roscpp_initialize(sys.argv)
         rospy.init_node("smach_based_introspection_framework_node")
+        rospy.loginfo("PID: %s"%os.getpid())
         rospy.on_shutdown(shutdown)
 
         sm = modify_user_sm.run(sm)
