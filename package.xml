@@ -60,6 +60,10 @@
   <build_depend>smach</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>trajectory_msgs</build_depend>
+  <build_depend>birl_sensory_data_manager</build_depend>
+  <build_depend>birl_hmm</build_depend>
+  <build_depend>birl_motion_library</build_depend>
+  <build_depend>birl_baxter_dmp</build_depend>
   <build_export_depend>actionlib</build_export_depend>
   <build_export_depend>baxter_core_msgs</build_export_depend>
   <build_export_depend>baxter_interface</build_export_depend>
@@ -83,6 +87,9 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>trajectory_msgs</exec_depend>
   <exec_depend>birl_sensory_data_manager</exec_depend>
+  <exec_depend>birl_hmm</exec_depend>
+  <exec_depend>birl_motion_library</exec_depend>
+  <exec_depend>birl_baxter_dmp</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
