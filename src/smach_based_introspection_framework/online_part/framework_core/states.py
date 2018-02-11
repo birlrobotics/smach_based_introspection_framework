@@ -10,6 +10,7 @@ from smach_based_introspection_framework.online_part.robot_screen_visualization.
     show_anomaly_detected,
     show_everyhing_is_good,
 )
+from smach_based_introspection_framework.srv import State_Switch, State_SwitchRequest
 
 mode_no_state_trainsition_report = False 
 event_flag = 1
@@ -54,7 +55,6 @@ def hmm_state_switch_client(state):
     rospy.wait_for_service('hmm_state_switch')
     try:
 
-        from birl_baxter_tasks.srv import State_Switch, State_SwitchRequest
         hmm_state_switch_proxy = rospy.ServiceProxy('hmm_state_switch',
                                                     State_Switch)
         req = State_SwitchRequest()
