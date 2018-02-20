@@ -60,7 +60,7 @@ When it's finished, you will notice ``` ./introspection_data_folder/model_folder
 
 ## 3. Collect Anomalous Trials
 
-Since anomaly detetion models are in place now, the robot now can detect anomalies and ask help from the operator.
+Since anomaly detection models are in place now, the robot now can detect anomalies and ask help from the operator.
 
 Run more trials and make them anomalous if possible.
 
