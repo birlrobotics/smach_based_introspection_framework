@@ -2,9 +2,6 @@ import smach
 import hardcoded_data
 import baxter_interface
 import rospy
-from smach_based_introspection_framework.online_part.motion_handler import (
-    BreakOnAnomalyTrajectoryClient,
-)
 import copy
 
 class CalibrateForceSensor(smach.State):
@@ -50,13 +47,11 @@ class GoToPickPosition(smach.State):
         
     def before_motion(self):
         limb = 'right'
-        traj = BreakOnAnomalyTrajectoryClient(limb)
-        traj.gripper_open()
+        baxter_interface.Gripper(limb).open()
 
     def after_motion(self):
         limb = 'right'
-        traj = BreakOnAnomalyTrajectoryClient(limb)
-        traj.gripper_close()
+        baxter_interface.Gripper(limb).close()
 
     def get_pose_goal(self):
         return hardcoded_data.pick_object_pose

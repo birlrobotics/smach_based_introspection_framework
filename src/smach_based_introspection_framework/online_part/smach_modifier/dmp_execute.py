@@ -1,8 +1,5 @@
 import baxter_interface
 import rospy
-from smach_based_introspection_framework.online_part.motion_handler import (
-    BreakOnAnomalyTrajectoryClient,
-)
 from smach_based_introspection_framework.configurables import (
     dmp_cmd_fields,
 )
