@@ -26,6 +26,7 @@ from smach_based_introspection_framework._constant import (
     ANOMALY_DETECTED,
 )
 import time
+from util import introspect_moveit_exec
 
 def execute(dmp_model, goal):
     list_of_postfix = get_eval_postfix(dmp_cmd_fields, 'pose')
@@ -47,23 +48,5 @@ def execute(dmp_model, goal):
     robot, group, plan, fraction = get_moveit_plan(command_matrix, dmp_cmd_fields, 'pose')
     rospy.loginfo('moveit plan success rate %s'%fraction)
     
-    def cb(data):
-        cb.result = data
-    cb.result = None
-    sub_handle = rospy.Subscriber('/robot/limb/right/follow_joint_trajectory/result', FollowJointTrajectoryActionResult, cb)
-
-    group.execute(plan, wait=False)
-    s_t = time.time()
-    while not cb.result and not rospy.is_shutdown() and time.time()-s_t<10: 
-        if get_event_flag() == ANOMALY_DETECTED:
-            group.stop()
-            return False
-    if cb.result is None:
-        rospy.logerr("dmp moveit exec did not return after 10 secs. Time out.")
-        return False
-        
-    if cb.result.result.error_code != 0:
-        rospy.logerr("dmp moveit exec returns: %s"%cb.result)
-        return False
-    sub_handle.unregister()
-    return True
+    goal_achieved = introspect_moveit_exec(group, plan)
+    return goal_achieved

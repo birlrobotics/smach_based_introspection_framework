@@ -15,6 +15,8 @@ from smach_based_introspection_framework.online_part.robot_screen_visualization.
 from smach_based_introspection_framework._constant import (
     ANOMALY_NOT_DETECTED,
 )
+import moveit_commander
+from util import introspect_moveit_exec
 
 def execute(self, userdata):
     hmm_state_switch_client(0)
@@ -23,22 +25,21 @@ def execute(self, userdata):
     write_exec_hist(self, type(self).__name__, userdata, self.depend_on_prev_state)
     if hasattr(self, "before_motion"):
         self.before_motion()
-    limb = 'right'
-    traj = BreakOnAnomalyTrajectoryClient(limb)
-    limb_interface = baxter_interface.limb.Limb(limb)
-    traj.clear('right')
-    current_angles = [limb_interface.joint_angle(joint) for joint in limb_interface.joint_names()]
-    traj.add_point(current_angles, 0.0)
-    
+
     goal_pose = self.get_pose_goal()
-    traj.add_pose_point(goal_pose, 4.0)
+
+    robot = moveit_commander.RobotCommander()
+    group = moveit_commander.MoveGroupCommander("right_arm")
+    group.set_max_velocity_scaling_factor(0.3)
+    group.set_max_acceleration_scaling_factor(0.3)
+    group.set_start_state_to_current_state()
+    group.set_pose_target(goal_pose)
+    plan = group.plan()
 
     hmm_state_switch_client(self.state_no)
-    traj.start()
 
-    goal_achieved = traj.wait(5)
+    goal_achieved = introspect_moveit_exec(group, plan)
     if not goal_achieved:
-        traj.stop()
         no_need_to_revert = sos.handle_anomaly(self)
         rospy.loginfo('no_need_to_revert : %s'%no_need_to_revert)
         if no_need_to_revert:
