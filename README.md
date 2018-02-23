@@ -5,8 +5,8 @@
 We want a finite-state-machine-based control framework for Rethink Robotics Baxter which satisfies the following needs:
 
 1. During motion, by observing sensory data, the robot should be able to detect and classify anomalies, then execute recovery policy accordingly.
-2. If the anomaly detected is never seen before, the robot can ask the operator to label the anomaly and demonstrate recovery policy for it.
-3. As the operator gives more help, the robot becomes more autonomous.
+1. If the anomaly detected is never seen before, the robot can ask the operator to label the anomaly and demonstrate recovery policy for it.
+1. As the operator gives more help, the robot becomes more autonomous.
 
 This framework attempts to meet these needs. 
 
@@ -24,70 +24,79 @@ Its core functionalities include:
 
 A simple demo of picking objects can be found in ``` ./test/demo ```. You can follow the steps below to experience how this framework works.
 
-## 1. Collect Enough Successful Trials
+1. Boot The Robot
 
-To collect one successful trial, run the following commands:
+    Run the follwoing commands to setup baxter (No need to launch simulation if you're using real robot):
+    ```bash
+    roslaunch baxter_gazebo baxter_world.launch
+    rosrun baxter_interface joint_trajectory_action_server.py
+    roslaunch baxter_moveit_config baxter_grippers.launch
+    ```
 
-```bash
-cd ./test/demo
-python pick_n_place_runner.py
-```
+1. Collect Enough Successful Trials
 
-After each trial, you will notice one folder is created in ``` ./introspection_data_folder/experiment_record_folder ```. If the trial is not successful, delete the latest folder. Make sure you collect enough successful trials (>=5) in the folder.
+    To collect one successful trial, run the following commands:
 
-Since during this step there is no model for anomaly detection, you will notice that baxter head screen shows yellow lights during the motion of each state, which indicates that no introspection model is found.
+    ```bash
+    cd ./test/demo
+    python pick_n_place_runner.py
+    ```
 
-## 2. Train Models For Anomaly Detection
+    After each trial, you will notice one folder is created in ``` ./introspection_data_folder/experiment_record_folder ```. If the trial is not successful, delete the latest folder. Make sure you collect enough successful trials (>=5) in the folder.
 
-To train models, we need to first extract samples from trial recordings which are effectively rosbag files.
+    Since during this step there is no model for anomaly detection, you will notice that baxter head screen shows yellow lights during the motion of each state, which indicates that no introspection model is found.
 
-To process these rosbag files into samples, run:
+1. Train Models For Anomaly Detection
 
-```bash
-cd ./scripts
-python process_experiment_record_to_dataset.py
-```
+    To train models, we need to first extract samples from trial recordings which are effectively rosbag files.
 
-When it's finished, you will notice ``` ./introspection_data_folder/dataset_folder/latest ``` is created which contains samples that can be used to train models.
+    To process these rosbag files into samples, run:
 
-Now, to train models using these samples, run:
-```bash
-cd ./scripts
-python process_dataset_to_models.py
-```
+    ```bash
+    cd ./scripts
+    python process_experiment_record_to_dataset.py
+    ```
 
-When it's finished, you will notice ``` ./introspection_data_folder/model_folder/latest ``` is created which contains models trained. A training log is generated in ```run.log``` there so you can have a look at the training details.
+    When it's finished, you will notice ``` ./introspection_data_folder/dataset_folder/latest ``` is created which contains samples that can be used to train models.
 
-## 3. Collect Anomalous Trials
+    Now, to train models using these samples, run:
+    ```bash
+    cd ./scripts
+    python process_dataset_to_models.py
+    ```
 
-Since anomaly detection models are in place now, the robot now can detect anomalies and ask help from the operator.
+    When it's finished, you will notice ``` ./introspection_data_folder/model_folder/latest ``` is created which contains models trained. A training log is generated in ```run.log``` there so you can have a look at the training details.
 
-Run more trials and make them anomalous if possible.
+1. Collect Anomalous Trials
 
-To run one trial:
-```bash
-cd ./test/demo
-python pick_n_place_runner.py
-```
+    Since anomaly detection models are in place now, the robot now can detect anomalies and ask help from the operator.
 
-When an anomaly is detected, look at the terminal and you will find an interface to label the anomaly and teach the recovery policy for it.
+    Run more trials and make them anomalous if possible.
 
-## 4. Train Anomaly Classifier
+    To run one trial:
+    ```bash
+    cd ./test/demo
+    python pick_n_place_runner.py
+    ```
 
-Since anomalous trials are collected and labeled, we can train classifiers for them:
+    When an anomaly is detected, look at the terminal and you will find an interface to label the anomaly and teach the recovery policy for it.
 
-```bash
-cd ./scripts
-python process_experiment_record_to_dataset.py
-```
-```bash
-cd ./scripts
-python process_dataset_to_models.py
-```
+1. Train Anomaly Classifier
 
-## 5. Done
+    Since anomalous trials are collected and labeled, we can train classifiers for them:
 
-Now the robot is able to detect anomalies, classify them and execute recovery policies accordingly.
+    ```bash
+    cd ./scripts
+    python process_experiment_record_to_dataset.py
+    ```
+    ```bash
+    cd ./scripts
+    python process_dataset_to_models.py
+    ```
+
+1. Done
+
+    Now the robot is able to detect anomalies, classify them and execute recovery policies accordingly.
 
 # Minimal tutorial 
 
@@ -117,7 +126,7 @@ A minimal tutorial on this framework can be:
         def determine_successor(self): # Determine next state
             return 'Successful'
     ```
-2. Pass in smach state machine as in ```./test/demo/pick_n_place_runner.py```:
+1. Pass in smach state machine as in ```./test/demo/pick_n_place_runner.py```:
     ```python
     from smach_based_introspection_framework.online_part import (
         smach_runner
