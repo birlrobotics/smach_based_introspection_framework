@@ -28,6 +28,9 @@ from smach_based_introspection_framework.online_part.framework_core.states impor
 )
 import moveit_commander
 import sys
+from smach_based_introspection_framework.configurables import (
+    topics_to_be_recorded_into_rosbag
+)
 
 def shutdown():
     rospy.loginfo("Shuting down, PID: %s"%os.getpid())
@@ -45,13 +48,7 @@ def toggle_introspection(start, sm=None):
             os.makedirs(latest_experiment_record_folder)
         rosbag_proc = RosbagProc(
             os.path.join(latest_experiment_record_folder, "record.bag"),
-            [
-                '/tag_multimodal', 
-                '/anomaly_detection_signal',
-                '/anomaly_detection_metric_gradient_of_loglikelihood',
-                '/anomaly_detection_threshold_gradient_of_loglikelihood',
-                '/identified_skill_gradient_of_loglikelihood',
-            ]
+            topics_to_be_recorded_into_rosbag
         )
         rosbag_proc.start()
         ac_proc = AnomalyClassificationProc()
