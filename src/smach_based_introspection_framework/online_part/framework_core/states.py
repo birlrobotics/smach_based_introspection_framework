@@ -1,5 +1,6 @@
 from smach_based_introspection_framework._constant import (
     ANOMALY_DETECTED,
+    ANOMALY_NOT_DETECTED,
     ROLLBACK_RECOVERY_TAG,
 )
 import smach
@@ -26,8 +27,10 @@ def get_event_flag():
     return event_flag
 
 def set_event_flag(value):
-    global event_flag
+    global event_flag, latest_anomaly_t
     event_flag = value
+    if value == ANOMALY_NOT_DETECTED:
+        latest_anomaly_t = None
 
 ## @brief record exec history
 ## @param current_state_name string
