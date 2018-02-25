@@ -75,12 +75,12 @@ info_of_topics_to_timeseries = [
             m.twist.linear.x, m.twist.linear.y, m.twist.linear.z,\
             m.twist.angular.x, m.twist.angular.y, m.twist.angular.z]
     ), 
-    (
-        "/robotiq_force_torque_wrench",
-        WrenchStamped,
-        lambda m: [m.wrench.force.x, m.wrench.force.y, m.wrench.force.z,\
-            m.wrench.torque.x, m.wrench.torque.y, m.wrench.torque.z]
-    ),
+    #(
+    #    "/robotiq_force_torque_wrench",
+    #    WrenchStamped,
+    #    lambda m: [m.wrench.force.x, m.wrench.force.y, m.wrench.force.z,\
+    #        m.wrench.torque.x, m.wrench.torque.y, m.wrench.torque.z]
+    #),
 ]
 timeseries_rate = 100
 

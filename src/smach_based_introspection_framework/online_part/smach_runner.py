@@ -20,6 +20,9 @@ from smach_based_introspection_framework.online_part.process_runner.AnomalyDetec
 from smach_based_introspection_framework.online_part.process_runner.tag_multimodal_topic_process import (
    TagMultimodalTopicProc, 
 )
+from smach_based_introspection_framework.online_part.process_runner.timeseries_process import (
+   TimeseriesProc, 
+)
 import shutil
 import datetime
 import signal
@@ -41,8 +44,9 @@ ac_proc = None
 tmt_proc = None
 sis = None
 ad_proc = None
+ts_proc = None
 def toggle_introspection(start, sm=None):
-    global rosbag_proc, ac_proc, tmt_proc, sis, ad_proc
+    global rosbag_proc, ac_proc, tmt_proc, sis, ad_proc, ts_proc
     if start:
         if not os.path.isdir(latest_experiment_record_folder):
             os.makedirs(latest_experiment_record_folder)
@@ -59,6 +63,8 @@ def toggle_introspection(start, sm=None):
         sis.start()
         ad_proc = AnomalyDetectionProc()
         ad_proc.start()
+        ts_proc = TimeseriesProc()
+        ts_proc.start()
         rospy.sleep(10)
         listen_HMM_anomaly_signal(use_manual_anomaly_signal=False)
     else:
@@ -86,6 +92,9 @@ def toggle_introspection(start, sm=None):
         if ad_proc:
             rospy.loginfo("Tring to tear down ad_proc")
             ad_proc.stop()
+        if ts_proc:
+            rospy.loginfo("Tring to tear down ts_proc")
+            ts_proc.stop()
 
 def run(sm):
     try: 
