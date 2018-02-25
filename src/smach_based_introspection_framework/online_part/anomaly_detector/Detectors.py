@@ -100,7 +100,7 @@ class DetectorBasedOnGradientOfLoglikCurve(BaseDetector):
         now_gradient = now_loglik-prev_loglik
         now_threshold = threshold_constant
         anomaly_detected = False
-        if now_gradient <= now_threshold:
+        if now_gradient < now_threshold:
             anomaly_detected = True
 
         if anomaly_detected:

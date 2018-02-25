@@ -43,7 +43,7 @@ data_fields_store = {
          '.wrench_stamped.wrench.torque.z',
     ],
 }
-data_type_chosen = 'endpoint_twist_and_wrench_torque'        
+data_type_chosen = 'endpoint_pose_and_endpoint_twist_and_wrench'        
 data_type_split = data_type_chosen.split("_and_")
 interested_data_fields = []
 for data_type in data_type_split:
@@ -70,12 +70,16 @@ info_of_topics_to_timeseries = [
     (
         "/robot/limb/right/endpoint_state",
         EndpointState,
-        lambda m: [m.twist.linear.x, m.twist.linear.y, m.twist.linear.z, m.twist.angular.x, m.twist.angular.y, m.twist.angular.z]
+        lambda m: [m.pose.position.x, m.pose.position.y, m.pose.position.z,\
+            m.pose.orientation.x, m.pose.orientation.y, m.pose.orientation.z, m.pose.orientation.w,\
+            m.twist.linear.x, m.twist.linear.y, m.twist.linear.z,\
+            m.twist.angular.x, m.twist.angular.y, m.twist.angular.z]
     ), 
     (
         "/robotiq_force_torque_wrench",
         WrenchStamped,
-        lambda m: [m.wrench.torque.x, m.wrench.torque.y, m.wrench.torque.z]
+        lambda m: [m.wrench.force.x, m.wrench.force.y, m.wrench.force.z,\
+            m.wrench.torque.x, m.wrench.torque.y, m.wrench.torque.z]
     ),
 ]
 timeseries_rate = 100
@@ -91,7 +95,7 @@ topics_to_be_recorded_into_rosbag = [
 ]
 
 for tu in info_of_topics_to_timeseries:
-    if tu[0] not in topics_in_rosbag:
+    if tu[0] not in topics_to_be_recorded_into_rosbag:
         raise Exception("%s not in topics_to_be_recorded_into_rosbag but in info_of_topics_to_timeseries"%tu[0]) 
 
 

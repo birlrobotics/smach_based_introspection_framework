@@ -126,8 +126,8 @@ def handle_anomaly(state_obj):
         if predicted_label == "__ERROR":
             rospy.logerr("calling AnomalyClassificationService failed: returns -1")
             raise Exception("calling AnomalyClassificationService failed: returns -1")
-        if predicted_label == '__NO_CLASSIFIER_FOUND':
-            rospy.loginfo("__NO_CLASSIFIER_FOUND") 
+        if predicted_label == '__NO_CLASSIFIER_FOUND' or predicted_label == '__NO_EXEC_RECORD':
+            rospy.logwarn(predicted_label) 
             need_human = True
             break
 

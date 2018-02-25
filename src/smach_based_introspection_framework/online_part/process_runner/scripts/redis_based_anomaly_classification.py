@@ -91,8 +91,8 @@ def cb(req):
 
     rows = r.zrangebyscore("tag_multimodal_msgs", search_start, search_end, withscores=True)
     if len(rows) == 0:
-        rospy.logerr("cannot find exec recrod in redis, redis returned nothing")
-        return AnomalyClassificationServiceResponse("__ERROR", 0)
+        rospy.logerr("cannot find exec record in redis, redis returned nothing")
+        return AnomalyClassificationServiceResponse("__NO_EXEC_RECORD", 0)
 
     import pandas as pd
     dimensions = copy.deepcopy(interested_data_fields)

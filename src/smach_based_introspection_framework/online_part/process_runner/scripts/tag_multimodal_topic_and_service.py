@@ -24,12 +24,9 @@ from smach_based_introspection_framework.srv import (
     State_SwitchResponse
 )
 
-shared_header = Header()
 shared_endpoint_state = EndpointState() 
 def callback_endpoint_state(endpoint_state):
-    global shared_header
     global shared_endpoint_state 
-    shared_header = endpoint_state.header
     shared_endpoint_state = endpoint_state
 
 shared_joint_state = JointState()
@@ -56,7 +53,6 @@ def state_switch_handle(req):
 
 def main():
     global hmm_state
-    global shared_header
     global shared_endpoint_state 
     global shared_joint_state
     global shared_wrench_stamped
@@ -82,7 +78,8 @@ def main():
     while not rospy.is_shutdown():
         tag_multimodal = Tag_MultiModal()
         tag_multimodal.tag = hmm_state
-        tag_multimodal.header = copy.deepcopy(shared_header)
+        tag_multimodal.header = Header()
+        tag_multimodal.header.stamp = rospy.Time.now()
         tag_multimodal.endpoint_state = copy.deepcopy(shared_endpoint_state)
         tag_multimodal.joint_state = copy.deepcopy(shared_joint_state)
         tag_multimodal.wrench_stamped = copy.deepcopy(shared_wrench_stamped)
