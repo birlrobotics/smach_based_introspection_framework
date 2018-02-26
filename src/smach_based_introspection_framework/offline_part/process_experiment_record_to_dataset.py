@@ -30,6 +30,7 @@ from smach_based_introspection_framework.configurables import (
     anomaly_window_size_in_sec, 
     anomaly_resample_hz, 
 )
+import ipdb
 
 def get_anomaly_labels(exp_dir):
     txt_path = os.path.join(exp_dir, anomaly_label_file)
@@ -86,6 +87,22 @@ def get_recovery_skill_tag(nominal_skill_tag, anomaly_type, add_if_not_exist=Tru
     json.dump(lookup_dict, open(os.path.join(latest_dataset_folder, "recovery_tag_lookup_dict.json"),'w'))
     return lookup_dict[key]
 
+def temporary_solution_to_add_wrench_derivative(df):
+    if u'.wrench_stamped.wrench.force.x' not in df.columns:
+        return df
+    df['.delta_wrench.force.x'] = df['.wrench_stamped.wrench.force.x']
+    df['.delta_wrench.force.y'] = df['.wrench_stamped.wrench.force.y']
+    df['.delta_wrench.force.z'] = df['.wrench_stamped.wrench.force.z']
+
+    df['.delta_wrench.force.x'].iloc[1:] = df['.delta_wrench.force.x'].iloc[1:].values-df['.delta_wrench.force.x'].iloc[:-1].values
+    df['.delta_wrench.force.x'].iloc[0] = 0
+    df['.delta_wrench.force.y'].iloc[1:] = df['.delta_wrench.force.y'].iloc[1:].values-df['.delta_wrench.force.y'].iloc[:-1].values
+    df['.delta_wrench.force.y'].iloc[0] = 0
+    df['.delta_wrench.force.z'].iloc[1:] = df['.delta_wrench.force.z'].iloc[1:].values-df['.delta_wrench.force.z'].iloc[:-1].values
+    df['.delta_wrench.force.z'].iloc[0] = 0
+
+    return df
+
 def add_skill_introspection_data(tag, df, name):
     tag_dir = os.path.join(
         latest_dataset_folder,
@@ -94,6 +111,7 @@ def add_skill_introspection_data(tag, df, name):
     )
     if not os.path.isdir(tag_dir):
         os.makedirs(tag_dir)
+    df = temporary_solution_to_add_wrench_derivative(df)
     df.to_csv(os.path.join(tag_dir, name), sep=',')
 
 def add_anomaly_data(nominal_skill_tag, anomaly_type, df, name):
@@ -105,6 +123,7 @@ def add_anomaly_data(nominal_skill_tag, anomaly_type, df, name):
     )
     if not os.path.isdir(anomaly_dir):
         os.makedirs(anomaly_dir)
+    df = temporary_solution_to_add_wrench_derivative(df)
     df.to_csv(os.path.join(anomaly_dir, name), sep=',')
     pass
                 
