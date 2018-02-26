@@ -59,12 +59,16 @@ class ConvertTagTopicToInterestedVectorProc(multiprocessing.Process):
 
 if __name__ == "__main__":
     import rospy
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import ipdb
+
     interested_data_fields = [
          '.wrench_stamped.wrench.force.x',
-         '.delta_wrench.force.x',
          '.wrench_stamped.wrench.force.y',
-         '.delta_wrench.force.y',
          '.wrench_stamped.wrench.force.z',
+         '.delta_wrench.force.x',
+         '.delta_wrench.force.y',
          '.delta_wrench.force.z',
     ]
 
@@ -78,8 +82,8 @@ if __name__ == "__main__":
 
     process_receiver.start()
 
-    rospy.init_node("test_ConvertTagTopicToInterestedVectorProc")
 
+    samples = []
     while not rospy.is_shutdown():
         try:
             latest_data_tuple = com_queue_of_receiver.get(timeout=1)
@@ -87,4 +91,19 @@ if __name__ == "__main__":
             continue
         except KeyboardInterrupt:
             break
-        rospy.loginfo(latest_data_tuple)
+        samples.append(latest_data_tuple[data_frame_idx])
+
+    mat = np.array(samples)    
+    ipdb.set_trace()
+    assert np.array_equal(mat[1:, :3]-mat[:-1, :3], mat[1:, 3:])
+    print "Pass wrench derivative test."
+#     dimension = mat.shape[1]
+#     fig, axs = plt.subplots(nrows=dimension, ncols=1)
+#     if dimension == 1:
+#         axs = [axs]
+#     for idx, field in enumerate(interested_data_fields):
+#         ax = axs[idx] 
+#         ax.set_title(field)
+#         ax.plot(mat[:, idx])
+#     plt.show()
+
