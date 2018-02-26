@@ -3,6 +3,10 @@ import copy
 from smach_based_introspection_framework.msg import (
     Tag_MultiModal,
 )
+from TagTopicMsgDecorator import TagTopicMsgDecorator
+import Queue
+import multiprocessing 
+
 data_frame_idx = 0
 smach_state_idx = 1
 data_header_idx = 2
@@ -25,8 +29,12 @@ class ConvertTagTopicToInterestedVectorProc(multiprocessing.Process):
         self.interested_data_fields = interested_data_fields
         self.com_queue = com_queue
         self.node_name = node_name
+    
+        self.tag_topic_msg_decorator = TagTopicMsgDecorator()
 
     def callback_multimodal(self, data):
+        data = self.tag_topic_msg_decorator.decorate(data)
+
         data_header = data.header
         smach_state = data.tag
 
@@ -47,3 +55,36 @@ class ConvertTagTopicToInterestedVectorProc(multiprocessing.Process):
         except Exception as e:
             rospy.logerr("ConvertTagTopicToInterestedVectorProc error: %s"%e)
         rospy.loginfo("ConvertTagTopicToInterestedVectorProc exits")
+
+
+if __name__ == "__main__":
+    import rospy
+    interested_data_fields = [
+         '.wrench_stamped.wrench.force.x',
+         '.delta_wrench.force.x',
+         '.wrench_stamped.wrench.force.y',
+         '.delta_wrench.force.y',
+         '.wrench_stamped.wrench.force.z',
+         '.delta_wrench.force.z',
+    ]
+
+    com_queue_of_receiver = multiprocessing.Queue()
+    process_receiver = ConvertTagTopicToInterestedVectorProc(
+        interested_data_fields,
+        com_queue_of_receiver,
+    )
+    process_receiver.daemon = True
+
+
+    process_receiver.start()
+
+    rospy.init_node("test_ConvertTagTopicToInterestedVectorProc")
+
+    while not rospy.is_shutdown():
+        try:
+            latest_data_tuple = com_queue_of_receiver.get(timeout=1)
+        except Queue.Empty:
+            continue
+        except KeyboardInterrupt:
+            break
+        rospy.loginfo(latest_data_tuple)
