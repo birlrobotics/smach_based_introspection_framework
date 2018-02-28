@@ -9,6 +9,10 @@ from smach_based_introspection_framework._constant import (
 )
 
 def introspect_moveit_exec(group, plan, timeout=1000):
+    if plan is None or len(plan.joint_trajectory.points) == 0:
+        return False
+
+
     def cb(data):
         cb.result = data
     cb.result = None

@@ -14,6 +14,7 @@ from smach_based_introspection_framework._constant import (
 )
 import moveit_commander
 from util import introspect_moveit_exec
+import dmp_execute
 
 def execute(self, userdata):
     hmm_state_switch_client(0)
@@ -32,13 +33,18 @@ def execute(self, userdata):
         group = moveit_commander.MoveGroupCommander("right_arm")
         group.set_max_velocity_scaling_factor(0.3)
         group.set_max_acceleration_scaling_factor(0.3)
-        group.set_start_state_to_current_state()
-        group.set_pose_target(goal_pose)
-        plan = group.plan()
 
-        hmm_state_switch_client(self.state_no)
 
-        goal_achieved = introspect_moveit_exec(group, plan)
+        if not hasattr(self, 'get_dmp_model'):
+            group.set_start_state_to_current_state()
+            group.set_pose_target(goal_pose)
+            plan = group.plan()
+            hmm_state_switch_client(self.state_no)
+            goal_achieved = introspect_moveit_exec(group, plan)
+        else:
+            dmp_model = self.get_dmp_model()
+            goal_achieved = dmp_execute.execute(dmp_model, goal_pose)
+
         if not goal_achieved:
             no_need_to_revert = sos.handle_anomaly(self)
             rospy.loginfo('no_need_to_revert : %s'%no_need_to_revert)
