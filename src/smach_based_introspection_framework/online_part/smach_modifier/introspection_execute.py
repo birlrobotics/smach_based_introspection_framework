@@ -22,10 +22,23 @@ def execute(self, userdata):
     set_event_flag(ANOMALY_NOT_DETECTED)
     write_exec_hist(self, type(self).__name__, userdata, self.depend_on_prev_state)
 
+    if hasattr(self, "before_motion"):
+        self.before_motion()
 
-    if hasattr(self, "get_pose_goal"):
-        if hasattr(self, "before_motion"):
-            self.before_motion()
+    if hasattr(self, "get_joint_state_goal"):
+        robot = moveit_commander.RobotCommander()
+        group = moveit_commander.MoveGroupCommander("right_arm")
+        group.set_max_velocity_scaling_factor(0.3)
+        group.set_max_acceleration_scaling_factor(0.3)
+
+        d = self.get_joint_state_goal()
+        goal_joint = {k:d[k] for k in group.get_active_joints()}
+
+        group.set_max_velocity_scaling_factor(0.3)
+        group.set_max_acceleration_scaling_factor(0.3)
+        group.set_joint_value_target(goal_joint)
+        group.go(wait=True)
+    elif hasattr(self, "get_pose_goal"):
 
         goal_pose = self.get_pose_goal()
 
@@ -55,7 +68,7 @@ def execute(self, userdata):
                 
         hmm_state_switch_client(0)
 
-        if hasattr(self, "after_motion"):
-            self.after_motion()
+    if hasattr(self, "after_motion"):
+        self.after_motion()
 
     return self.determine_successor()
