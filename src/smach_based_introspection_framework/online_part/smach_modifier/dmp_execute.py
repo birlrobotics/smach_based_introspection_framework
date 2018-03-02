@@ -14,7 +14,6 @@ import baxter_interface
 from smach_based_introspection_framework.online_part.framework_core.states import (
     get_event_flag,
 )
-from birl_baxter_dmp.dmp_generalize import dmp_imitate
 import ipdb
 from baxter_core_msgs.msg import EndpointState
 from birl_runtime_parameter_filler.util import get_topic_message_once
@@ -24,6 +23,7 @@ from smach_based_introspection_framework._constant import (
 )
 import time
 from util import introspect_moveit_exec
+from birl_dmp.dmp_training.util import generalize_via_dmp
 
 def execute(dmp_model, goal):
     list_of_postfix = get_eval_postfix(dmp_cmd_fields, 'pose')
@@ -39,11 +39,14 @@ def execute(dmp_model, goal):
     start = cook_array_from_object_using_postfixs(list_of_postfix, endpoint_state_msg.pose)
     end = cook_array_from_object_using_postfixs(list_of_postfix, goal)
 
+    
 
-    command_matrix = dmp_imitate(starting_pose=start, ending_pose=end, weight_mat=dmp_model["basis_weight"], base_fuc=dmp_model["basis_function_type"])
+    command_matrix = generalize_via_dmp(start, end, dmp_model)
     
     robot, group, plan, fraction = get_moveit_plan(command_matrix, dmp_cmd_fields, 'pose')
     rospy.loginfo('moveit plan success rate %s, Press enter to exec'%fraction)
     raw_input() 
+    if rospy.is_shutdown():
+        return False
     goal_achieved = introspect_moveit_exec(group, plan)
     return goal_achieved

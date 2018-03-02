@@ -18,10 +18,11 @@ import json
 import numpy as np
 from model_training import train_introspection_model
 from model_training import train_anomaly_classifier
-import birl_baxter_dmp.dmp_train 
+from smach_based_introspection_framework.offline_part.model_training import train_dmp_model
 import ipdb
 import smach_based_introspection_framework.configurables as configurables 
 import logging
+import dill
 
 dmp_cmd_fields  = configurables.dmp_cmd_fields  
 data_type_chosen  = configurables.data_type_chosen  
@@ -153,23 +154,19 @@ def run():
             df = pd.read_csv(j, sep=',')
             list_of_mat.append(df[dmp_cmd_fields].values)
 
+        result = train_dmp_model.run(orig_mat)
 
-
-        basis_weight, basis_function_type = birl_baxter_dmp.dmp_train.train(list_of_mat)
-        logger.info("Built dmp model for skill %s"%tag)
-        model = {
-            "basis_weight": basis_weight,
-            "basis_function_type": basis_function_type,
-        }
         d = os.path.join(get_latest_model_folder(), os.path.basename(i))
         if not os.path.isdir(d):
             os.makedirs(d)
-        joblib.dump(
-            model,
-            os.path.join(d, 'dmp_model')
+
+        dill.dump(
+            result['model'],
+            open(os.path.join(d, 'dmp_model'), 'w')
         )
         model_info = { 
             'dmp_cmd_fields': dmp_cmd_fields,
+            'model_info': result['model_info']
         }
         json.dump(
             model_info,
