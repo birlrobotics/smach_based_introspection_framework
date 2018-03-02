@@ -154,7 +154,7 @@ def run():
             df = pd.read_csv(j, sep=',')
             list_of_mat.append(df[dmp_cmd_fields].values)
 
-        result = train_dmp_model.run(orig_mat)
+        result = train_dmp_model.run(list_of_mat[0])
 
         d = os.path.join(get_latest_model_folder(), os.path.basename(i))
         if not os.path.isdir(d):
