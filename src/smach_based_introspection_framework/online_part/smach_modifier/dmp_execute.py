@@ -39,8 +39,6 @@ def execute(dmp_model, goal):
     start = cook_array_from_object_using_postfixs(list_of_postfix, endpoint_state_msg.pose)
     end = cook_array_from_object_using_postfixs(list_of_postfix, goal)
 
-    
-
     command_matrix = generalize_via_dmp(start, end, dmp_model)
     
     robot, group, plan, fraction = get_moveit_plan(command_matrix, dmp_cmd_fields, 'pose')

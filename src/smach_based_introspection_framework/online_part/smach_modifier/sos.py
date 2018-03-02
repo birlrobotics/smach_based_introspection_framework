@@ -34,6 +34,8 @@ from smach_based_introspection_framework._constant import (
     ANOMALY_NOT_DETECTED,
     RECOVERY_DEMONSTRATED_BY_HUMAN_TAG,
 )
+import dill
+import ipdb
 
 def human_teach(state_obj):
     hmm_state_switch_client(-1)
@@ -147,7 +149,8 @@ def handle_anomaly(state_obj):
                 need_human = True
                 break
 
-            dmp_model = joblib.load(dmp_model_path)
+            dmp_model = dill.load(open(dmp_model_path, 'r'))
+            ipdb.set_trace()
             
             
             alf.write("%s\n"%predicted_label)
