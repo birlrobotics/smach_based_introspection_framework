@@ -49,7 +49,7 @@ def run():
         raise Exception("Not found %s"%latest_dataset_folder)
 
     logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger()
+    logger = logging.getLogger('process_dataset_to_models')
 
     log_file = os.path.join(get_latest_model_folder(), 'run.log')
     fileHandler = logging.FileHandler(os.path.realpath(log_file))
@@ -105,7 +105,7 @@ def run():
         m = prog.match(os.path.basename(i))
         tag = m.group(1)
         anomaly_type = m.group(2)
-        logger.info(tag, anomaly_type)
+        logger.info('tag %s, anomaly_type %s'%(tag, anomaly_type))
         if anomaly_type == 'Unlabeled':
             logger.info("Skip Unlabeled anomalies in skill %s"%tag)
             continue
