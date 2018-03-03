@@ -1,5 +1,6 @@
 from baxter_core_msgs.msg import EndpointState
 from geometry_msgs.msg import WrenchStamped
+from parameters_combinator import ListOfParams
 
 dmp_cmd_fields = [
     '.endpoint_state.pose.position.x',
@@ -48,18 +49,29 @@ data_fields_store = {
         '.delta_wrench.force.z',
     ],
 }
-data_type_chosen = 'endpoint_pose_and_endpoint_twist_and_wrench_and_wrench_derivative'        
+data_type_chosen = 'endpoint_pose_and_endpoint_twist_and_wrench'        
 data_type_split = data_type_chosen.split("_and_")
 interested_data_fields = []
 for data_type in data_type_split:
     interested_data_fields += data_fields_store[data_type]
 
-model_type = 'hmmlearn\'s HMM'
 score_metric = '_score_metric_sum_of_loglik_'
+
+'''
+model_type = 'hmmlearn\'s HMM'
 model_config = {
-    'hmm_max_train_iteration': 1000,
-    'hmm_max_hidden_state_amount': 7,
-    'gaussianhmm_covariance_type_string': ['diag', 'spherical', 'full', 'tied'],
+  'n_components': ListOfParams([1,3,5,7]),
+  'covariance_type': ListOfParams(['diag', 'spherical', 'full', 'tied']),
+  'n_iter': 1000,
+}
+'''
+model_type = 'BNPY\'s HMM'
+model_config = {
+    'n_iteration': 100,
+    'K': 4,
+    'alloModel' : 'HDPHMM',     
+    'obsModel'  : 'Gauss',     
+    'varMethod' : 'moVB',
 }
 
 
