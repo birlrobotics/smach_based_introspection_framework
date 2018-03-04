@@ -48,6 +48,15 @@ data_fields_store = {
         '.delta_wrench.force.y',
         '.delta_wrench.force.z',
     ],
+    'right_joint_angles': [
+        '.joint_angles.right_s0',
+        '.joint_angles.right_s1',
+        '.joint_angles.right_e0',
+        '.joint_angles.right_e1',
+        '.joint_angles.right_w0',
+        '.joint_angles.right_w1',
+        '.joint_angles.right_w2',
+    ]
 }
 data_type_chosen = 'endpoint_pose_and_endpoint_twist_and_wrench'        
 data_type_split = data_type_chosen.split("_and_")
@@ -57,7 +66,6 @@ for data_type in data_type_split:
 
 score_metric = '_score_metric_sum_of_loglik_'
 
-'''
 model_type = 'hmmlearn\'s HMM'
 model_config = {
   'n_components': ListOfParams([1,3,5,7]),
@@ -74,6 +82,7 @@ model_config = {
     'varMethod' : ListOfParams(['memoVB', 'moVB']),
     'ECovMat'   : ListOfParams(['covdata', 'covfirstdiff', 'diagcovdata', 'diagcovfirstdiff']),
 }
+'''
 
 
 anomaly_window_size_in_sec = 4
