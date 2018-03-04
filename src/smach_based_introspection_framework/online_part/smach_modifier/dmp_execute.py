@@ -43,7 +43,6 @@ def execute(dmp_model, goal):
     
     robot, group, plan, fraction = get_moveit_plan(command_matrix, dmp_cmd_fields, 'pose')
     rospy.loginfo('moveit plan success rate %s, Press enter to exec'%fraction)
-    raw_input() 
     if rospy.is_shutdown():
         return False
     goal_achieved = introspect_moveit_exec(group, plan)
