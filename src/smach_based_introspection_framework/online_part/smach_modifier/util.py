@@ -29,7 +29,7 @@ def introspect_moveit_exec(group, plan, timeout=1000):
         rospy.logerr("dmp moveit exec did not return after %s secs. Time out."%timeout)
         return False
 
-    if cb.result.result.error_code != 0:
+    if cb.result.result.error_code != 0 and cb.result.result.error_code != -5:
         rospy.logerr("dmp moveit exec returns: %s"%cb.result)
         return False
     sub_handle.unregister()
