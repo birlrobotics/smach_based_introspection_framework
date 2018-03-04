@@ -9,8 +9,7 @@ def run(list_of_mat, model_type, model_config, score_metric):
         raise Exception('Contains 0 train samples, failed to train introspection model')
     else:
         print 'Contains %s train samples'%(len(list_of_train_mat))
-        
-
+           
     if len(list_of_test_mat) == 0:
         raise Exception('Contains 0 test samples, failed to train introspection model')
     else:

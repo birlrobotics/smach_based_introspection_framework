@@ -67,11 +67,12 @@ model_config = {
 '''
 model_type = 'BNPY\'s HMM'
 model_config = {
-    'n_iteration': 100,
-    'K': 4,
+    'n_iteration': 1000,
+    'K': 10,
     'alloModel' : 'HDPHMM',     
-    'obsModel'  : 'Gauss',     
-    'varMethod' : 'moVB',
+    'obsModel'  : 'AutoRegGauss',     
+    'varMethod' : ListOfParams(['memoVB', 'moVB']),
+    'ECovMat'   : ListOfParams(['covdata', 'covfirstdiff', 'diagcovdata', 'diagcovfirstdiff']),
 }
 
 
