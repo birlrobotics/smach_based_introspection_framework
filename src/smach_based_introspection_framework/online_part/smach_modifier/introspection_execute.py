@@ -25,6 +25,8 @@ def execute(self, userdata):
     if hasattr(self, "before_motion"):
         self.before_motion()
 
+    goal_achieved = True
+    hmm_state_switch_client(self.state_no)
     if hasattr(self, "get_joint_state_goal"):
         robot = moveit_commander.RobotCommander()
         group = moveit_commander.MoveGroupCommander("right_arm")
@@ -34,10 +36,9 @@ def execute(self, userdata):
         d = self.get_joint_state_goal()
         goal_joint = {k:d[k] for k in group.get_active_joints()}
 
-        group.set_max_velocity_scaling_factor(0.3)
-        group.set_max_acceleration_scaling_factor(0.3)
         group.set_joint_value_target(goal_joint)
         group.go(wait=True)
+        goal_achieved = True
     elif hasattr(self, "get_pose_goal"):
 
         goal_pose = self.get_pose_goal()
@@ -52,21 +53,19 @@ def execute(self, userdata):
             group.set_start_state_to_current_state()
             group.set_pose_target(goal_pose)
             plan = group.plan()
-            hmm_state_switch_client(self.state_no)
             goal_achieved = introspect_moveit_exec(group, plan)
         else:
             dmp_model = self.get_dmp_model()
             goal_achieved = dmp_execute.execute(dmp_model, goal_pose)
 
-        if not goal_achieved:
-            no_need_to_revert = sos.handle_anomaly(self)
-            rospy.loginfo('no_need_to_revert : %s'%no_need_to_revert)
-            if no_need_to_revert:
-                pass
-            else:
-                return "Revert"
-                
-        hmm_state_switch_client(0)
+    hmm_state_switch_client(0)
+    if not goal_achieved:
+        no_need_to_revert = sos.handle_anomaly(self)
+        rospy.loginfo('no_need_to_revert : %s'%no_need_to_revert)
+        if no_need_to_revert:
+            pass
+        else:
+            return "Revert"
 
     if hasattr(self, "after_motion"):
         self.after_motion()
