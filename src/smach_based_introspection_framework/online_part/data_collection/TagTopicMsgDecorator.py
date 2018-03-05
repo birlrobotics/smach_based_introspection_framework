@@ -17,10 +17,16 @@ class TagTopicMsgDecorator(object):
             delta_wrench.force.x = t1.force.x-t0.force.x
             delta_wrench.force.y = t1.force.y-t0.force.y
             delta_wrench.force.z = t1.force.z-t0.force.z
+            delta_wrench.torque.x = t1.torque.x-t0.torque.x
+            delta_wrench.torque.y = t1.torque.y-t0.torque.y
+            delta_wrench.torque.z = t1.torque.z-t0.torque.z
         else:
             delta_wrench.force.x = 0
             delta_wrench.force.y = 0
             delta_wrench.force.z = 0
+            delta_wrench.torque.x = 0
+            delta_wrench.torque.y = 0
+            delta_wrench.torque.z = 0
         
         bunch = Bunch()
         for attr in msg.__slots__:

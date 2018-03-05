@@ -47,9 +47,12 @@ data_fields_store = {
         '.delta_wrench.force.x',
         '.delta_wrench.force.y',
         '.delta_wrench.force.z',
+        '.delta_wrench.torque.x',
+        '.delta_wrench.torque.y',
+        '.delta_wrench.torque.z',
     ],
 }
-data_type_chosen = 'endpoint_pose_and_endpoint_twist_and_wrench'        
+data_type_chosen = 'endpoint_twist_and_wrench_and_wrench_derivative'        
 data_type_split = data_type_chosen.split("_and_")
 interested_data_fields = []
 for data_type in data_type_split:

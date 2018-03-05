@@ -101,6 +101,17 @@ def temporary_solution_to_add_wrench_derivative(df):
     df['.delta_wrench.force.z'].iloc[1:] = df['.delta_wrench.force.z'].iloc[1:].values-df['.delta_wrench.force.z'].iloc[:-1].values
     df['.delta_wrench.force.z'].iloc[0] = 0
 
+    df['.delta_wrench.torque.x'] = df['.wrench_stamped.wrench.torque.x']
+    df['.delta_wrench.torque.y'] = df['.wrench_stamped.wrench.torque.y']
+    df['.delta_wrench.torque.z'] = df['.wrench_stamped.wrench.torque.z']
+
+    df['.delta_wrench.torque.x'].iloc[1:] = df['.delta_wrench.torque.x'].iloc[1:].values-df['.delta_wrench.torque.x'].iloc[:-1].values
+    df['.delta_wrench.torque.x'].iloc[0] = 0
+    df['.delta_wrench.torque.y'].iloc[1:] = df['.delta_wrench.torque.y'].iloc[1:].values-df['.delta_wrench.torque.y'].iloc[:-1].values
+    df['.delta_wrench.torque.y'].iloc[0] = 0
+    df['.delta_wrench.torque.z'].iloc[1:] = df['.delta_wrench.torque.z'].iloc[1:].values-df['.delta_wrench.torque.z'].iloc[:-1].values
+    df['.delta_wrench.torque.z'].iloc[0] = 0
+
     return df
 
 def add_skill_introspection_data(tag, df, name):
