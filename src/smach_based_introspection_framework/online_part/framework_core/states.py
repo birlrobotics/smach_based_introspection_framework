@@ -90,7 +90,19 @@ class RollBackRecovery(smach.State):
                 break
 
         if history_to_reexecute is None:
+            rospy.loginfo("Cannot find reverting point in history_to_reexecute. Gonna abort")
             return 'RecoveryFailed'
+
+        rospy.loginfo("About to revert, confirm? Or abort the whole task? Input confirm or abort.")
+        while True:
+            s = raw_input()
+            if s == 'abort':
+                return 'RecoveryFailed'
+            elif s == 'confrim':
+                break
+            else:
+                rospy.loginfo("input confirm or abort")
+
 
         state_name = history_to_reexecute['state_name']
         next_state = state_name
