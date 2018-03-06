@@ -86,10 +86,10 @@ class BasicCalculator(object):
 
 def get_calculator(model):
     import hmmlearn.hmm
-    import bnpy
+    from birl_hmm.bnpy_hmm_wrapper.hmm import HongminHMM
     if issubclass(type(model), hmmlearn.hmm._BaseHMM):
         return HmmlearnModelIncrementalLoglikCalculator(model)
-    elif issubclass(type(model), bnpy.HModel.HModel)
+    elif issubclass(type(model), HongminHMM):
         return BNPYModelIncrementalLoglikCalculator(model)
     else:
         print "Returning BasicCalculator! HMM incremental calculation will NOT be optimal."
