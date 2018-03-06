@@ -98,7 +98,7 @@ class RollBackRecovery(smach.State):
             s = raw_input()
             if s == 'abort':
                 return 'RecoveryFailed'
-            elif s == 'confrim':
+            elif s == 'confirm':
                 break
             else:
                 rospy.loginfo("input confirm or abort")
