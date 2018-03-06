@@ -69,11 +69,7 @@ def run():
             df = pd.read_csv(j, sep=',')
             list_of_mat.append(df[interested_data_fields].values)
 
-        try:
-            result = train_introspection_model.run(list_of_mat, model_type, model_config, score_metric)
-        except Exception as e:
-            logger.error("Failed to train introspection model for tag %s: %s"%(tag, e))
-            continue
+        result = train_introspection_model.run(list_of_mat, model_type, model_config, score_metric)
         logger.info("Successfully trained introspection model for tag %s"%(tag))
     
             

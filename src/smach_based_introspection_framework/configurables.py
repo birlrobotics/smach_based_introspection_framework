@@ -1,6 +1,9 @@
 from baxter_core_msgs.msg import EndpointState
 from geometry_msgs.msg import WrenchStamped
 from parameters_combinator import ListOfParams
+from smach_based_introspection_framework.msg import (
+    Tag_MultiModal,
+)
 
 dmp_cmd_fields = [
     '.endpoint_state.pose.position.x',
@@ -60,7 +63,6 @@ for data_type in data_type_split:
 
 score_metric = '_score_metric_sum_of_loglik_'
 
-'''
 model_type = 'hmmlearn\'s HMM'
 model_config = {
   'n_components': ListOfParams([1,3,5,7]),
@@ -75,8 +77,9 @@ model_config = {
     'alloModel' : 'HDPHMM',     
     'obsModel'  : 'AutoRegGauss',     
     'varMethod' : ListOfParams(['memoVB', 'moVB']),
-    'ECovMat'   : ListOfParams(['covdata', 'covfirstdiff', 'diagcovdata', 'diagcovfirstdiff']),
+    'ECovMat'   : ListOfParams(['eye']),
 }
+'''
 
 
 anomaly_window_size_in_sec = 4
@@ -88,22 +91,24 @@ anomaly_classification_confidence_threshold = 0.5
 # New config that is about to remove some old ones above
 
 info_of_topics_to_timeseries = [
-    (
-        "/robot/limb/right/endpoint_state",
-        EndpointState,
-        lambda m: [m.pose.position.x, m.pose.position.y, m.pose.position.z,\
-            m.pose.orientation.x, m.pose.orientation.y, m.pose.orientation.z, m.pose.orientation.w,\
-            m.twist.linear.x, m.twist.linear.y, m.twist.linear.z,\
-            m.twist.angular.x, m.twist.angular.y, m.twist.angular.z]
-    ), 
-    #(
-    #    "/robotiq_force_torque_wrench",
-    #    WrenchStamped,
-    #    lambda m: [m.wrench.force.x, m.wrench.force.y, m.wrench.force.z,\
-    #        m.wrench.torque.x, m.wrench.torque.y, m.wrench.torque.z]
-    #),
+    # (
+    #     "/tag_multimodal",
+    #     Tag_MultiModal,
+    #     lambda m: [
+    #         m.endpoint_state.twist.linear.x, m.endpoint_state.twist.linear.y, m.endpoint_state.twist.linear.z,\
+    #         m.endpoint_state.twist.angular.x, m.endpoint_state.twist.angular.y, m.endpoint_state.twist.angular.z,\
+    #     ]
+    # ), 
+    # (
+    #     "/tag_multimodal",
+    #     Tag_MultiModal,
+    #     lambda m: [
+    #         m.wrench_stamped.wrench.force.x, m.wrench_stamped.wrench.force.y, m.wrench_stamped.wrench.force.z,\
+    #         m.wrench_stamped.wrench.torque.x, m.wrench_stamped.wrench.torque.y, m.wrench_stamped.wrench.torque.z,\
+    #     ]
+    # ), 
 ]
-timeseries_rate = 100
+timeseries_rate = 10
 
 topics_to_be_recorded_into_rosbag = [
     '/tag_multimodal', 

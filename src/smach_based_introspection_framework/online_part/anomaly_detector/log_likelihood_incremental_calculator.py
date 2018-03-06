@@ -41,10 +41,20 @@ class HmmlearnModelIncrementalLoglikCalculator(object):
         
         return logsumexp(self.fwdlattice[-1])
 
+class BasicCalculator(object):
+    def __init__(self, model):
+        self.model = model
+        self.samples = []
+
+    def add_one_sample_and_get_loglik(self, sample):
+        self.samples.append(sample)
+        return self.model.score(np.concatenate(self.samples, axis=0))
+
 def get_calculator(model):
     import hmmlearn.hmm
     if issubclass(type(model), hmmlearn.hmm._BaseHMM):
         return HmmlearnModelIncrementalLoglikCalculator(model)
         
     else:
-        raise Exception('model of type %s is not supported by fast_log_curve_calculation.'%(type(model),))
+        print "Returning BasicCalculator! HMM incremental calculation will NOT be optimal."
+        return BasicCalculator(model)
