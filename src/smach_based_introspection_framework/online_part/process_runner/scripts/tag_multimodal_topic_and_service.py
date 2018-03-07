@@ -8,7 +8,8 @@ import ipdb
 import rospy
 from std_msgs.msg import (
     Empty,
-    Header
+    Header,
+    Int64
 )
 
 import copy
@@ -39,6 +40,10 @@ def callback_wrench_stamped(wrench_stamped):
     global shared_wrench_stamped
     shared_wrench_stamped = wrench_stamped
 
+shared_tactile_texel_sum = Int64() 
+def callback_tactile_texel_sum(tactile_texel_sum):
+    global shared_tactile_texel_sum
+    shared_tactile_texel_sum = tactile_texel_sum
 
     
 hmm_state = None 
@@ -68,6 +73,7 @@ def main():
     rospy.Subscriber("/robot/limb/right/endpoint_state", EndpointState, callback_endpoint_state)
     rospy.Subscriber("/robot/joint_states", JointState, callback_joint_state)
     rospy.Subscriber("/robotiq_force_torque_wrench", WrenchStamped, callback_wrench_stamped)
+    rospy.Subscriber("/tactile_texel_sum", Int64, callback_tactile_texel_sum)
 
     pub = rospy.Publisher("/tag_multimodal",Tag_MultiModal, queue_size=10)
 
@@ -83,6 +89,7 @@ def main():
         tag_multimodal.endpoint_state = copy.deepcopy(shared_endpoint_state)
         tag_multimodal.joint_state = copy.deepcopy(shared_joint_state)
         tag_multimodal.wrench_stamped = copy.deepcopy(shared_wrench_stamped)
+        tag_multimodal.tactile_texel_sum = copy.deepcopy(shared_tactile_texel_sum).data
         pub.publish(tag_multimodal)
 
         try:

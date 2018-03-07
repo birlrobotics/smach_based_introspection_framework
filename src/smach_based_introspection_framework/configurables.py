@@ -54,8 +54,11 @@ data_fields_store = {
         '.delta_wrench.torque.y',
         '.delta_wrench.torque.z',
     ],
+    'tactile_texel_sum': [
+        '.tactile_texel_sum',
+    ]
 }
-data_type_chosen = 'endpoint_twist_and_wrench_and_wrench_derivative'        
+data_type_chosen = 'endpoint_twist_and_wrench_and_wrench_derivative_and_tactile_texel_sum'
 data_type_split = data_type_chosen.split("_and_")
 interested_data_fields = []
 for data_type in data_type_split:
@@ -63,6 +66,7 @@ for data_type in data_type_split:
 
 score_metric = '_score_metric_sum_of_loglik_'
 
+'''
 model_type = 'hmmlearn\'s HMM'
 model_config = {
   'n_components': ListOfParams([1,3,5,7]),
@@ -79,7 +83,6 @@ model_config = {
     'varMethod' : ListOfParams(['memoVB', 'moVB']),
     'ECovMat'   : ListOfParams(['eye']),
 }
-'''
 
 
 anomaly_window_size_in_sec = 4
@@ -91,14 +94,11 @@ anomaly_classification_confidence_threshold = 0.5
 # New config that is about to remove some old ones above
 
 info_of_topics_to_timeseries = [
-    # (
-    #     "/tag_multimodal",
-    #     Tag_MultiModal,
-    #     lambda m: [
-    #         m.endpoint_state.twist.linear.x, m.endpoint_state.twist.linear.y, m.endpoint_state.twist.linear.z,\
-    #         m.endpoint_state.twist.angular.x, m.endpoint_state.twist.angular.y, m.endpoint_state.twist.angular.z,\
-    #     ]
-    # ), 
+    (
+        "/tag_multimodal",
+        Tag_MultiModal,
+        lambda m: [m.tactile_texel_sum]
+    ), 
     # (
     #     "/tag_multimodal",
     #     Tag_MultiModal,
