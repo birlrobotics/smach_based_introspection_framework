@@ -48,14 +48,13 @@ class BNPYModelIncrementalLoglikCalculator(object):
         model = model.model
         self.model = model
         self.n_components = model.allocModel.K
-        self.log_transmat = log_mask_zero(model.allocModel.get_init_prob_vector()) 
-        self.log_startprob = log_mask_zero(model.allocModel.get_trans_prob_matrix())
+        self.log_startprob = log_mask_zero(model.allocModel.get_init_prob_vector()) 
+        self.log_transmat  = log_mask_zero(model.allocModel.get_trans_prob_matrix())
         self.fwdlattice = None
         self.preSample = None
         self.work_buffer = np.zeros(self.n_components)
 
     def add_one_sample_and_get_loglik(self, sample):
-        ipdb.set_trace()
         import bnpy
         if self.preSample is None:
             self.preSample = sample
@@ -107,8 +106,28 @@ def get_calculator(model):
 
 if __name__ == '__main__':
     from sklearn.externals import joblib
+    from birl_hmm.hmm_training.hmm_util import fast_log_curve_calculation
+    import matplotlib.pyplot as plt
     import numpy
     model = joblib.load('test_data/introspection_model')['hmm_model']
+    mat = numpy.load('test_data/test_mat.npy')
     c = get_calculator(model) 
-    while True:
-        c.add_one_sample_and_get_loglik(numpy.array([[1]*18]))
+    baseline_curve = fast_log_curve_calculation(mat, model)
+
+    test_curve = []
+    for i in range(mat.shape[0]):
+        test_curve.append(c.add_one_sample_and_get_loglik(mat[i].reshape((1, -1))))
+
+    fig, ax = plt.subplots(nrows=1, ncols=1)
+    ax.plot(baseline_curve, '-g') 
+    ax.plot(test_curve, '-r') 
+
+    plt.show()
+
+
+
+
+
+
+
+
