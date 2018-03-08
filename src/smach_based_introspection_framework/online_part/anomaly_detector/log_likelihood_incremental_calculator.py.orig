@@ -48,22 +48,36 @@ class BNPYModelIncrementalLoglikCalculator(object):
         model = model.model
         self.model = model
         self.n_components = model.allocModel.K
-        self.log_startprob = log_mask_zero(model.allocModel.get_active_comp_probs()) 
+        self.log_startprob = log_mask_zero(model.allocModel.get_init_prob_vector()) 
         self.log_transmat  = log_mask_zero(model.allocModel.get_trans_prob_matrix())
         self.fwdlattice = None
+<<<<<<< HEAD
+        self.preSample  = None
+        self.work_buffer = np.zeros(self.n_components)
+
+    def add_one_sample_and_get_loglik(self, sample):
+=======
         self.preSample = None
         self.work_buffer = np.zeros(self.n_components)
 
     def add_one_sample_and_get_loglik(self, sample):
         import bnpy
+>>>>>>> 2c2f1c3e270ab3f42ff7bbd59be80d86ca2dace5
         if self.preSample is None:
             self.preSample = sample
             return 0
         else:
+<<<<<<< HEAD
+            Xprev  = np.append([self.preSample],[sample],axis=0)
+            X      = sample
+            self.preSample = sample
+        length = len(X)
+=======
             Xprev = self.preSample
             X = sample
             self.preSample = sample
         length = 1
+>>>>>>> 2c2f1c3e270ab3f42ff7bbd59be80d86ca2dace5
         doc_range = [0, length]
         dataset = bnpy.data.GroupXData(X, doc_range, length, Xprev)
 
@@ -73,7 +87,6 @@ class BNPYModelIncrementalLoglikCalculator(object):
             self.fwdlattice = np.zeros((1, self.n_components))
             for i in range(self.n_components):
                 self.fwdlattice[0,i] = self.log_startprob[i] + framelogprob[0,i]
-            print "I am here"
         else:
             self.fwdlattice = np.append(self.fwdlattice, np.zeros((1, self.n_components)), axis=0)
             for j in range(self.n_components):
@@ -103,6 +116,8 @@ def get_calculator(model):
     else:
         print "Returning BasicCalculator! HMM incremental calculation will NOT be optimal."
         return BasicCalculator(model)
+<<<<<<< HEAD
+=======
 
 
 if __name__ == '__main__':
@@ -132,3 +147,4 @@ if __name__ == '__main__':
 
 
 
+>>>>>>> 2c2f1c3e270ab3f42ff7bbd59be80d86ca2dace5
