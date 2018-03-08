@@ -48,13 +48,17 @@ class BNPYModelIncrementalLoglikCalculator(object):
         self.log_transmat = log_mask_zero(model.allocModel.get_init_prob_vector()) 
         self.log_startprob = log_mask_zero(model.allocModel.get_trans_prob_matrix())
         self.fwdlattice = None
+        self.preSample  = None
         self.work_buffer = np.zeros(self.n_components)
 
     def add_one_sample_and_get_loglik(self, sample):
-        if np.array([sample]).shape[0] == 1:
-            sample = np.append([sample],[sample], axis=0)
-        Xprev  = sample[:-1,:]
-        X      = sample[1:,:]
+        if self.preSample is None:
+            self.preSample = sample
+            return 0
+        else:
+            Xprev  = np.append([self.preSample],[sample],axis=0)
+            X      = sample
+            self.preSample = sample
         length = len(X)
         doc_range = [0, length]
         dataset = bnpy.data.GroupXData(X, doc_range, length, Xprev)
