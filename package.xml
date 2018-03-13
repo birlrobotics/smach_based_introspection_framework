@@ -64,6 +64,7 @@
   <build_depend>birl_hmm</build_depend>
   <build_depend>birl_motion_library</build_depend>
   <build_depend>rostopics_to_timeseries</build_depend>
+  <build_depend>parameters_combinator</build_depend>
   <build_depend>birl_dmp</build_depend>
   <build_export_depend>actionlib</build_export_depend>
   <build_export_depend>baxter_core_msgs</build_export_depend>
@@ -92,6 +93,7 @@
   <exec_depend>birl_hmm</exec_depend>
   <exec_depend>birl_motion_library</exec_depend>
   <exec_depend>rostopics_to_timeseries</exec_depend>
+  <exec_depend>parameters_combinator</exec_depend>
   <exec_depend>dill</exec_depend>
   <exec_depend>birl_dmp</exec_depend>
 
