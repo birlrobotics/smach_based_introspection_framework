@@ -34,6 +34,14 @@ latest_model_folder = os.path.join(
     'latest',
 )
 
+visualized_dataset_folder = os.path.join(
+    introspection_data_folder,
+    "visualized_dataset_folder")
+latest_visualized_dataset_folder = os.path.join(
+    visualized_dataset_folder,
+    'latest',
+)
+
 realtime_anomaly_plot_folder = os.path.join(
     introspection_data_folder,
     "realtime_anomaly_plot_folder")
