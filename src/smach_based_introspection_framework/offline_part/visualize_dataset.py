@@ -19,6 +19,7 @@ import numpy as np
 import ipdb
 import smach_based_introspection_framework.configurables as configurables 
 import logging
+import matplotlib.pyplot as plt
 
 dmp_cmd_fields  = configurables.dmp_cmd_fields  
 data_type_chosen  = configurables.data_type_chosen  
@@ -27,7 +28,27 @@ model_type  = configurables.model_type
 score_metric  = configurables.score_metric  
 model_config  = configurables.model_config  
 
-def plot_list_of_df(save_folder, list_of_df, list_of_legend):
+def plot_list_of_df(save_folder, list_of_df, list_of_labels):
+    print 'plot_list_of_df with save_folder %s'%save_folder
+    if len(list_of_df) == 0:
+        return
+    dims = list_of_df[0].columns
+    for dim in dims:
+        fig, ax = plt.subplots(nrows=1, ncols=1)
+        lgds = []
+
+        for idx, df in enumerate(list_of_df):
+            label = list_of_labels[idx]
+            ax.plot(df[dim], label=label)
+
+        ax.set_title('...'+(save_folder+', '+dim)[-70:])
+
+        handles, labels = ax.get_legend_handles_labels()
+        lgd = ax.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5,-0.1))
+
+        fig.savefig(os.path.join(save_folder, dim.replace('.', '>')), format='png', bbox_extra_artists=(lgd,), bbox_inches='tight')
+
+        plt.close(fig)
     pass
 
 def get_latest_visualized_dataset_folder():
@@ -62,17 +83,17 @@ def run():
         tag = prog.match(os.path.basename(i)).group(1)
 
         list_of_df = []
-        list_of_legend = []
+        list_of_labels = []
         for j in glob.glob(os.path.join(i, "*")):
             df = pd.read_csv(j, sep=',')
             list_of_df.append(df[interested_data_fields])
-            list_of_legend.append(j)
+            list_of_labels.append(os.path.basename(j))
 
         d = os.path.join(get_latest_visualized_dataset_folder(), 'tag_%s'%tag)
         if not os.path.isdir(d):
             os.makedirs(d)
 
-        plot_list_of_df(d, list_of_df, list_of_legend)
+        plot_list_of_df(d, list_of_df, list_of_labels)
 
     prog = re.compile(r'nominal_skill_(\d+)_anomaly_type_(.*)')
     for i in glob.glob(os.path.join(latest_dataset_folder, "anomaly_data", '*')):
@@ -82,17 +103,17 @@ def run():
         if anomaly_type == 'Unlabeled':
             continue
         list_of_df = []
-        list_of_legend = []
+        list_of_labels = []
         for j in glob.glob(os.path.join(i, "*")):
             df = pd.read_csv(j, sep=',')
             list_of_df.append(df[interested_data_fields])
-            list_of_legend.append(j)
+            list_of_labels.append(os.path.basename(j))
 
         d = os.path.join(get_latest_visualized_dataset_folder(), os.path.basename(i))
         if not os.path.isdir(d):
             os.makedirs(d)
 
-        plot_list_of_df(d, list_of_df, list_of_legend)
+        plot_list_of_df(d, list_of_df, list_of_labels)
 
     prog = re.compile(r'tag_(\d+)')
     for i in glob.glob(os.path.join(latest_dataset_folder, "skill_data", '*')):
@@ -100,17 +121,17 @@ def run():
         if int(tag) < RECOVERY_SKILL_BEGINS_AT:
             continue
         list_of_df = []
-        list_of_legend = []
+        list_of_labels = []
         for j in glob.glob(os.path.join(i, "*")):
             df = pd.read_csv(j, sep=',')
             list_of_df.append(df[dmp_cmd_fields])
-            list_of_legend.append(j)
+            list_of_labels.append(os.path.basename(j))
 
         d = os.path.join(get_latest_visualized_dataset_folder(), os.path.basename(i))
         if not os.path.isdir(d):
             os.makedirs(d)
 
-        plot_list_of_df(d, list_of_df, list_of_legend)
+        plot_list_of_df(d, list_of_df, list_of_labels)
 
 
     fileHandler.close()
