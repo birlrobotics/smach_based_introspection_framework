@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os
 import smach_based_introspection_framework.offline_part.process_dataset_to_models as m2
 
