@@ -110,7 +110,7 @@ class RollBackRecovery(smach.State):
         rospy.sleep(5)
         return 'Reenter_'+next_state
 
-def listen_HMM_anomaly_signal(use_manual_anomaly_signal):
+def listen_HMM_anomaly_signal():
     hmm_state_switch_client(0)
     def callback_hmm(msg):
         global latest_anomaly_t
@@ -122,8 +122,5 @@ def listen_HMM_anomaly_signal(use_manual_anomaly_signal):
                 latest_anomaly_t = anomaly_t
 
     import std_msgs.msg
-    if use_manual_anomaly_signal:
-        rospy.Subscriber("/manual_anomaly_signal", std_msgs.msg.Header, callback_hmm)
-    else:
-        rospy.Subscriber("/anomaly_detection_signal", std_msgs.msg.Header, callback_hmm)
+    rospy.Subscriber("/anomaly_detection_signal", std_msgs.msg.Header, callback_hmm)
 
