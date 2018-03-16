@@ -10,6 +10,7 @@ from smach_based_introspection_framework.online_part.robot_screen_visualization.
 import rospy
 from smach_based_introspection_framework.configurables import (
     anomaly_classification_confidence_threshold,
+    HUMAN_AS_MODEL_MODE,
 )
 from smach_based_introspection_framework._constant import (
     latest_model_folder,
@@ -115,25 +116,41 @@ def handle_anomaly(state_obj):
         show_anomaly_detected()
         rospy.sleep(5)
 
-        sp = rospy.ServiceProxy('AnomalyClassificationService', AnomalyClassificationService)
-        try:
-            resp = sp(anomaly_t, str(nominal_tag))
-        except rospy.ServiceException as exc:
-            rospy.logerr("calling AnomalyClassificationService failed: %s"%exc)
-            raise Exception("calling AnomalyClassificationService failed: %s"%exc)
+        if not HUMAN_AS_MODEL_MODE:
+            sp = rospy.ServiceProxy('AnomalyClassificationService', AnomalyClassificationService)
+            try:
+                resp = sp(anomaly_t, str(nominal_tag))
+            except rospy.ServiceException as exc:
+                rospy.logerr("calling AnomalyClassificationService failed: %s"%exc)
+                raise Exception("calling AnomalyClassificationService failed: %s"%exc)
 
-        predicted_label = resp.predicted_label
-        predicted_proba = resp.predicted_proba
+            predicted_label = resp.predicted_label
+            predicted_proba = resp.predicted_proba
 
-        if predicted_label == "__ERROR":
-            rospy.logerr("calling AnomalyClassificationService failed: returns -1")
-            raise Exception("calling AnomalyClassificationService failed: returns -1")
-        if predicted_label == '__NO_CLASSIFIER_FOUND' or predicted_label == '__NO_EXEC_RECORD':
-            rospy.logwarn(predicted_label) 
-            need_human = True
-            break
+            if predicted_label == "__ERROR":
+                rospy.logerr("calling AnomalyClassificationService failed: returns -1")
+                raise Exception("calling AnomalyClassificationService failed: returns -1")
+            if predicted_label == '__NO_CLASSIFIER_FOUND' or predicted_label == '__NO_EXEC_RECORD':
+                rospy.logwarn(predicted_label) 
+                need_human = True
+                break
+            rospy.loginfo("anomaly classification resp: %s"%resp) 
+        else:
+            rospy.loginfo("since HUMAN_AS_MODEL_MODE is on, input the label of this anomaly please:")
+            while True:
+                raw_label_str = raw_input()
+                rospy.loginfo("confirm \"%s\"? yes/no"%raw_label_str)
+                s = raw_input()
+                if s == 'no':
+                    rospy.loginfo("try again, type in the label")
+                    continue 
+                elif s == 'yes':
+                    break
+                else:
+                    rospy.loginfo("input no or yes.")
+                predicted_label = raw_label_str
+            predicted_proba = 1
 
-        rospy.loginfo("anomaly classification resp: %s"%resp) 
         if predicted_proba > anomaly_classification_confidence_threshold:
 
             dmp_tag = get_recovery_skill_tag(nominal_tag, predicted_label, False)
