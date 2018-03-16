@@ -136,7 +136,7 @@ def handle_anomaly(state_obj):
                 break
             rospy.loginfo("anomaly classification resp: %s"%resp) 
         else:
-            rospy.loginfo("since HUMAN_AS_MODEL_MODE is on, input the label of this anomaly please:")
+            rospy.loginfo("since HUMAN_AS_MODEL_MODE is on, input the label of this anomaly which happened in skill %s:"%nominal_tag)
             while True:
                 raw_label_str = raw_input()
                 rospy.loginfo("confirm \"%s\"? yes/no"%raw_label_str)
@@ -148,7 +148,7 @@ def handle_anomaly(state_obj):
                     break
                 else:
                     rospy.loginfo("input no or yes.")
-                predicted_label = raw_label_str
+            predicted_label = raw_label_str
             predicted_proba = 1
 
         if predicted_proba > anomaly_classification_confidence_threshold:
