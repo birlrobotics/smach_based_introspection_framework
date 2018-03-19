@@ -18,16 +18,16 @@ from baxter_core_msgs.msg import EndpointState
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import WrenchStamped
 from smach_based_introspection_framework.msg import (
-    Tag_MultiModal,
+    Tag_MultiModal, tactile_static
 )
 from smach_based_introspection_framework.srv import (
     State_Switch,
     State_SwitchResponse
 )
 
-shared_endpoint_state = EndpointState() 
+shared_endpoint_state = EndpointState()
 def callback_endpoint_state(endpoint_state):
-    global shared_endpoint_state 
+    global shared_endpoint_state
     shared_endpoint_state = endpoint_state
 
 shared_joint_state = JointState()
@@ -35,18 +35,25 @@ def callback_joint_state(joint_state):
     global shared_joint_state
     shared_joint_state = joint_state
 
-shared_wrench_stamped = WrenchStamped() 
+shared_wrench_stamped = WrenchStamped()
 def callback_wrench_stamped(wrench_stamped):
     global shared_wrench_stamped
     shared_wrench_stamped = wrench_stamped
 
-shared_tactile_texel_sum = Int64() 
+'''
+shared_tactile_texel_sum = Int64()
 def callback_tactile_texel_sum(tactile_texel_sum):
     global shared_tactile_texel_sum
     shared_tactile_texel_sum = tactile_texel_sum
+'''
 
-    
-hmm_state = None 
+shared_tactile_sensor_data = tactile_static()
+def callback_tactile_sensor_data(tactile_sensor_data):
+    global shared_tactile_sensor_data
+    shared_tactile_sensor_data = tactile_sensor_data
+
+
+hmm_state = None
 def state_switch_handle(req):
     global hmm_state
     hmm_state = req.state
@@ -54,18 +61,18 @@ def state_switch_handle(req):
     resp = State_SwitchResponse()
     resp.finish.data = True
     return resp
-    
+
 
 def main():
     global hmm_state
-    global shared_endpoint_state 
+    global shared_endpoint_state
     global shared_joint_state
     global shared_wrench_stamped
 
     hmm_state = 0
 
     publishing_rate = 100
-    
+
     rospy.init_node("topic_multimodal", anonymous=True)
 
     rospy.loginfo("tag_multimodal_topic_and_service.py starts")
@@ -73,14 +80,15 @@ def main():
     rospy.Subscriber("/robot/limb/right/endpoint_state", EndpointState, callback_endpoint_state)
     rospy.Subscriber("/robot/joint_states", JointState, callback_joint_state)
     rospy.Subscriber("/robotiq_force_torque_wrench", WrenchStamped, callback_wrench_stamped)
-    rospy.Subscriber("/tactile_texel_sum", Int64, callback_tactile_texel_sum)
+#    rospy.Subscriber("/tactile_texel_sum", Int64, callback_tactile_texel_sum)
+    rospy.Subscriber("/tactile_sensor_data", tactile_static, callback_tactile_sensor_data)
 
     pub = rospy.Publisher("/tag_multimodal",Tag_MultiModal, queue_size=10)
 
     state_switch = rospy.Service('hmm_state_switch', State_Switch, state_switch_handle)
 
     r = rospy.Rate(publishing_rate)
-    
+
     while not rospy.is_shutdown():
         tag_multimodal = Tag_MultiModal()
         tag_multimodal.tag = hmm_state
@@ -89,7 +97,7 @@ def main():
         tag_multimodal.endpoint_state = copy.deepcopy(shared_endpoint_state)
         tag_multimodal.joint_state = copy.deepcopy(shared_joint_state)
         tag_multimodal.wrench_stamped = copy.deepcopy(shared_wrench_stamped)
-        tag_multimodal.tactile_texel_sum = copy.deepcopy(shared_tactile_texel_sum).data
+#        tag_multimodal.tactile_texel_sum = copy.deepcopy(shared_tactile_texel_sum).data
         pub.publish(tag_multimodal)
 
         try:
