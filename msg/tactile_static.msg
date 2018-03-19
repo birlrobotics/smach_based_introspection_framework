@@ -1,0 +1,10 @@
+float32 tactile_values_0
+float32 tactile_values_1
+float32 tactile_values_2
+float32 tactile_values_3
+float32 tactile_values_4
+float32 tactile_values_5
+float32 tactile_values_6
+float32 tactile_values_7
+float32 tactile_values_8
+float32 tactile_values_9

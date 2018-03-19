@@ -2,6 +2,6 @@ std_msgs/Header header
 baxter_core_msgs/EndpointState endpoint_state
 sensor_msgs/JointState joint_state
 geometry_msgs/WrenchStamped wrench_stamped
-int64 tactile_texel_sum
+tactile_static tactile_values
 int32 tag 
 
