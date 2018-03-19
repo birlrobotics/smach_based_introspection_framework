@@ -27,12 +27,16 @@ def execute(self, userdata):
 
     goal_achieved = True
     hmm_state_switch_client(self.state_no)
-    if hasattr(self, "get_joint_state_goal"):
-        robot = moveit_commander.RobotCommander()
-        group = moveit_commander.MoveGroupCommander("right_arm")
-        group.set_max_velocity_scaling_factor(0.3)
-        group.set_max_acceleration_scaling_factor(0.3)
 
+
+    robot = moveit_commander.RobotCommander()
+    group = moveit_commander.MoveGroupCommander("right_arm")
+    group.set_max_velocity_scaling_factor(1)
+    group.set_max_acceleration_scaling_factor(1)
+
+
+
+    if hasattr(self, "get_joint_state_goal"):
         d = self.get_joint_state_goal()
         goal_joint = {k:d[k] for k in group.get_active_joints()}
 
@@ -42,12 +46,6 @@ def execute(self, userdata):
     elif hasattr(self, "get_pose_goal"):
 
         goal_pose = self.get_pose_goal()
-
-        robot = moveit_commander.RobotCommander()
-        group = moveit_commander.MoveGroupCommander("right_arm")
-        group.set_max_velocity_scaling_factor(0.3)
-        group.set_max_acceleration_scaling_factor(0.3)
-
 
         if not hasattr(self, 'get_dmp_model'):
             group.set_start_state_to_current_state()
