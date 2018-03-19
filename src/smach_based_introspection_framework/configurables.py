@@ -113,20 +113,20 @@ info_of_topics_to_timeseries = [
 #        lambda m: [m.tactile_texel_sum]
 #    ),
 
-     (
-         "/tag_multimodal",
-         Tag_MultiModal,
-         lambda m: [
-             m.wrench_stamped.wrench.force.x,
-             m.wrench_stamped.wrench.force.y,
-             m.wrench_stamped.wrench.force.z,
-             m.wrench_stamped.wrench.torque.x,
-             m.wrench_stamped.wrench.torque.y,
-             m.wrench_stamped.wrench.torque.z,
-         ]
-     ),
+#      (
+#          "/tag_multimodal",
+#          Tag_MultiModal,
+#          lambda m: [
+#              m.wrench_stamped.wrench.force.x,
+#              m.wrench_stamped.wrench.force.y,
+#              m.wrench_stamped.wrench.force.z,
+#              m.wrench_stamped.wrench.torque.x,
+#              m.wrench_stamped.wrench.torque.y,
+#              m.wrench_stamped.wrench.torque.z,
+#          ]
+#      ),
 ]
-timeseries_rate = 10
+timeseries_rate = 1
 
 topics_to_be_recorded_into_rosbag = [
     '/tag_multimodal',
@@ -136,6 +136,7 @@ topics_to_be_recorded_into_rosbag = [
     '/identified_skill_gradient_of_loglikelihood',
     '/robot/limb/right/endpoint_state',
     '/robotiq_force_torque_wrench',
+    '/tactile_sensor_data',
 ]
 
 for tu in info_of_topics_to_timeseries:
