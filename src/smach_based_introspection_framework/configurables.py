@@ -5,6 +5,8 @@ from smach_based_introspection_framework.msg import (
     Tag_MultiModal,
 )
 
+HUMAN_AS_MODEL_MODE = True
+
 dmp_cmd_fields = [
     '.endpoint_state.pose.position.x',
     '.endpoint_state.pose.position.y',

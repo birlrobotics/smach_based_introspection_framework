@@ -32,7 +32,8 @@ from smach_based_introspection_framework.online_part.framework_core.states impor
 import moveit_commander
 import sys
 from smach_based_introspection_framework.configurables import (
-    topics_to_be_recorded_into_rosbag
+    topics_to_be_recorded_into_rosbag,
+    HUMAN_AS_MODEL_MODE,
 )
 
 def shutdown():
@@ -66,7 +67,7 @@ def toggle_introspection(start, sm=None):
         ts_proc = TimeseriesProc()
         ts_proc.start()
         rospy.sleep(10)
-        listen_HMM_anomaly_signal(use_manual_anomaly_signal=False)
+        listen_HMM_anomaly_signal(use_manual_anomaly_signal=HUMAN_AS_MODEL_MODE)
     else:
         rospy.sleep(5)
         if rosbag_proc:
