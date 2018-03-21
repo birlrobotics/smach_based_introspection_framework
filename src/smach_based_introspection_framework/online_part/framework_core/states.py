@@ -17,6 +17,7 @@ mode_no_state_trainsition_report = False
 event_flag = 1
 execution_history = []
 latest_anomaly_t = None
+reverting_statistics = None
 
 def get_anomaly_t():
     global latest_anomaly_t
@@ -73,40 +74,28 @@ class RollBackRecovery(smach.State):
         smach.State.__init__(self, outcomes)
         
     def execute(self, userdata):
-        global execution_history
+        global execution_history, reverting_statistics
         hmm_state_switch_client(ROLLBACK_RECOVERY_TAG)
 
         rospy.loginfo("Enter RollBackRecovery State...")
 
-        history_to_reexecute = None 
-        while True:
-            if len(execution_history) == 0:
-                rospy.loginfo("no independent state found")
-                return 'RecoveryFailed'
-            elif execution_history[-1]['depend_on_prev_states']:
-                execution_history.pop()
-            else:
-                history_to_reexecute = execution_history[-1]
-                break
-
-        if history_to_reexecute is None:
-            rospy.loginfo("Cannot find reverting point in history_to_reexecute. Gonna abort")
-            return 'RecoveryFailed'
-
-        rospy.loginfo("About to revert, confirm? Or abort the whole task? Input confirm or abort.")
-        while True:
-            s = raw_input()
-            if s == 'abort':
-                return 'RecoveryFailed'
-            elif s == 'confirm':
-                break
-            else:
-                rospy.loginfo("input confirm or abort")
-
-
-        state_name = history_to_reexecute['state_name']
-        next_state = state_name
-        rospy.loginfo('Gonna reenter %s'%(next_state,))
+        current_node = execution_history[-1]['state_name']
+        if reverting_statistics is None:
+            next_state = current_node
+            rospy.loginfo('reverting_statistics is None, gonna reenter itself %s'%(next_state,))
+        elif current_node not in reverting_statistics:
+            next_state = current_node
+            rospy.loginfo('reverting_statistics contains no statistics about this state, gonna reenter itself %s'%(next_state,))
+        else:
+            import nyyumpy as np
+            stat = reverting_statistics[current_node]
+            names = [i[0] for i in stat.items()]
+            counts = np.array([i[1] for i in stat.items()], dtype=np.float64)
+            prob = counts/counts.sum()
+            idx = np.argwhere(np.random.multinomial(1, prob))[0][0]
+            next_state = names[idx]
+            rospy.loginfo('prob %s, gonna reenter %s'%(str(prob), next_state,))
+            
         rospy.sleep(5)
         return 'Reenter_'+next_state
 
