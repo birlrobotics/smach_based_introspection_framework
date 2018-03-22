@@ -98,6 +98,7 @@ def main():
         tag_multimodal.joint_state = copy.deepcopy(shared_joint_state)
         tag_multimodal.wrench_stamped = copy.deepcopy(shared_wrench_stamped)
 #        tag_multimodal.tactile_texel_sum = copy.deepcopy(shared_tactile_texel_sum).data
+        tag_multimodal.tactile_values = copy.deepcopy(shared_tactile_sensor_data)
         pub.publish(tag_multimodal)
 
         try:
