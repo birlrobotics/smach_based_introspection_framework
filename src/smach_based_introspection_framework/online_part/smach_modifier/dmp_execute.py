@@ -53,7 +53,7 @@ def filter_close_points(_mat):
     last = mat[0].copy()
     new_mat = [last.copy()]
     for i in range(mat.shape[0]):
-        if numpy.linalg.norm(mat[i]-last) < 0.05:
+        if numpy.linalg.norm(mat[i]-last) < 0.01:
             continue
 
         new_mat.append(mat[i].copy())
