@@ -91,7 +91,7 @@ class RollBackRecovery(smach.State):
             next_state = current_node
             rospy.loginfo('reverting_statistics contains no statistics about this state, gonna reenter itself %s'%(next_state,))
         else:
-            import nyyumpy as np
+            import numpy as np
             stat = reverting_statistics[current_node]
             names = [i[0] for i in stat.items()]
             counts = np.array([i[1] for i in stat.items()], dtype=np.float64)
