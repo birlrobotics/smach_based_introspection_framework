@@ -19,6 +19,10 @@ execution_history = []
 latest_anomaly_t = None
 reverting_statistics = None
 
+def set_reverting_statistics(value):
+    global reverting_statistics
+    reverting_statistics = value 
+
 def get_anomaly_t():
     global latest_anomaly_t
     return latest_anomaly_t

@@ -28,6 +28,7 @@ import datetime
 import signal
 from smach_based_introspection_framework.online_part.framework_core.states import (
     listen_HMM_anomaly_signal,
+    set_reverting_statistics, 
 )
 import moveit_commander
 import sys
@@ -100,8 +101,9 @@ def toggle_introspection(start, sm=None):
             rospy.loginfo("Tring to tear down ts_proc")
             ts_proc.stop()
 
-def run(sm):
+def run(sm, reverting_statistics=None):
     try: 
+        set_reverting_statistics(reverting_statistics)
         moveit_commander.roscpp_initialize(sys.argv)
         rospy.init_node("smach_based_introspection_framework_node")
         rospy.loginfo("PID: %s"%os.getpid())
