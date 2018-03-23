@@ -167,8 +167,6 @@ def handle_anomaly(state_obj):
                 break
 
             dmp_model = dill.load(open(dmp_model_path, 'r'))
-            ipdb.set_trace()
-            
             
             alf.write("%s\n"%predicted_label)
             hmm_state_switch_client(dmp_tag)

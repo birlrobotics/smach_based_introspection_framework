@@ -94,7 +94,6 @@ if __name__ == "__main__":
         samples.append(latest_data_tuple[data_frame_idx])
 
     mat = np.array(samples)    
-    ipdb.set_trace()
     assert np.array_equal(mat[1:, :3]-mat[:-1, :3], mat[1:, 3:])
     print "Pass wrench derivative test."
 #     dimension = mat.shape[1]
