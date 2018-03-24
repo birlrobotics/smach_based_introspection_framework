@@ -52,7 +52,7 @@ ad_proc = None
 ts_proc = None
 goal_proc = None
 def toggle_introspection(start, sm=None):
-    global rosbag_proc, ac_proc, tmt_proc, sis, ad_proc, ts_proc
+    global rosbag_proc, ac_proc, tmt_proc, sis, ad_proc, ts_proc, goal_proc
     if start:
         if not os.path.isdir(latest_experiment_record_folder):
             os.makedirs(latest_experiment_record_folder)

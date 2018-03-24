@@ -24,6 +24,11 @@ from smach_based_introspection_framework._constant import (
 import time
 from util import introspect_moveit_exec
 from birl_dmp.dmp_training.util import generalize_via_dmp
+from smach_based_introspection_framework.srv import (
+    UpdateGoalVector,
+    UpdateGoalVectorRequest,
+    UpdateGoalVectorResponse,
+)
 
 def norm_quaternion(command_matrix, control_dimensions):
     from sklearn import preprocessing
@@ -61,6 +66,12 @@ def filter_close_points(_mat):
 
     return numpy.flip(numpy.matrix(new_mat), axis=0)
 
+def update_goal_vector(vec):
+    sp = rospy.ServiceProxy("/observation/update_goal_vector", UpdateGoalVector)
+    req = UpdateGoalVectorRequest()
+    req.goal_vector = vec
+    sp.call(req)
+
 def execute(dmp_model, goal):
     list_of_postfix = get_eval_postfix(dmp_cmd_fields, 'pose')
 
@@ -80,6 +91,8 @@ def execute(dmp_model, goal):
     command_matrix = norm_quaternion(command_matrix, dmp_cmd_fields)
     command_matrix = lock_last_quaternion(command_matrix, dmp_cmd_fields)
     command_matrix = filter_close_points(command_matrix)
+
+    update_goal_vector(command_matrix[-1].tolist()[0])
     
     robot, group, plan, fraction = get_moveit_plan(command_matrix, dmp_cmd_fields, 'pose')
     rospy.loginfo('moveit plan success rate %s, Press enter to exec'%fraction)
