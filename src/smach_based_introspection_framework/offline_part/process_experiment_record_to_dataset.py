@@ -231,6 +231,7 @@ def run():
                 ran = recovery_demonstration[1]
                 df = tag_df.iloc[ran[0]:ran[1]]
                 add_skill_introspection_data(tag, df, "recovery_demonstration_for_no_%s_anomaly_in_%s"%(count, os.path.basename(exp_dir)))
+                # TODO save old and new goals
 
 
             df = i['extracted_anomaly'][1]
