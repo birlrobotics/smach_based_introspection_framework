@@ -23,6 +23,9 @@ from smach_based_introspection_framework.online_part.process_runner.tag_multimod
 from smach_based_introspection_framework.online_part.process_runner.timeseries_process import (
    TimeseriesProc, 
 )
+from smach_based_introspection_framework.online_part.process_runner.goal_process import (
+   GoalProc, 
+)
 import shutil
 import datetime
 import signal
@@ -47,6 +50,7 @@ tmt_proc = None
 sis = None
 ad_proc = None
 ts_proc = None
+goal_proc = None
 def toggle_introspection(start, sm=None):
     global rosbag_proc, ac_proc, tmt_proc, sis, ad_proc, ts_proc
     if start:
@@ -70,6 +74,8 @@ def toggle_introspection(start, sm=None):
 
         ts_proc = TimeseriesProc()
         ts_proc.start()
+        goal_proc = GoalProc()
+        goal_proc.start()
         rospy.sleep(10)
         listen_HMM_anomaly_signal()
     else:
@@ -100,6 +106,10 @@ def toggle_introspection(start, sm=None):
         if ts_proc:
             rospy.loginfo("Tring to tear down ts_proc")
             ts_proc.stop()
+        if goal_proc:
+            rospy.loginfo("Tring to tear down goal_proc")
+            goal_proc.stop()
+            
 
 def run(sm, reverting_statistics=None):
     try: 

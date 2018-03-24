@@ -22,6 +22,7 @@ def scb(req):
 
 if __name__ == '__main__':
     rospy.init_node("goal_topic_and_service_node")
+    rospy.loginfo("goal_topic_and_service.py starts")
 
     ss = rospy.Service("/observation/update_goal_vector", UpdateGoalVector, scb)
     pub = rospy.Publisher("/observation/goal_vector", GoalVector, queue_size=0)
@@ -32,4 +33,9 @@ if __name__ == '__main__':
         pub.publish(shared_goal_vector)
         access_shared_data.release()
 
-        rate.sleep()
+        try:
+            rate.sleep()
+        except rospy.exceptions.ROSInterruptException:
+            break
+
+    rospy.loginfo("goal_topic_and_service.py ends")
