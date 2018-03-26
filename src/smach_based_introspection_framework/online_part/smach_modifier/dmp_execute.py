@@ -1,5 +1,7 @@
 import baxter_interface
 import rospy
+import copy
+import numpy
 from smach_based_introspection_framework.configurables import (
     dmp_cmd_fields,
 )
@@ -29,6 +31,9 @@ from smach_based_introspection_framework.srv import (
     UpdateGoalVectorRequest,
     UpdateGoalVectorResponse,
 )
+from tf.transformations import (
+    quaternion_multiply,
+)
 
 def norm_quaternion(command_matrix, control_dimensions):
     from sklearn import preprocessing
@@ -52,7 +57,6 @@ def lock_last_quaternion(command_matrix, control_dimensions):
     
 
 def filter_close_points(_mat):
-    import numpy
     mat = numpy.flip(_mat, axis=0)
 
     last = mat[0].copy()
@@ -72,7 +76,7 @@ def update_goal_vector(vec):
     req.goal_vector = vec
     sp.call(req)
 
-def execute(dmp_model, goal):
+def execute(dmp_model, goal, goal_modification_info=None):
     list_of_postfix = get_eval_postfix(dmp_cmd_fields, 'pose')
 
     limb = 'right'
@@ -83,8 +87,19 @@ def execute(dmp_model, goal):
     topic_type = EndpointState
     endpoint_state_msg = get_topic_message_once(topic_name, topic_type)
 
-    start = cook_array_from_object_using_postfixs(list_of_postfix, endpoint_state_msg.pose)
-    end = cook_array_from_object_using_postfixs(list_of_postfix, goal)
+    start = numpy.array(cook_array_from_object_using_postfixs(list_of_postfix, endpoint_state_msg.pose))
+    end = numpy.array(cook_array_from_object_using_postfixs(list_of_postfix, goal))
+
+    if goal_modification_info is not None:
+        new_goal = copy.deepcopy(end)
+        if 'translation' in goal_modification_info:
+            pxyz_idx = goal_modification_info['translation']['index'] 
+            new_goal[pxyz_idx] = end[pxyz_idx]+goal_modification_info['translation']['value']
+        if 'quaternion_rotation' in goal_modification_info:
+            qxyzw_idx = goal_modification_info['quaternion_rotation']['index']
+            rot_q = goal_modification_info['quaternion_rotation']['value']
+            new_goal[qxyzw_idx] = quaternion_multiply(rot_q, end[qxyzw_idx])
+        end = new_goal
 
     command_matrix = generalize_via_dmp(start, end, dmp_model)
 

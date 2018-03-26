@@ -37,6 +37,10 @@ from smach_based_introspection_framework._constant import (
 )
 import dill
 import ipdb
+from tf.transformations import (
+    quaternion_inverse,
+    quaternion_multiply,
+)
 
 def human_teach(state_obj):
     hmm_state_switch_client(-1)
@@ -165,14 +169,21 @@ def handle_anomaly(state_obj):
                 rospy.loginfo("dmp model not found: %s"%dmp_model_path) 
                 need_human = True
                 break
+            goal_modification_info_path = os.path.join(latest_model_folder, 'tag_%s'%dmp_tag, 'goal_modification_info')
+            if not os.path.isfile(goal_modification_info_path):
+                rospy.loginfo("dmp model not found: %s"%goal_modification_info_path) 
+                need_human = True
+                break
 
             dmp_model = dill.load(open(dmp_model_path, 'r'))
+            goal_modification_info = dill.load(open(goal_modification_info_path, 'r'))
             
             alf.write("%s\n"%predicted_label)
             hmm_state_switch_client(dmp_tag)
             show_everyhing_is_good()
             set_event_flag(ANOMALY_NOT_DETECTED)
-            if dmp_execute.execute(dmp_model, state_obj.get_pose_goal()):
+
+            if dmp_execute.execute(dmp_model, state_obj.get_pose_goal(), goal_modification_info):
                 hmm_state_switch_client(0)
                 break
             else:

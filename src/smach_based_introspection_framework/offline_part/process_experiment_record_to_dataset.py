@@ -42,7 +42,8 @@ def get_tag_range(df):
     ret = [] 
     last_tag = None
     last_tag_at = 0
-    for index, tag in df['.tag'].iteritems():
+    for index, tu in enumerate(df['.tag'].iteritems()):
+        tag = tu[1]
         if tag != last_tag:
             if last_tag is not None:
                 new_range = (last_tag, (last_tag_at, index-1))
@@ -137,6 +138,17 @@ def add_anomaly_data(nominal_skill_tag, anomaly_type, df, name):
     df = temporary_solution_to_add_wrench_derivative(df)
     df.to_csv(os.path.join(anomaly_dir, name), sep=',')
     pass
+
+def process_time_and_set_as_index(df):
+    from dateutil import parser
+    import numpy as np
+    import datetime
+    df['time'] = df['time'].apply(lambda x: parser.parse(x))
+    start_datetime = df['time'][0]
+    df['time'] -= datetime.datetime(1970, 1, 1, 0, 0, 0, 0)
+    df['time'] = df['time'].apply(lambda x: x.total_seconds())
+    df = df.drop_duplicates(subset='time').set_index('time')
+    return df
                 
 def run():        
     if not os.path.isdir(experiment_record_folder):
@@ -157,6 +169,18 @@ def run():
         if len(ret) != 1:
             raise Exception("Failed to get /tag_multimodal from record.bag in %s"%exp_dir)
         bag_path, tag_df = ret[0]
+        tag_df = process_time_and_set_as_index(tag_df)
+
+        ret = rh.get_csv_of_a_topic("/observation/goal_vector") 
+        if len(ret) != 1:
+            raise Exception("Failed to get /observation/goal_vector from record.bag in %s"%exp_dir)
+        bag_path, goal_df = ret[0]
+        goal_df = process_time_and_set_as_index(goal_df)
+
+        goal_df = goal_df.reindex(goal_df.index.union(tag_df.index), method='nearest')
+        goal_df = goal_df.loc[tag_df.index]
+        tag_df['.goal_vector'] =  goal_df['.goal_vector']
+
         list_of_tag_range = [i for i in get_tag_range(tag_df) if i[0] != 0]
 
         stat = {
