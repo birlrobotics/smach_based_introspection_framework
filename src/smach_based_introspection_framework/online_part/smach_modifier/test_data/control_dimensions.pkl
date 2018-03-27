@@ -1,0 +1,16 @@
+(lp0
+S'.endpoint_state.pose.position.x'
+p1
+aS'.endpoint_state.pose.position.y'
+p2
+aS'.endpoint_state.pose.position.z'
+p3
+aS'.endpoint_state.pose.orientation.x'
+p4
+aS'.endpoint_state.pose.orientation.y'
+p5
+aS'.endpoint_state.pose.orientation.z'
+p6
+aS'.endpoint_state.pose.orientation.w'
+p7
+a.

@@ -35,40 +35,10 @@ from tf.transformations import (
     quaternion_multiply,
 )
 
-def norm_quaternion(command_matrix, control_dimensions):
-    from sklearn import preprocessing
-    ori_column_idx = []
-    for idx, dim in enumerate(control_dimensions):
-        if 'orientation' in dim:
-            ori_column_idx.append(idx)
-
-    q = command_matrix[:, ori_column_idx]
-    nq = preprocessing.normalize(q)
-    command_matrix[:, ori_column_idx] = nq
-    return command_matrix
-
-def lock_last_quaternion(command_matrix, control_dimensions):
-    ori_column_idx = []
-    for idx, dim in enumerate(control_dimensions):
-        if 'orientation' in dim:
-            ori_column_idx.append(idx)
-    command_matrix[:, ori_column_idx] = command_matrix[-1, ori_column_idx]
+def slerp_quaternion(command_matrix, control_dimensions):
+    ipdb.set_trace()
     return command_matrix
     
-
-def filter_close_points(_mat):
-    mat = numpy.flip(_mat, axis=0)
-
-    last = mat[0].copy()
-    new_mat = [last.copy()]
-    for i in range(mat.shape[0]):
-        if numpy.linalg.norm(mat[i]-last) < 0.01:
-            continue
-
-        new_mat.append(mat[i].copy())
-        last = mat[i].copy()
-
-    return numpy.flip(numpy.matrix(new_mat), axis=0)
 
 def update_goal_vector(vec):
     sp = rospy.ServiceProxy("/observation/update_goal_vector", UpdateGoalVector)
@@ -102,10 +72,7 @@ def execute(dmp_model, goal, goal_modification_info=None):
         end = new_goal
 
     command_matrix = generalize_via_dmp(start, end, dmp_model)
-
-    command_matrix = norm_quaternion(command_matrix, dmp_cmd_fields)
-    command_matrix = lock_last_quaternion(command_matrix, dmp_cmd_fields)
-    command_matrix = filter_close_points(command_matrix)
+    command_matrix = slerp_quaternion(command_matrix, dmp_cmd_fields)
 
     update_goal_vector(command_matrix[-1].tolist()[0])
     
