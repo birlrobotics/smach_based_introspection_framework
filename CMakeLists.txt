@@ -75,6 +75,7 @@ add_service_files(
   State_Switch.srv
   AnomalyClassificationService.srv
   UpdateGoalVector.srv
+  ExperimentRecording.srv
 )
 
 ## Generate actions in the 'action' folder
