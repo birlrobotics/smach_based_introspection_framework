@@ -63,7 +63,7 @@ def toggle_experiment_recording(start, experiment_name="Unnamed"):
         req = ExperimentRecordingRequest()
         if start:
             req.start_recording = True
-        else
+        else:
             req.start_recording = False
             req.experiment_name = experiment_name
         sp.call(req)
