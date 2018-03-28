@@ -18,6 +18,10 @@ latest_experiment_record_folder = os.path.join(
     'latest',
 )
 
+experiment_video_folder = os.path.join(
+    introspection_data_folder,
+    "experiment_video_folder")
+
 dataset_folder = os.path.join(
     introspection_data_folder,
     "dataset_folder")
