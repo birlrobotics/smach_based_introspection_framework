@@ -1,3 +1,4 @@
+
 # Package: smach_based_introspection_framework
 
 # Why This Package Exists
@@ -147,6 +148,28 @@ Important dependencies are listed below, they are all catkin packages so you can
 - [birl_hmm](https://github.com/birlrobotics/birl_hmm)
 - [birl_motion_library](https://github.com/birlrobotics/birl_motion_library)
 - [birl_baxter_dmp](https://github.com/birlrobotics/birl_baxter_dmp)
+
+# Utilities
+
+## Automatically record PC screen when an experiment starts
+
+1. Assume the PC whose screen you want to record is named ___RecordPC___. Install ```avconv``` on ___RecordPC___ :
+	```
+	sudo apt-get install libav-tools
+	```
+
+2. Join ___RecordPC___ to the ROS network where you're conducting the experiment, in the case of Baxter, run:
+	```
+	[On "RecordPC", cd to baxter_ws]
+	./baxter.sh
+	```
+	Then, start screen recording service on ___RecordPC___:
+	
+	```
+	rosrun smach_based_introspection_framework start_cam_recording_service.py 
+	```
+
+3. Now, you're all set. Run the experiment and when it's finished, you will have a mp4 file on ___RecordPC___. It's saved at ```introspection_data_folder/experiment_video_folder/*```
 
 
 
