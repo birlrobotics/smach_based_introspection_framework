@@ -34,11 +34,7 @@ from smach_based_introspection_framework.srv import (
 from tf.transformations import (
     quaternion_multiply,
 )
-
-def slerp_quaternion(command_matrix, control_dimensions):
-    ipdb.set_trace()
-    return command_matrix
-    
+from quaternion_interpolation import interpolate_pose_using_slerp
 
 def update_goal_vector(vec):
     sp = rospy.ServiceProxy("/observation/update_goal_vector", UpdateGoalVector)
@@ -72,9 +68,9 @@ def execute(dmp_model, goal, goal_modification_info=None):
         end = new_goal
 
     command_matrix = generalize_via_dmp(start, end, dmp_model)
-    command_matrix = slerp_quaternion(command_matrix, dmp_cmd_fields)
+    command_matrix = interpolate_pose_using_slerp(command_matrix, dmp_cmd_fields)
 
-    update_goal_vector(command_matrix[-1].tolist()[0])
+    update_goal_vector(numpy.asarray(command_matrix[-1]).reshape(-1).tolist())
     
     robot, group, plan, fraction = get_moveit_plan(command_matrix, dmp_cmd_fields, 'pose')
     rospy.loginfo('moveit plan success rate %s, Press enter to exec'%fraction)
