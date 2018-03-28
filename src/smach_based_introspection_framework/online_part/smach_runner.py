@@ -39,6 +39,11 @@ from smach_based_introspection_framework.configurables import (
     topics_to_be_recorded_into_rosbag,
     HUMAN_AS_MODEL_MODE,
 )
+from smach_based_introspection_framework.srv import (
+    ExperimentRecording,
+    ExperimentRecordingRequest,
+    ExperimentRecordingResponse,
+)
 
 def shutdown():
     rospy.loginfo("Shuting down, PID: %s"%os.getpid())
@@ -51,9 +56,24 @@ sis = None
 ad_proc = None
 ts_proc = None
 goal_proc = None
+
+def toggle_experiment_recording(start, experiment_name="Unnamed"):
+    try:
+        sp = rospy.ServiceProxy("experiment_recording_service", ExperimentRecording)
+        req = ExperimentRecordingRequest()
+        if start:
+            req.start_recording = True
+        else
+            req.start_recording = False
+            req.experiment_name = experiment_name
+        sp.call(req)
+    except Exception as e:
+        rospy.logerror("toggle_experiment_recording failed: %s"%e)
+
 def toggle_introspection(start, sm=None):
     global rosbag_proc, ac_proc, tmt_proc, sis, ad_proc, ts_proc, goal_proc
     if start:
+        toggle_experiment_recording(True)
         if not os.path.isdir(latest_experiment_record_folder):
             os.makedirs(latest_experiment_record_folder)
         rosbag_proc = RosbagProc(
@@ -80,6 +100,8 @@ def toggle_introspection(start, sm=None):
         listen_HMM_anomaly_signal()
     else:
         rospy.sleep(5)
+        experiment_name = 'experiment_at_%s'%datetime.datetime.now().strftime(folder_time_fmt)
+        toggle_experiment_recording(False, experiment_name)
         if rosbag_proc:
             rospy.loginfo("Tring to tear down rosbag_proc")
             rosbag_proc.stop()
@@ -88,7 +110,7 @@ def toggle_introspection(start, sm=None):
                 latest_experiment_record_folder, 
                 os.path.join(
                     experiment_record_folder,
-                    'experiment_at_%s'%datetime.datetime.now().strftime(folder_time_fmt),
+                    experiment_name
                 )
             )
         if ac_proc:
