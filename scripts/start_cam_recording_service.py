@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from smach_based_introspection_framework.online_part.process_runner.shell_process_runner import ShellProcessRunner
 from smach_based_introspection_framework._constant import experiment_video_folder
 import os
