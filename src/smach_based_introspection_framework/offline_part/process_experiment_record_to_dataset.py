@@ -1,5 +1,6 @@
 import os
 import sys
+import pickle
 import glob
 from birl_offline_data_handler.rosbag_handler import (
     RosbagHandler,
@@ -56,12 +57,8 @@ def get_tag_range(df):
     return ret
 
 def setup_latest_dataset_folder():
-    if os.path.isdir(latest_dataset_folder):
-       shutil.move(
-            latest_dataset_folder,  
-            os.path.join(dataset_folder, "dataset_folder.old.%s"%datetime.datetime.now().strftime(folder_time_fmt))
-        )
-    os.makedirs(latest_dataset_folder)
+    if not os.path.isdir(latest_dataset_folder):
+        os.makedirs(latest_dataset_folder)
     
 def get_recovery_skill_tag(nominal_skill_tag, anomaly_type, add_if_not_exist=True):
     if anomaly_type == "count":
@@ -149,6 +146,19 @@ def process_time_and_set_as_index(df):
     df['time'] = df['time'].apply(lambda x: x.total_seconds())
     df = df.drop_duplicates(subset='time').set_index('time')
     return df
+
+def get_log_dict():
+    log_file_path = os.path.join(dataset_folder, "log_dict.pkl")
+    if os.path.isfile(log_file_path):
+        log_dict = pickle.load(open(log_file_path, 'r'))
+    else:
+        log_dict = {}
+    return log_dict
+
+def save_log_dict(log_dict):
+    log_file_path = os.path.join(dataset_folder, "log_dict.pkl")
+    pickle.dump(log_dict, open(log_file_path, 'w'))
+        
                 
 def run():        
     if not os.path.isdir(experiment_record_folder):
@@ -159,7 +169,10 @@ def run():
     
     exp_dirs = [i for i in glob.glob(os.path.join(experiment_record_folder, '*')) if os.path.isdir(i)]
 
+    log_dict = get_log_dict()
     for exp_dir in exp_dirs: 
+        if exp_dir in log_dict:
+            continue
         try:
             print exp_dir
             try:
@@ -225,45 +238,46 @@ def run():
 
                             
             if len(stat[UNSUCCESSFULLY_EXECUTED_SKILL]) == 0:
-                continue
+                pass
+            else:
+                rae = RosbagAnomalyExtractor(os.path.join(exp_dir, "record.bag"))
+                ret = rae.get_anomaly_csv(
+                    "/tag_multimodal",
+                    "/anomaly_detection_signal",
+                    anomaly_window_size_in_sec,
+                    anomaly_resample_hz,
+                )
+                if len(ret) != 1:
+                    raise Exception("Failed to extract anomalies from record.bag in %s"%exp_dir)
+                bag_path, list_of_anomaly = ret[0]
 
-            rae = RosbagAnomalyExtractor(os.path.join(exp_dir, "record.bag"))
-            ret = rae.get_anomaly_csv(
-                "/tag_multimodal",
-                "/anomaly_detection_signal",
-                anomaly_window_size_in_sec,
-                anomaly_resample_hz,
-            )
-            if len(ret) != 1:
-                raise Exception("Failed to extract anomalies from record.bag in %s"%exp_dir)
-            bag_path, list_of_anomaly = ret[0]
+                if len(list_of_anomaly) != len(stat[UNSUCCESSFULLY_EXECUTED_SKILL]):
+                    raise Exception("Anomalies amount does NOT match UNSUCCESSFULLY_EXECUTED_SKILL amount.")
 
-            if len(list_of_anomaly) != len(stat[UNSUCCESSFULLY_EXECUTED_SKILL]):
-                raise Exception("Anomalies amount does NOT match anomaly amount.")
-
-            list_of_anomaly_label = get_anomaly_labels(exp_dir)
-            if len(list_of_anomaly) != len(list_of_anomaly_label):
-                raise Exception("Anomalies amount does NOT match anomaly label amount.")
+                list_of_anomaly_label = get_anomaly_labels(exp_dir)
+                if len(list_of_anomaly) != len(list_of_anomaly_label):
+                    raise Exception("Anomalies amount does NOT match anomaly label amount.")
+                
             
-        
-            for idx, anomaly_tuple in enumerate(list_of_anomaly):
-                stat[UNSUCCESSFULLY_EXECUTED_SKILL][idx]["extracted_anomaly"] = anomaly_tuple
-                stat[UNSUCCESSFULLY_EXECUTED_SKILL][idx]["anomaly_label"] = list_of_anomaly_label[idx]
-                   
-            for count, i in enumerate(stat[UNSUCCESSFULLY_EXECUTED_SKILL]):
-                nominal_skill_tag = i['failed_nominal_skill'][0]
-                anomaly_type = i['anomaly_label']
-                recovery_demonstration = i['human_dem_recovery_tr_tuple']
-                if recovery_demonstration is not None:
-                    tag = get_recovery_skill_tag(nominal_skill_tag, anomaly_type) 
-                    ran = recovery_demonstration[1]
-                    df = tag_df.iloc[ran[0]:ran[1]]
-                    add_skill_introspection_data(tag, df, "recovery_demonstration_for_no_%s_anomaly_in_%s"%(count, os.path.basename(exp_dir)))
-                    # TODO save old and new goals
+                for idx, anomaly_tuple in enumerate(list_of_anomaly):
+                    stat[UNSUCCESSFULLY_EXECUTED_SKILL][idx]["extracted_anomaly"] = anomaly_tuple
+                    stat[UNSUCCESSFULLY_EXECUTED_SKILL][idx]["anomaly_label"] = list_of_anomaly_label[idx]
+                       
+                for count, i in enumerate(stat[UNSUCCESSFULLY_EXECUTED_SKILL]):
+                    nominal_skill_tag = i['failed_nominal_skill'][0]
+                    anomaly_type = i['anomaly_label']
+                    recovery_demonstration = i['human_dem_recovery_tr_tuple']
+                    if recovery_demonstration is not None:
+                        tag = get_recovery_skill_tag(nominal_skill_tag, anomaly_type) 
+                        ran = recovery_demonstration[1]
+                        df = tag_df.iloc[ran[0]:ran[1]]
+                        add_skill_introspection_data(tag, df, "recovery_demonstration_for_no_%s_anomaly_in_%s"%(count, os.path.basename(exp_dir)))
+                        # TODO save old and new goals
 
-
-                df = i['extracted_anomaly'][1]
-                add_anomaly_data(nominal_skill_tag, anomaly_type, df, "no_%s_anomaly_in_%s"%(count, os.path.basename(exp_dir)))
+                    df = i['extracted_anomaly'][1]
+                    add_anomaly_data(nominal_skill_tag, anomaly_type, df, "no_%s_anomaly_in_%s"%(count, os.path.basename(exp_dir)))
         except Exception as e:
             print "process exp_dir \"%s\"failed: %s"%(exp_dir,e )
-            raise e
+        else:
+            log_dict[exp_dir] = True
+        save_log_dict(log_dict)
