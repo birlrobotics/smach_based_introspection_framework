@@ -96,16 +96,13 @@ def toggle_introspection(start, sm=None):
         ts_proc.start()
         goal_proc = GoalProc()
         goal_proc.start()
-        rospy.sleep(10)
         listen_HMM_anomaly_signal()
     else:
-        rospy.sleep(5)
         experiment_name = 'experiment_at_%s'%datetime.datetime.now().strftime(folder_time_fmt)
         toggle_experiment_recording(False, experiment_name)
         if rosbag_proc:
             rospy.loginfo("Tring to tear down rosbag_proc")
             rosbag_proc.stop()
-            rospy.sleep(2)
             shutil.move(
                 latest_experiment_record_folder, 
                 os.path.join(

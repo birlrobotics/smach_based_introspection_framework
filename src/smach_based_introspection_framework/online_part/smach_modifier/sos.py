@@ -108,7 +108,7 @@ def human_help(state_obj):
             rospy.loginfo("input end please.")
     return label, True
 
-def handle_anomaly(state_obj):
+def handle_anomaly(state_obj, robot, group):
     alf = open(os.path.join(latest_experiment_record_folder, anomaly_label_file) ,'a')
     nominal_tag = state_obj.state_no
     rospy.loginfo("handle_anomaly starts") 
@@ -118,7 +118,8 @@ def handle_anomaly(state_obj):
         hmm_state_switch_client(-1)
         anomaly_t = get_anomaly_t()
         show_anomaly_detected()
-        rospy.sleep(5)
+        rospy.loginfo("An anomaly happened, gonna sleep 3 secs so that we can have a static window of the anomaly")
+        rospy.sleep(3)
 
         if not HUMAN_AS_MODEL_MODE:
             sp = rospy.ServiceProxy('AnomalyClassificationService', AnomalyClassificationService)
@@ -184,7 +185,9 @@ def handle_anomaly(state_obj):
             show_everyhing_is_good()
             set_event_flag(ANOMALY_NOT_DETECTED)
 
-            if dmp_execute.execute(dmp_model, state_obj.get_pose_goal(), goal_modification_info):
+            plan = dmp_execute.get_dmp_plan(robot, group, dmp_model, state_obj.get_pose_goal(), goal_modification_info)
+            goal_achieved = introspect_moveit_exec(group, plan)
+            if goal_achieved:
                 hmm_state_switch_client(0)
                 break
             else:

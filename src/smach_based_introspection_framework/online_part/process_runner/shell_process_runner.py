@@ -16,7 +16,6 @@ class ShellProcessRunner(object):
         if self.cmd is None:
             raise Exception("Process cmd is None.")
         self.process = subprocess.Popen(self.cmd, shell=True)
-        time.sleep(1)
         if self.process.poll() is not None:
             raise Exception("Process died immediately. returncode: %s."%(
                 self.process.returncode,

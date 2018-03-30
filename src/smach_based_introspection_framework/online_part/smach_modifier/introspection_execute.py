@@ -15,6 +15,19 @@ from smach_based_introspection_framework._constant import (
 import moveit_commander
 from util import introspect_moveit_exec
 import dmp_execute
+import time
+import ipdb
+
+def get_moveit_vars():
+    if not hasattr(get_moveit_vars, 'robot'):
+        robot = moveit_commander.RobotCommander()
+        group = moveit_commander.MoveGroupCommander("right_arm")
+        group.set_max_velocity_scaling_factor(1)
+        group.set_max_acceleration_scaling_factor(1)
+        get_moveit_vars.robot = robot
+        get_moveit_vars.group = group
+    get_moveit_vars.group.clear_pose_targets()
+    return get_moveit_vars.robot, get_moveit_vars.group
 
 def execute(self, userdata):
     hmm_state_switch_client(0)
@@ -25,40 +38,43 @@ def execute(self, userdata):
     if hasattr(self, "before_motion"):
         self.before_motion()
 
-    goal_achieved = True
+
     hmm_state_switch_client(self.state_no)
 
 
-    robot = moveit_commander.RobotCommander()
-    group = moveit_commander.MoveGroupCommander("right_arm")
-    group.set_max_velocity_scaling_factor(1)
-    group.set_max_acceleration_scaling_factor(1)
+    robot, group = get_moveit_vars()
 
-
-
+    pst = time.time()
+    plan = None
     if hasattr(self, "get_joint_state_goal"):
         d = self.get_joint_state_goal()
         goal_joint = {k:d[k] for k in group.get_active_joints()}
-
         group.set_joint_value_target(goal_joint)
-        group.go(wait=True)
-        goal_achieved = True
+        plan = group.plan()
     elif hasattr(self, "get_pose_goal"):
-
         goal_pose = self.get_pose_goal()
-
         if not hasattr(self, 'get_dmp_model'):
             group.set_start_state_to_current_state()
             group.set_pose_target(goal_pose)
             plan = group.plan()
-            goal_achieved = introspect_moveit_exec(group, plan)
         else:
             dmp_model = self.get_dmp_model()
-            goal_achieved = dmp_execute.execute(dmp_model, goal_pose)
+            plan = dmp_execute.get_dmp_plan(robot, group, dmp_model, goal_pose)
+
+    pet = time.time()
+
+    goal_achieved = True
+    if plan is not None:
+        rospy.loginfo("Took %s seconds to figure out a moveit plan"%(pet-pst))
+        mst = time.time()
+        goal_achieved = introspect_moveit_exec(group, plan)
+        met = time.time()
+        rospy.loginfo("Took %s seconds to exec moveit plan"%(met-mst))
 
     hmm_state_switch_client(0)
     if not goal_achieved:
-        no_need_to_revert = sos.handle_anomaly(self)
+        robot, group = get_moveit_vars()
+        no_need_to_revert = sos.handle_anomaly(self, robot, group)
         rospy.loginfo('no_need_to_revert : %s'%no_need_to_revert)
         if no_need_to_revert:
             pass

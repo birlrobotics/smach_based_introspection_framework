@@ -10,7 +10,7 @@ from birl_skill_management.dmp_management import (
 )
 from birl_skill_management.util import (
     get_eval_postfix,
-    get_moveit_plan,
+    plot_cmd_matrix,
 )
 import baxter_interface
 from smach_based_introspection_framework.online_part.framework_core.states import (
@@ -36,13 +36,51 @@ from tf.transformations import (
 )
 from quaternion_interpolation import interpolate_pose_using_slerp
 
+def _get_moveit_plan(robot, group, command_matrix, control_dimensions, control_mode):
+    from geometry_msgs.msg import (
+        Pose,
+    )
+
+    plot_cmd_matrix(command_matrix, control_dimensions, control_mode)
+    
+    list_of_postfix = get_eval_postfix(control_dimensions, control_mode)
+    list_of_poses = []
+    for row_no in range(command_matrix.shape[0]):
+        pose = Pose() 
+        for col_no in range(command_matrix.shape[1]):
+            exec_str = 'pose'+list_of_postfix[col_no]+'=command_matrix[row_no, col_no]'
+            exec(exec_str)
+        list_of_poses.append(pose)
+
+
+
+    group.set_max_velocity_scaling_factor(0.3)
+    group.set_max_acceleration_scaling_factor(0.3)
+
+
+    plan = None
+    fraction = None
+    while not rospy.is_shutdown():
+        group.set_start_state_to_current_state()
+        plan, fraction = group.compute_cartesian_path(
+                                 list_of_poses,   # waypoints to follow
+                                 0.1,        # eef_step
+                                 0.0)         # jump_threshold
+        if fraction < 0.99:
+            break
+        else:
+            break
+
+    return plan, fraction
+
+
 def update_goal_vector(vec):
     sp = rospy.ServiceProxy("/observation/update_goal_vector", UpdateGoalVector)
     req = UpdateGoalVectorRequest()
     req.goal_vector = vec
     sp.call(req)
 
-def execute(dmp_model, goal, goal_modification_info=None):
+def get_dmp_plan(robot, group, dmp_model, goal, goal_modification_info=None):
     list_of_postfix = get_eval_postfix(dmp_cmd_fields, 'pose')
 
     limb = 'right'
@@ -72,9 +110,6 @@ def execute(dmp_model, goal, goal_modification_info=None):
 
     update_goal_vector(numpy.asarray(command_matrix[-1]).reshape(-1).tolist())
     
-    robot, group, plan, fraction = get_moveit_plan(command_matrix, dmp_cmd_fields, 'pose')
-    rospy.loginfo('moveit plan success rate %s, Press enter to exec'%fraction)
-    if rospy.is_shutdown():
-        return False
-    goal_achieved = introspect_moveit_exec(group, plan)
-    return goal_achieved
+    plan, fraction = _get_moveit_plan(robot, group, command_matrix, dmp_cmd_fields, 'pose')
+    rospy.loginfo('moveit plan success rate %s'%fraction)
+    return plan
