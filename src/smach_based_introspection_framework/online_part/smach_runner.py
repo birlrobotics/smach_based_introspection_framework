@@ -68,7 +68,7 @@ def toggle_experiment_recording(start, experiment_name="Unnamed"):
             req.experiment_name = experiment_name
         sp.call(req)
     except Exception as e:
-        rospy.logerror("toggle_experiment_recording failed: %s"%e)
+        rospy.logerr("toggle_experiment_recording failed: %s"%e)
 
 def toggle_introspection(start, sm=None):
     global rosbag_proc, ac_proc, tmt_proc, sis, ad_proc, ts_proc, goal_proc
