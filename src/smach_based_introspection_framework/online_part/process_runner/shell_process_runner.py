@@ -37,3 +37,7 @@ class ShellProcessRunner(object):
         parent.send_signal(signal.SIGINT)
         parent.wait()
         self.started = False 
+
+    def check_if_successfully_start(self):
+        # TODO: implement custom ways to check successful start
+        pass
