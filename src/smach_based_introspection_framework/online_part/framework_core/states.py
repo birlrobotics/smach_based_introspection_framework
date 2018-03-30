@@ -94,7 +94,7 @@ class RollBackRecovery(smach.State):
             rospy.loginfo('reverting_statistics is None, gonna reenter itself %s'%(next_state,))
         else:
             try:
-                stat = reverting_statistics[latest_anomaly_type][current_node]
+                stat = reverting_statistics[current_node][latest_anomaly_type]
             except KeyError:
                 stat = None
             if stat is None:
