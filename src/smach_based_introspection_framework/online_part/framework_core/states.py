@@ -18,6 +18,7 @@ event_flag = 1
 execution_history = []
 latest_anomaly_t = None
 reverting_statistics = None
+latest_anomaly_type = None
 
 def set_reverting_statistics(value):
     global reverting_statistics
@@ -36,6 +37,10 @@ def set_event_flag(value):
     event_flag = value
     if value == ANOMALY_NOT_DETECTED:
         latest_anomaly_t = None
+
+def set_latest_anomaly_type(value):
+    global latest_anomaly_type
+    latest_anomaly_type = value
 
 ## @brief record exec history
 ## @param current_state_name string
@@ -87,18 +92,22 @@ class RollBackRecovery(smach.State):
         if reverting_statistics is None:
             next_state = current_node
             rospy.loginfo('reverting_statistics is None, gonna reenter itself %s'%(next_state,))
-        elif current_node not in reverting_statistics:
-            next_state = current_node
-            rospy.loginfo('reverting_statistics contains no statistics about this state, gonna reenter itself %s'%(next_state,))
         else:
-            import numpy as np
-            stat = reverting_statistics[current_node]
-            names = [i[0] for i in stat.items()]
-            counts = np.array([i[1] for i in stat.items()], dtype=np.float64)
-            prob = counts/counts.sum()
-            idx = np.argwhere(np.random.multinomial(1, prob))[0][0]
-            next_state = names[idx]
-            rospy.loginfo('prob %s, gonna reenter %s'%(str(prob), next_state,))
+            try:
+                stat = reverting_statistics[latest_anomaly_type][current_node]
+            except KeyError:
+                stat = None
+            if stat is None:
+                next_state = current_node
+                rospy.loginfo('reverting_statistics contains no statistics about how to recover anomaly \'%s\' in state \'%s\', gonna reenter itself %s'%(latest_anomaly_type, current_node, next_state,))
+            else:
+                import numpy as np
+                names = [i[0] for i in stat.items()]
+                counts = np.array([i[1] for i in stat.items()], dtype=np.float64)
+                prob = counts/counts.sum()
+                idx = np.argwhere(np.random.multinomial(1, prob))[0][0]
+                next_state = names[idx]
+                rospy.loginfo('prob %s, gonna reenter %s'%(str(prob), next_state,))
             
         rospy.sleep(5)
         return 'Reenter_'+next_state

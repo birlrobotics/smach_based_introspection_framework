@@ -2,6 +2,7 @@ from smach_based_introspection_framework.online_part.framework_core.states impor
     hmm_state_switch_client,
     get_anomaly_t,
     set_event_flag,
+    set_latest_anomaly_type,
 )
 from smach_based_introspection_framework.online_part.robot_screen_visualization.setter import(
     show_anomaly_detected,
@@ -37,8 +38,12 @@ from smach_based_introspection_framework._constant import (
 )
 import dill
 import ipdb
+from tf.transformations import (
+    quaternion_inverse,
+    quaternion_multiply,
+)
 
-def human_teach(state_obj):
+def human_help(state_obj):
     hmm_state_switch_client(-1)
     nominal_tag = state_obj.state_no
     existing_types = []
@@ -60,6 +65,7 @@ def human_teach(state_obj):
             break
         else:
             rospy.loginfo("input no or yes.")
+
     rospy.loginfo("type in the label")
     while True:
         raw_label_str = raw_input()
@@ -84,7 +90,6 @@ def human_teach(state_obj):
             break
         else:
             rospy.loginfo("input no or yes.")
-
     rospy.loginfo("enter \"start\" to begin")
     while True:
         s = raw_input()
@@ -93,7 +98,6 @@ def human_teach(state_obj):
             break
         else:
             rospy.loginfo("input start please.")
-
     rospy.loginfo("enter \"end\" to end")
     while True:
         s = raw_input()
@@ -165,14 +169,22 @@ def handle_anomaly(state_obj):
                 rospy.loginfo("dmp model not found: %s"%dmp_model_path) 
                 need_human = True
                 break
+            goal_modification_info_path = os.path.join(latest_model_folder, 'tag_%s'%dmp_tag, 'goal_modification_info')
+            if not os.path.isfile(goal_modification_info_path):
+                rospy.loginfo("goal_modification_info not found: %s"%goal_modification_info_path) 
+                need_human = True
+                break
 
             dmp_model = dill.load(open(dmp_model_path, 'r'))
+            goal_modification_info = dill.load(open(goal_modification_info_path, 'r'))
             
             alf.write("%s\n"%predicted_label)
+            set_latest_anomaly_type(predicted_label)
             hmm_state_switch_client(dmp_tag)
             show_everyhing_is_good()
             set_event_flag(ANOMALY_NOT_DETECTED)
-            if dmp_execute.execute(dmp_model, state_obj.get_pose_goal()):
+
+            if dmp_execute.execute(dmp_model, state_obj.get_pose_goal(), goal_modification_info):
                 hmm_state_switch_client(0)
                 break
             else:
@@ -184,9 +196,9 @@ def handle_anomaly(state_obj):
 
     if need_human:
         hmm_state_switch_client(-1)
-        label, success = human_teach(state_obj)
+        label, success = human_help(state_obj)
         alf.write("%s\n"%label)
+        set_latest_anomaly_type(label)
         return success
     else:
         return True
-
