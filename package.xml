@@ -95,7 +95,9 @@
   <exec_depend>rostopics_to_timeseries</exec_depend>
   <exec_depend>parameters_combinator</exec_depend>
   <exec_depend>dill</exec_depend>
+  <exec_depend>pyquaternion</exec_depend>
   <exec_depend>birl_dmp</exec_depend>
+  <exec_depend>avconv</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

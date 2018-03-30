@@ -138,6 +138,7 @@ topics_to_be_recorded_into_rosbag = [
     '/robot/limb/right/endpoint_state',
     '/robotiq_force_torque_wrench',
     '/tactile_sensor_data',
+    '/observation/goal_vector',
 ]
 
 for tu in info_of_topics_to_timeseries:

@@ -1,0 +1,4 @@
+bool start_recording
+string experiment_name 
+---
+bool success

@@ -19,6 +19,7 @@ import numpy as np
 from model_training import train_introspection_model
 from model_training import train_anomaly_classifier
 from smach_based_introspection_framework.offline_part.model_training import train_dmp_model
+from smach_based_introspection_framework.offline_part import util 
 import ipdb
 import smach_based_introspection_framework.configurables as configurables 
 import logging
@@ -149,25 +150,58 @@ def run():
             logger.info("Skip nominal skill %s"%tag)
             continue
         logger.info("Gonna build dmp model for skill %s"%tag)
-        list_of_mat = []
+        one_shot_mat = None
+        goal_info = {}
         for j in glob.glob(os.path.join(i, "*")):
             df = pd.read_csv(j, sep=',')
-            list_of_mat.append(df[dmp_cmd_fields].values)
+            cmd_df =  df[dmp_cmd_fields]
+            dem_goal = cmd_df.iloc[-1].values
+            ori_goal = np.array(eval(df['.goal_vector'].iloc[-1]))
+            one_shot_mat = cmd_df.values
+            goal_info['original_goal'] = ori_goal
+            goal_info['demonstration_goal'] = dem_goal
+            break
 
-        result = train_dmp_model.run(list_of_mat[0])
+        goal_modification_info = {}
+        pxyz_idx = util.get_position_xyz_index(dmp_cmd_fields)
+        if None not in pxyz_idx:
+            goal_modification_info['translation'] = {
+                'index': pxyz_idx,
+                'value': dem_goal[pxyz_idx]-ori_goal[pxyz_idx],
+            }
 
-        d = os.path.join(get_latest_model_folder(), os.path.basename(i))
-        if not os.path.isdir(d):
-            os.makedirs(d)
+        qxyzw_idx = util.get_quaternion_xyzw_index(dmp_cmd_fields)
+        if None not in qxyzw_idx:
+            from tf.transformations import (
+                quaternion_inverse,
+                quaternion_multiply,
+            )
+            ori_q = ori_goal[qxyzw_idx]
+            dem_q = dem_goal[qxyzw_idx]
+            rot_q = quaternion_multiply(dem_q, quaternion_inverse(ori_q))
+            goal_modification_info['quaternion_rotation'] = {
+                'index': qxyzw_idx,
+                'value': rot_q,
+            }
 
-        dill.dump(
-            result['model'],
-            open(os.path.join(d, 'dmp_model'), 'w')
-        )
+        result = train_dmp_model.run(one_shot_mat)
+
         model_info = { 
             'dmp_cmd_fields': dmp_cmd_fields,
             'model_info': result['model_info']
         }
+
+        d = os.path.join(get_latest_model_folder(), os.path.basename(i))
+        if not os.path.isdir(d):
+            os.makedirs(d)
+        dill.dump(
+            goal_modification_info,
+            open(os.path.join(d, 'goal_modification_info'), 'w')
+        )
+        dill.dump(
+            result['model'],
+            open(os.path.join(d, 'dmp_model'), 'w')
+        )
         json.dump(
             model_info,
             open(os.path.join(d, 'dmp_model_info'), 'w'),
