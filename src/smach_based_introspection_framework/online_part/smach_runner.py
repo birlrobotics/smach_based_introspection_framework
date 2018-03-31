@@ -134,7 +134,7 @@ def run(sm, reverting_statistics=None):
     try: 
         set_reverting_statistics(reverting_statistics)
         moveit_commander.roscpp_initialize(sys.argv)
-        rospy.init_node("smach_based_introspection_framework_node")
+        rospy.init_node("smach_based_introspection_framework_node", log_level=rospy.DEBUG)
         rospy.loginfo("PID: %s"%os.getpid())
         rospy.on_shutdown(shutdown)
 

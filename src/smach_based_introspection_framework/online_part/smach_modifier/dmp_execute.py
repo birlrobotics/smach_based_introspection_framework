@@ -1,4 +1,3 @@
-import baxter_interface
 import rospy
 import copy
 import numpy
@@ -12,7 +11,6 @@ from birl_skill_management.util import (
     get_eval_postfix,
     plot_cmd_matrix,
 )
-import baxter_interface
 from smach_based_introspection_framework.online_part.framework_core.states import (
     get_event_flag,
 )
@@ -83,18 +81,12 @@ def update_goal_vector(vec):
 def get_dmp_plan(robot, group, dmp_model, goal, goal_modification_info=None):
     list_of_postfix = get_eval_postfix(dmp_cmd_fields, 'pose')
 
-    limb = 'right'
-    limb_interface = baxter_interface.limb.Limb(limb)
-
-
-    topic_name = "/robot/limb/%s/endpoint_state"%(limb,)
-    topic_type = EndpointState
-    endpoint_state_msg = get_topic_message_once(topic_name, topic_type)
-
-    start = numpy.array(cook_array_from_object_using_postfixs(list_of_postfix, endpoint_state_msg.pose))
+    current_pose = group.get_current_pose().pose
+    start = numpy.array(cook_array_from_object_using_postfixs(list_of_postfix, current_pose))
     end = numpy.array(cook_array_from_object_using_postfixs(list_of_postfix, goal))
 
     if goal_modification_info is not None:
+        gmst = rospy.Time.now().to_sec()
         new_goal = copy.deepcopy(end)
         if 'translation' in goal_modification_info:
             pxyz_idx = goal_modification_info['translation']['index'] 
@@ -104,12 +96,21 @@ def get_dmp_plan(robot, group, dmp_model, goal, goal_modification_info=None):
             rot_q = goal_modification_info['quaternion_rotation']['value']
             new_goal[qxyzw_idx] = quaternion_multiply(rot_q, end[qxyzw_idx])
         end = new_goal
+        gmet = rospy.Time.now().to_sec()
+        rospy.logdebug("Took %s seconds to modify goal"%(gmet-gmst))
 
+    st = rospy.Time.now().to_sec()
     command_matrix = generalize_via_dmp(start, end, dmp_model)
+    rospy.logdebug("Took %s seconds to call generalize_via_dmp"%(rospy.Time.now().to_sec()-st))
+    st = rospy.Time.now().to_sec()
     command_matrix = interpolate_pose_using_slerp(command_matrix, dmp_cmd_fields)
+    rospy.logdebug("Took %s seconds to call interpolate_pose_using_slerp"%(rospy.Time.now().to_sec()-st))
 
     update_goal_vector(numpy.asarray(command_matrix[-1]).reshape(-1).tolist())
     
+    st = rospy.Time.now().to_sec()
     plan, fraction = _get_moveit_plan(robot, group, command_matrix, dmp_cmd_fields, 'pose')
+    rospy.logdebug("Took %s seconds to call _get_moveit_plan"%(rospy.Time.now().to_sec()-st))
+
     rospy.loginfo('moveit plan success rate %s'%fraction)
     return plan

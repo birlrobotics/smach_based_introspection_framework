@@ -44,12 +44,13 @@ def execute(self, userdata):
 
     robot, group = get_moveit_vars()
 
-    pst = time.time()
+    pst = rospy.Time.now().to_sec()
     plan = None
     if hasattr(self, "get_joint_state_goal"):
         d = self.get_joint_state_goal()
         goal_joint = {k:d[k] for k in group.get_active_joints()}
         group.set_joint_value_target(goal_joint)
+        group.set_start_state_to_current_state()
         plan = group.plan()
     elif hasattr(self, "get_pose_goal"):
         goal_pose = self.get_pose_goal()
@@ -59,17 +60,17 @@ def execute(self, userdata):
             plan = group.plan()
         else:
             dmp_model = self.get_dmp_model()
+            group.set_start_state_to_current_state()
             plan = dmp_execute.get_dmp_plan(robot, group, dmp_model, goal_pose)
-
-    pet = time.time()
+    pet = rospy.Time.now().to_sec()
 
     goal_achieved = True
     if plan is not None:
-        rospy.loginfo("Took %s seconds to figure out a moveit plan"%(pet-pst))
-        mst = time.time()
+        rospy.logdebug("Took %s seconds to figure out a moveit plan"%(pet-pst))
+        mst = rospy.Time.now().to_sec()
         goal_achieved = introspect_moveit_exec(group, plan)
-        met = time.time()
-        rospy.loginfo("Took %s seconds to exec moveit plan"%(met-mst))
+        met = rospy.Time.now().to_sec()
+        rospy.logdebug("Took %s seconds to exec moveit plan"%(met-mst))
 
     hmm_state_switch_client(0)
     if not goal_achieved:
