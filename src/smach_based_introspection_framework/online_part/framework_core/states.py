@@ -65,15 +65,12 @@ def write_exec_hist(state_instance, current_state_name, current_userdata, depend
 
 def hmm_state_switch_client(state):
     global mode_no_state_trainsition_report
-    try:
-
-        hmm_state_switch_proxy = rospy.ServiceProxy('hmm_state_switch',
-                                                    State_Switch)
-        req = State_SwitchRequest()
-        req.state = state
-        resp = hmm_state_switch_proxy(req)
-    except rospy.ServiceException, e:
-        rospy.logerr("Service call failed: %s"%e)
+    rospy.wait_for_service('hmm_state_switch', timeout=3)
+    hmm_state_switch_proxy = rospy.ServiceProxy('hmm_state_switch',
+                                                State_Switch)
+    req = State_SwitchRequest()
+    req.state = state
+    resp = hmm_state_switch_proxy(req)
 
 class RollBackRecovery(smach.State):
     def __init__(self, outcomes):
