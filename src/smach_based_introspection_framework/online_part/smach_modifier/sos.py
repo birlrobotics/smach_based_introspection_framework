@@ -42,6 +42,7 @@ from tf.transformations import (
     quaternion_inverse,
     quaternion_multiply,
 )
+from util import introspect_moveit_exec
 
 def human_help(state_obj):
     hmm_state_switch_client(-1)
