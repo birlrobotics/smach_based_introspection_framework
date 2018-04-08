@@ -15,7 +15,6 @@ from smach_based_introspection_framework.online_part.framework_core.states impor
     get_event_flag,
 )
 import ipdb
-from baxter_core_msgs.msg import EndpointState
 from birl_runtime_parameter_filler.util import get_topic_message_once
 from control_msgs.msg import FollowJointTrajectoryActionResult
 from smach_based_introspection_framework._constant import (

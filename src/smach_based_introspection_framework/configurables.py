@@ -1,4 +1,3 @@
-from baxter_core_msgs.msg import EndpointState
 from geometry_msgs.msg import WrenchStamped
 from parameters_combinator import ListOfParams
 from smach_based_introspection_framework.msg import (
