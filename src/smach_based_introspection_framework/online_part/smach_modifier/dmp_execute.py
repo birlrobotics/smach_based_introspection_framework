@@ -57,16 +57,11 @@ def _get_moveit_plan(robot, group, command_matrix, control_dimensions, control_m
 
     plan = None
     fraction = None
-    while not rospy.is_shutdown():
-        group.set_start_state_to_current_state()
-        plan, fraction = group.compute_cartesian_path(
-                                 list_of_poses,   # waypoints to follow
-                                 0.1,        # eef_step
-                                 0.0)         # jump_threshold
-        if fraction < 0.99:
-            break
-        else:
-            break
+    group.set_start_state_to_current_state()
+    plan, fraction = group.compute_cartesian_path(
+                             list_of_poses,   # waypoints to follow
+                             0.1,        # eef_step
+                             0.0)         # jump_threshold
 
     return plan, fraction
 
@@ -77,7 +72,7 @@ def update_goal_vector(vec):
     req.goal_vector = vec
     sp.call(req)
 
-def get_dmp_plan(robot, group, dmp_model, goal, goal_modification_info=None):
+def _get_dmp_plan(robot, group, dmp_model, goal, goal_modification_info=None):
     list_of_postfix = get_eval_postfix(dmp_cmd_fields, 'pose')
 
     current_pose = group.get_current_pose().pose
@@ -112,4 +107,19 @@ def get_dmp_plan(robot, group, dmp_model, goal, goal_modification_info=None):
     rospy.logdebug("Took %s seconds to call _get_moveit_plan"%(rospy.Time.now().to_sec()-st))
 
     rospy.loginfo('moveit plan success rate %s'%fraction)
+    return plan, fraction
+
+def get_dmp_plan(robot, group, dmp_model, goal, goal_modification_info=None):
+    while not rospy.is_shutdown():
+        plan, fraction = _get_dmp_plan(robot, group, dmp_model, goal, goal_modification_info)
+        if fraction < 1:
+            rospy.loginfo("fraction %s, hit 'Enter' to plan again. or enter anything to move on."%fraction)
+            s = raw_input()
+            if s == '':
+                continue
+            else:
+                break
+        else:
+            break
+
     return plan
