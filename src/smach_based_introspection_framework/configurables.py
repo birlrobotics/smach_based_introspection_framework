@@ -73,7 +73,7 @@ data_fields_store = {
         '.tactile_values.tactile_values_9',
 ],
 }
-data_type_chosen = 'endpoint_twist_and_wrench_and_tactile_sensor_data'
+data_type_chosen = 'endpoint_twist_and_wrench'
 data_type_split = data_type_chosen.split("_and_")
 interested_data_fields = []
 for data_type in data_type_split:
@@ -88,6 +88,7 @@ model_config = {
   'covariance_type': ListOfParams(['diag', 'spherical', 'full', 'tied']),
   'n_iter': 1000,
 }
+
 '''
 model_type = 'BNPY\'s HMM'
 model_config = {
@@ -95,16 +96,19 @@ model_config = {
     'K': 10,
     'alloModel' : 'HDPHMM',
     'obsModel'  : 'AutoRegGauss',
-    'varMethod' : ListOfParams(['memoVB', 'moVB']),
-    'ECovMat'   : ListOfParams(['eye']),
+    'varMethod' : ListOfParams(['memoVB']),
+    'ECovMat'   : ListOfParams(['diagcovdata']),
 }
 
 
 anomaly_window_size_in_sec = 4
 anomaly_resample_hz = 10
-
 anomaly_classification_confidence_threshold = 0.5
-
+anomaly_handcoded_labels = {0: 'object_slip',
+                            1: 'tool_collision',
+                            2: 'human_collision',
+                            3: 'no_object',}
+anomaly_classifier_model_path = '/home/birl_wu/baxter_ws/src/SPAI/smach_based_introspection_framework/anomaly_classifier'
 
 # New config that is about to remove some old ones above
 
