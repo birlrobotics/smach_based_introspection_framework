@@ -100,7 +100,8 @@ def _get_dmp_plan(robot, group, dmp_model, goal, goal_modification_info=None):
     command_matrix = interpolate_pose_using_slerp(command_matrix, dmp_cmd_fields)
     rospy.logdebug("Took %s seconds to call interpolate_pose_using_slerp"%(rospy.Time.now().to_sec()-st))
 
-    update_goal_vector(numpy.asarray(command_matrix[-1]).reshape(-1).tolist())
+    if goal_modification_info is None:
+        update_goal_vector(numpy.asarray(command_matrix[-1]).reshape(-1).tolist())
     
     st = rospy.Time.now().to_sec()
     plan, fraction = _get_moveit_plan(robot, group, command_matrix, dmp_cmd_fields, 'pose')
