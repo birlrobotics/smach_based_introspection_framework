@@ -148,7 +148,7 @@ def process_time_and_set_as_index(df):
     return df
 
 def get_log_dict():
-    log_file_path = os.path.join(dataset_folder, "log_dict.pkl")
+    log_file_path = os.path.join(latest_dataset_folder, "log_dict.pkl")
     if os.path.isfile(log_file_path):
         log_dict = pickle.load(open(log_file_path, 'r'))
     else:
@@ -156,7 +156,7 @@ def get_log_dict():
     return log_dict
 
 def save_log_dict(log_dict):
-    log_file_path = os.path.join(dataset_folder, "log_dict.pkl")
+    log_file_path = os.path.join(latest_dataset_folder, "log_dict.pkl")
     pickle.dump(log_dict, open(log_file_path, 'w'))
         
                 
@@ -168,6 +168,11 @@ def run():
     setup_latest_dataset_folder()
     
     exp_dirs = [i for i in glob.glob(os.path.join(experiment_record_folder, '*')) if os.path.isdir(i)]
+
+    # SORTING IS CRITICAL, 
+    # we have to process experiments in temporal order
+    # otherwise recovery tag assignments will crash
+    exp_dirs.sort() 
 
     log_dict = get_log_dict()
     for exp_dir in exp_dirs: 
@@ -205,7 +210,6 @@ def run():
                 UNSUCCESSFULLY_EXECUTED_SKILL: [],
             }
            
-            last_nominal_skill_idx = None 
             for idx, tr_tuple in enumerate(list_of_tag_range):
                 tag, ran = tr_tuple
                 if idx == len(list_of_tag_range)-1:
@@ -215,13 +219,11 @@ def run():
 
                 # Nominal skill
                 if tag > 0:
-                    if tag < RECOVERY_SKILL_BEGINS_AT:
-                        last_nominal_skill_idx = idx
                     if next_tag is None or next_tag > 0:
                         stat[SUCCESSULLY_EXECUTED_SKILL].append(tr_tuple)  
                     else:
                         stat[UNSUCCESSFULLY_EXECUTED_SKILL].append({
-                            "failed_nominal_skill": list_of_tag_range[last_nominal_skill_idx],
+                            "failed_nominal_skill": list_of_tag_range[idx],
                             "human_dem_recovery_tr_tuple": None,
                             "extracted_anomaly": None,
                             "anomaly_label": None
@@ -236,7 +238,6 @@ def run():
                 df = tag_df.iloc[ran[0]:ran[1]]
                 add_skill_introspection_data(i[0], df, "no_%s_successful_skill_from_%s"%(count, os.path.basename(exp_dir)))
 
-                            
             if len(stat[UNSUCCESSFULLY_EXECUTED_SKILL]) == 0:
                 pass
             else:
