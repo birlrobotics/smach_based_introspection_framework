@@ -1,10 +1,24 @@
 import os
 import glob
 import rosbag
+import ipdb
+import coloredlogs, logging
+coloredlogs.install()
+
+from smach_based_introspection_framework._constant import (
+    anomaly_label_file,
+)
 
 class ExperimentRecord(object):
     def __init__(self, folder_path):
         self.folder_path = folder_path
+        logger = logging.getLogger('ExperimentRecord')
+        logger.setLevel(logging.INFO)
+        consoleHandler = logging.StreamHandler()
+        consoleHandler.setLevel(logging.INFO)
+        logger.addHandler(consoleHandler)
+        self.logger = logger
+        
 
     @property
     def tag_ranges(self):
@@ -87,15 +101,56 @@ class ExperimentRecord(object):
         self._successful_tag_ranges = succ_tag_ranges
         return self._successful_tag_ranges
 
+    @property
+    def anomaly_signals(self):
+        if hasattr(self, '_anomaly_signals'):
+            return self._anomaly_signals
+
+        signals = []
+        anomaly_start_time = None
+        for count, (topic, msg, time) in enumerate(self.rosbag.read_messages('/anomaly_detection_signal')):
+            cur_anomaly_time = msg.stamp
+            if anomaly_start_time is None or \
+                (cur_anomaly_time-anomaly_start_time).to_sec > 2:
+
+                anomaly_start_time = cur_anomaly_time
+                signals.append(anomaly_start_time)
+        if len(signals) > len(self.anomaly_labels):
+            raise Exception("anomaly signals amount, %s, does not match anomaly labels, %s."%(len(signals), len(self.anomaly_labels)))
+        elif len(signals) < len(self.anomaly_labels):
+            self.logger.warn("anomaly signals amount, %s, does not match anomaly labels, %s. But I will try to pair them in reverse order."%(len(signals), len(self.anomaly_labels)))
+            labels = self.anomaly_labels[-len(signals):]
+        else:
+            labels = self.anomaly_labels
+        
+        self._anomaly_signals = zip(labels, signals)
+        return self._anomaly_signals
+
+    @property
+    def anomaly_labels(self):
+        if hasattr(self, '_anomaly_labels'):
+            return self._anomaly_labels
+
+        txt_path = os.path.join(self.folder_path, anomaly_label_file)
+        lines = open(txt_path, 'r').readlines()
+        labels = [i.strip() for i in lines]
+        labels = [i for i in labels if i != ""]
+        self._anomaly_labels = labels
+        return self._anomaly_labels
+
 if __name__ == '__main__':
     import pprint
     pp = pprint.PrettyPrinter(indent=4)
 
     base_path = os.path.dirname(os.path.realpath(__file__))
-    er = ExperimentRecord(os.path.join(base_path, 'test_data/experiment_at_2018y04m10d20H40M57S'))
+    er = ExperimentRecord(os.path.join(base_path, 'test_data', 'experiment_at_2018y04m10d20H47M31S'))
+
+
     print '\ntag_ranges', '-'*20
     pp.pprint(er.tag_ranges)
     print '\nunsuccessful_tag_ranges', '-'*20
     pp.pprint(er.unsuccessful_tag_ranges)
     print '\nsuccessful_tag_ranges', '-'*20
     pp.pprint(er.successful_tag_ranges)
+    print '\nanomaly_signals', '-'*20
+    pp.pprint(er.anomaly_signals)
