@@ -15,7 +15,7 @@ class ExperimentRecord(object):
         last_tag_starts_at = None
         ranges = []
         for count, (topic, msg, time) in enumerate(self.rosbag.read_messages('/tag_multimodal')):
-            cur_tag = msg.tag
+            cur_tag = int(msg.tag)
             if last_tag is None:
                 last_tag = cur_tag
                 last_tag_starts_at = time
@@ -45,8 +45,34 @@ class ExperimentRecord(object):
         self._rosbag = bags[0]
         return self._rosbag
 
+    @property
+    def unsuccessful_tag_ranges(self):
+        if hasattr(self, "_unsuccessful_tag_ranges"):
+            return self._unsuccessful_tag_ranges
+
+        unsucc_tag_ranges = []
+        for idx, (tag, (start_time, end_time)) in enumerate(self.tag_ranges):
+            try:
+                next_tag = 0
+                forward = 1
+                while next_tag == 0:
+                    next_tag = self.tag_ranges[idx+forward][0]
+                    forward += 1
+            except IndexError:
+                break
+            if tag > 0 and next_tag < 0:
+                unsucc_tag_ranges.append((tag, (start_time, end_time)))
+
+        self._unsuccessful_tag_ranges = unsucc_tag_ranges
+        return self._unsuccessful_tag_ranges
+
 if __name__ == '__main__':
+    import pprint
+    pp = pprint.PrettyPrinter(indent=4)
+
     base_path = os.path.dirname(os.path.realpath(__file__))
     er = ExperimentRecord(os.path.join(base_path, 'test_data/experiment_at_2018y04m10d20H40M57S'))
-    print er.tag_ranges
-
+    print '\ntag_ranges', '-'*20
+    pp.pprint(er.tag_ranges)
+    print '\nunsuccessful_tag_ranges', '-'*20
+    pp.pprint(er.unsuccessful_tag_ranges)
