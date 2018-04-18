@@ -12,7 +12,7 @@ from smach_based_introspection_framework._constant import (
 class ExperimentRecord(object):
     def __init__(self, folder_path):
         self.folder_path = folder_path
-        logger = logging.getLogger('ExperimentRecord')
+        logger = logging.getLogger('ExpRecordOf...%s'%str(folder_path)[-20:])
         logger.setLevel(logging.INFO)
         consoleHandler = logging.StreamHandler()
         consoleHandler.setLevel(logging.INFO)
