@@ -66,6 +66,27 @@ class ExperimentRecord(object):
         self._unsuccessful_tag_ranges = unsucc_tag_ranges
         return self._unsuccessful_tag_ranges
 
+    @property
+    def successful_tag_ranges(self):
+        if hasattr(self, "_successful_tag_ranges"):
+            return self._successful_tag_ranges
+
+        succ_tag_ranges = []
+        for idx, (tag, (start_time, end_time)) in enumerate(self.tag_ranges):
+            try:
+                next_tag = 0
+                forward = 1
+                while next_tag == 0:
+                    next_tag = self.tag_ranges[idx+forward][0]
+                    forward += 1
+            except IndexError:
+                next_tag = 0
+            if tag > 0 and next_tag >= 0:
+                succ_tag_ranges.append((tag, (start_time, end_time)))
+
+        self._successful_tag_ranges = succ_tag_ranges
+        return self._successful_tag_ranges
+
 if __name__ == '__main__':
     import pprint
     pp = pprint.PrettyPrinter(indent=4)
@@ -76,3 +97,5 @@ if __name__ == '__main__':
     pp.pprint(er.tag_ranges)
     print '\nunsuccessful_tag_ranges', '-'*20
     pp.pprint(er.unsuccessful_tag_ranges)
+    print '\nsuccessful_tag_ranges', '-'*20
+    pp.pprint(er.successful_tag_ranges)
