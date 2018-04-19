@@ -19,6 +19,7 @@ scripted_inputs = [
 
 count = 0
 def get_input():
+    return raw_input()
     global count
     ret = scripted_inputs[count] 
     print 'fake operator enters \'%s\''%ret
