@@ -52,6 +52,10 @@ realtime_anomaly_plot_folder = os.path.join(
 
 anomaly_label_file = "anomaly_labels.txt"
 
+datasets_of_filtering_schemes_folder = os.path.join(
+    introspection_data_folder,
+    "datasets_of_filtering_schemes_folder")
+
 SUCCESSULLY_EXECUTED_SKILL = 0
 UNSUCCESSFULLY_EXECUTED_SKILL = 1
 
