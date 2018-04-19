@@ -30,8 +30,23 @@ def setup_and_get_scheme_folder(scheme_count, filtering_scheme, exp_dir):
         f.write(filtering_scheme.info)
         f.close()
     return scheme_folder
-    
 
+def generate_and_save_csv(output_csv, er, st, et, filtering_scheme, ortt, logger):
+    if not os.path.isfile(output_csv):
+        t, mat = ortt.get_timeseries_mat(
+            er.rosbag,
+            st,
+            et,
+        )
+        df = pd.DataFrame(mat, columns=filtering_scheme.timeseries_header, index=t)
+        output_dir = os.path.dirname(output_csv)
+        if not os.path.isdir(output_dir):
+            os.makedirs(output_dir)
+        df.to_csv(output_csv)
+        logger.info("Done.")
+    else:
+        logger.info("Already done, gonna skip.")
+    
 def run():
     logger = logging.getLogger('FilteringRecordsWithSchemes')
     logger.setLevel(logging.INFO)
@@ -53,20 +68,17 @@ def run():
                     'skill %s'%tag,
                     'No.%s successful skill from %s.csv'%(skill_count, os.path.basename(exp_dir))
                 )
-                if not os.path.isfile(output_csv):
-                    t, mat = ortt.get_timeseries_mat(
-                        er.rosbag,
-                        st,
-                        et,
-                    )
-                    df = pd.DataFrame(mat, columns=filtering_scheme.timeseries_header, index=t)
-                    output_dir = os.path.dirname(output_csv)
-                    if not os.path.isdir(output_dir):
-                        os.makedirs(output_dir)
-                    df.to_csv(output_csv)
-                    logger.info("Done.")
-                else:
-                    logger.info("Already done, gonna skip.")
+                generate_and_save_csv(output_csv, er, st, et, filtering_scheme, ortt, logger)
+
+            for skill_count, (tag, (st, et)) in enumerate(er.unsuccessful_tag_ranges):
+                logger.info("No.%s unsuccessful skill"%skill_count)
+                output_csv = os.path.join(
+                    setup_and_get_scheme_folder(scheme_count, filtering_scheme, exp_dir),
+                    'unsuccessful_skills',
+                    'skill %s'%tag,
+                    'No.%s unsuccessful skill from %s.csv'%(skill_count, os.path.basename(exp_dir))
+                )
+                generate_and_save_csv(output_csv, er, st, et, filtering_scheme, ortt, logger)
 
 if __name__ == '__main__':
     run()
