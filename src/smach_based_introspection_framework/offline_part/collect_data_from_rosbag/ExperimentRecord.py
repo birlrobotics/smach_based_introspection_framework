@@ -117,6 +117,8 @@ class ExperimentRecord(object):
                 signals.append(anomaly_start_time)
         if len(signals) > len(self.anomaly_labels):
             raise Exception("anomaly signals amount, %s, does not match anomaly labels, %s."%(len(signals), len(self.anomaly_labels)))
+        elif len(signals) != len(self.unsuccessful_tag_ranges):
+            raise Exception("anomaly signals amount, %s, does not match unsuccessful skill amount, %s."%(len(signals), len(self.unsuccessful_tag_ranges)))
         elif len(signals) < len(self.anomaly_labels):
             self.logger.warn("anomaly signals amount, %s, does not match anomaly labels, %s. But I will try to pair them in reverse order."%(len(signals), len(self.anomaly_labels)))
             labels = self.anomaly_labels[-len(signals):]
@@ -143,7 +145,7 @@ if __name__ == '__main__':
     pp = pprint.PrettyPrinter(indent=4)
 
     base_path = os.path.dirname(os.path.realpath(__file__))
-    er = ExperimentRecord(os.path.join(base_path, 'test_data', 'experiment_at_2018y04m10d20H47M31S'))
+    er = ExperimentRecord('/home/sklaw/ros/indigo/birl_ws/src/smach_based_introspection_framework/src/smach_based_introspection_framework/../../introspection_data_folder/experiment_record_folder/experiment_at_2018y04m02d21H34M33S')
 
 
     print '\ntag_ranges', '-'*20

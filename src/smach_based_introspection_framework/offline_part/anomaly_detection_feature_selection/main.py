@@ -9,7 +9,9 @@ from rostopics_to_timeseries import OfflineRostopicsToTimeseries
 from filtering_schemes import filtering_schemes
 import itertools
 import pandas as pd
-import ipdb
+import pickle
+import shutil
+import rospy
 import coloredlogs, logging
 coloredlogs.install()
 
@@ -43,9 +45,9 @@ def generate_and_save_csv(output_csv, er, st, et, filtering_scheme, ortt, logger
         if not os.path.isdir(output_dir):
             os.makedirs(output_dir)
         df.to_csv(output_csv)
-        logger.info("Done.")
+        logger.debug("Done.")
     else:
-        logger.info("Already done, gonna skip.")
+        logger.debug("Already done, gonna skip.")
     
 def run():
     logger = logging.getLogger('FilteringRecordsWithSchemes')
@@ -61,7 +63,7 @@ def run():
             er = ExperimentRecord(exp_dir)
             ortt = OfflineRostopicsToTimeseries(filtering_scheme, rate=10) 
             for skill_count, (tag, (st, et)) in enumerate(er.successful_tag_ranges):
-                logger.info("No.%s successful skill"%skill_count)
+                logger.debug("No.%s successful skill"%skill_count)
                 output_csv = os.path.join(
                     setup_and_get_scheme_folder(scheme_count, filtering_scheme, exp_dir),
                     'successful_skills',
@@ -71,14 +73,27 @@ def run():
                 generate_and_save_csv(output_csv, er, st, et, filtering_scheme, ortt, logger)
 
             for skill_count, (tag, (st, et)) in enumerate(er.unsuccessful_tag_ranges):
-                logger.info("No.%s unsuccessful skill"%skill_count)
+                logger.debug("No.%s unsuccessful skill"%skill_count)
                 output_csv = os.path.join(
                     setup_and_get_scheme_folder(scheme_count, filtering_scheme, exp_dir),
                     'unsuccessful_skills',
                     'skill %s'%tag,
+                    'No.%s unsuccessful skill from %s'%(skill_count, os.path.basename(exp_dir)),
                     'No.%s unsuccessful skill from %s.csv'%(skill_count, os.path.basename(exp_dir))
                 )
-                generate_and_save_csv(output_csv, er, st, et, filtering_scheme, ortt, logger)
+                try:
+                    generate_and_save_csv(output_csv, er, st, et+rospy.Duration(2), filtering_scheme, ortt, logger)
+                    pickle.dump(
+                        er.anomaly_signals[skill_count],
+                        open(os.path.join(
+                            os.path.dirname(output_csv),
+                            'anomaly_label_and_signal_time.pkl'
+                        ), 'w'),
+                    )
+                except Exception as e:
+                    logger.error("Exception: %s"%e)
+                    shutil.rmtree(os.path.dirname(output_csv), ignore_errors=True) 
+                    break
 
 if __name__ == '__main__':
     run()
