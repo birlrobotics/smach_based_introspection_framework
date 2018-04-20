@@ -42,10 +42,10 @@ from tf.transformations import (
     quaternion_inverse,
     quaternion_multiply,
 )
+from util import introspect_moveit_exec
 
-def human_help(state_obj):
+def human_help(nominal_tag):
     hmm_state_switch_client(-1)
-    nominal_tag = state_obj.state_no
     existing_types = []
     prog = re.compile(r'nominal_skill_(\d+)_anomaly_type_(.*)')
     for i in glob.glob(os.path.join(latest_dataset_folder, 'anomaly_data', '*')):
@@ -181,6 +181,7 @@ def handle_anomaly(state_obj, robot, group):
             
             alf.write("%s\n"%predicted_label)
             set_latest_anomaly_type(predicted_label)
+            nominal_tag = dmp_tag
             hmm_state_switch_client(dmp_tag)
             show_everyhing_is_good()
             set_event_flag(ANOMALY_NOT_DETECTED)
@@ -199,7 +200,7 @@ def handle_anomaly(state_obj, robot, group):
 
     if need_human:
         hmm_state_switch_client(-1)
-        label, success = human_help(state_obj)
+        label, success = human_help(nominal_tag)
         alf.write("%s\n"%label)
         set_latest_anomaly_type(label)
         return success

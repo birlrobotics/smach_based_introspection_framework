@@ -1,4 +1,3 @@
-import baxter_interface
 import rospy
 import sos
 from smach_based_introspection_framework.online_part.framework_core.states import (

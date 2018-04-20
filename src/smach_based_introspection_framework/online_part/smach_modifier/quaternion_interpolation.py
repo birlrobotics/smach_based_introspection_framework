@@ -16,6 +16,9 @@ def interpolate_pose_using_slerp(command_matrix, control_dimensions):
 
     qxyzw0 = numpy.asarray(quat_mat[0]).reshape(-1)
     qxyzw1 = numpy.asarray(quat_mat[-1]).reshape(-1)
+
+    if numpy.dot(qxyzw0, qxyzw1) < 0:
+        qxyzw0 = -qxyzw0
     
     q0 = Quaternion(
         qxyzw0[3],

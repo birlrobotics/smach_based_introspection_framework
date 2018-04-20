@@ -48,8 +48,8 @@ class BNPYModelIncrementalLoglikCalculator(object):
         model = model.model
         self.model = model
         self.n_components = model.allocModel.K
-        self.log_startprob = log_mask_zero(model.allocModel.get_active_comp_probs()) 
-        self.log_transmat  = log_mask_zero(model.allocModel.get_trans_prob_matrix())
+        self.log_startprob = np.log(model.allocModel.get_init_prob_vector()) 
+        self.log_transmat  = np.log(model.allocModel.get_trans_prob_matrix())
         self.fwdlattice = None
         self.preSample = None
         self.work_buffer = np.zeros(self.n_components)
