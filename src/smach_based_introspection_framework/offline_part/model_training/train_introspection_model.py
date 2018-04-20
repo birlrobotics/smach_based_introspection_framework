@@ -44,6 +44,7 @@ def run(list_of_mat, model_type, model_config, score_metric):
             'threshold_for_introspection':threshold,
         },
         'model_info': {
+            'test_score': test_score,
             'threshold_for_introspection':threshold,
             'training_report': tried_models,
             'size_of_train_set': len(list_of_train_mat),
