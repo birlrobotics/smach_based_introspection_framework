@@ -31,6 +31,7 @@ from smach_based_introspection_framework._constant import (
     latest_model_folder,
     realtime_anomaly_plot_folder,
 )
+from birl_hmm.hmm_training import (hmm_util,)
 import glob
 import re
 from sklearn.externals import joblib
@@ -71,6 +72,7 @@ def classify_against_all_types(mat, happen_in_state):
 
         model = joblib.load(os.path.join(i, 'classifier_model'))
         hmm_model = model['hmm_model']
+        '''
         threshold_for_classification = model['threshold_for_classification']
         score = hmm_model.score(mat) 
         confidence = score/threshold_for_classification
@@ -80,6 +82,16 @@ def classify_against_all_types(mat, happen_in_state):
                 "score":score, 
                 "threshold_for_classification":threshold_for_classification, 
                 "confidence":confidence,
+            },
+        ))
+
+        '''
+        confidence = hmm_util.fast_log_curve_calculation(mat, hmm_model)[-1]
+        ret.append((
+            anomaly_type,
+            {
+                "confidence":confidence,
+                
             },
         ))
 
@@ -110,7 +122,7 @@ def classify_against_all_types(mat, happen_in_state):
         },
     ))
     return ret
-    '''
+    '''   
 
 def cb(req):
     rospy.loginfo(req)

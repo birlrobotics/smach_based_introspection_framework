@@ -97,8 +97,8 @@ model_config = {
     'alloModel' : 'HDPHMM',
     'obsModel'  : 'AutoRegGauss',
     'varMethod' : ListOfParams(['memoVB']),
-    'ECovMat'   : ListOfParams(['diagcovdata']),
-}
+    'ECovMat'   : ListOfParams(['covdata']), #diagcovdata
+ }
 
 
 anomaly_window_size_in_sec = 4

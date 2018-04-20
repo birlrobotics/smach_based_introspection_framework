@@ -59,6 +59,7 @@ def run():
     consoleHandler = logging.StreamHandler()
     logger.addHandler(consoleHandler)
 
+    '''
     logger.info("Collecting skill_data to build introspection model")
     prog = re.compile(r'tag_(\d+)')
     for i in glob.glob(os.path.join(latest_dataset_folder, "skill_data", '*')):
@@ -98,10 +99,10 @@ def run():
             open(os.path.join(d, 'introspection_model_info'), 'w'),
             indent=4,
         )
-
+    '''
+    
     logger.info("Collecting anomaly_data to build anomaly classifier")
     prog = re.compile(r'nominal_skill_(\d+)_anomaly_type_(.*)')
-
     anomaly_paths = glob.glob(os.path.join(latest_dataset_folder, "anomaly_data", '*'))
     all_anomaly_type = []
     for i in glob.glob(os.path.join(latest_dataset_folder, "anomaly_data", '*')):
