@@ -16,18 +16,16 @@ def run(list_of_mat, model_type, model_config, score_metric):
         raise Exception('Contains 0 test samples, failed to train introspection model')
     else:
         print 'Contains %s test samples'%(len(list_of_test_mat))
-
-    sorted_model_list = train_model.run(
+    best_model, test_score, tried_models = train_model.run(
         list_of_train_mat=list_of_train_mat, 
         list_of_test_mat=list_of_test_mat,
         model_type=model_type,
         model_config=model_config,
         score_metric=score_metric,
     )
-    best = sorted_model_list[0]
 
 
-    list_of_log_curves = [hmm_util.fast_log_curve_calculation(i, best['model']) for i in list_of_test_mat]
+    list_of_log_curves = [hmm_util.fast_log_curve_calculation(i, best_model) for i in list_of_test_mat]
     max_candidate = []
     min_candidate = []
     for curve in list_of_log_curves:
@@ -40,18 +38,14 @@ def run(list_of_mat, model_type, model_config, score_metric):
     max_gradient = max(max_candidate)
     gradient_range = max_gradient-min_gradient
     threshold = min_gradient-gradient_range/2
-    
-    train_report = [{hmm_util.get_model_config_id(i['now_model_config']): i['score']} for i in sorted_model_list]
-
     return {
         'model': {
-            'hmm_model':best['model'],
+            'hmm_model':best_model,
             'threshold_for_introspection':threshold,
         },
         'model_info': {
-            'config_of_best_model': best['now_model_config'],
             'threshold_for_introspection':threshold,
-            'train_report': train_report,
+            'training_report': tried_models,
             'size_of_train_set': len(list_of_train_mat),
             'size_of_test_set': len(list_of_test_mat),
         }
