@@ -22,11 +22,16 @@ from smach_based_introspection_framework.configurables import (
     anomaly_window_size_in_sec, 
     anomaly_resample_hz, 
     interested_data_fields,
+    anomaly_window_size_in_sec,
+    anomaly_resample_hz,    
+    anomaly_classifier_model_path,
+    anomaly_handcoded_labels,
 )
 from smach_based_introspection_framework._constant import (
     latest_model_folder,
     realtime_anomaly_plot_folder,
 )
+from birl_hmm.hmm_training import (hmm_util,)
 import glob
 import re
 from sklearn.externals import joblib
@@ -50,7 +55,9 @@ def plot_resampled_anomaly_df(resampled_anomaly_df):
         fig.savefig(os.path.join(realtime_anomaly_plot_dir, (dim+'.png').strip('.')))
         plt.close(fig)
 
+loaded_model  = None
 def classify_against_all_types(mat, happen_in_state):
+
     ret = []
     prog = re.compile(r'nominal_skill_(\d+)_anomaly_type_(.*)')
     for i in glob.glob(os.path.join(latest_model_folder, '*')):
@@ -65,6 +72,7 @@ def classify_against_all_types(mat, happen_in_state):
 
         model = joblib.load(os.path.join(i, 'classifier_model'))
         hmm_model = model['hmm_model']
+        '''
         threshold_for_classification = model['threshold_for_classification']
         score = hmm_model.score(mat) 
         confidence = score/threshold_for_classification
@@ -76,8 +84,45 @@ def classify_against_all_types(mat, happen_in_state):
                 "confidence":confidence,
             },
         ))
-        
+
+        '''
+        confidence = hmm_util.fast_log_curve_calculation(mat, hmm_model)[-1]
+        ret.append((
+            anomaly_type,
+            {
+                "confidence":confidence,
+                
+            },
+        ))
+
     return ret
+
+
+    '''
+    # load the LSTM model
+    global loaded_model
+    if loaded_model == None:
+        rospy.loginfo('loading anomaly_classifier_model')
+        import anomaly_model_generation
+        loaded_model = anomaly_model_generation.run()
+        loaded_model.load_weights(os.path.join(anomaly_classifier_model_path, 'baxter_pnp_weights.h5'))
+        loaded_model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics =['accuracy'])
+    else:
+        rospy.loginfo('model had been loaded!')
+    rospy.loginfo("\nPredicting")
+    pred = loaded_model.predict(mat.T[np.newaxis,...], batch_size=128)
+    anomaly_type = anomaly_handcoded_labels[np.argmax(pred)]
+    rospy.loginfo('Predicted class: ' + anomaly_type)
+    
+    ret = []
+    ret.append((
+        anomaly_type,
+        {
+            "confidence":np.max(pred),
+        },
+    ))
+    return ret
+    '''   
 
 def cb(req):
     rospy.loginfo(req)
@@ -85,7 +130,6 @@ def cb(req):
     happen_in_state = req.happen_in_state
     import redis
     r = redis.Redis(host='localhost', port=6379, db=0)
-    from birl.robot_introspection_pkg.anomaly_sampling_config import anomaly_window_size_in_sec, anomaly_resample_hz
     search_start = anomaly_t-anomaly_window_size_in_sec/2-1            
     search_end = anomaly_t+anomaly_window_size_in_sec/2+1
 
