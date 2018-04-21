@@ -30,11 +30,21 @@ def run():
     )) 
     for succ_folder in succ_folders:
         logger.info(succ_folder)
+        path_postfix = os.path.relpath(succ_folder, datasets_of_filtering_schemes_folder)
+        output_dir = os.path.join(
+            datasets_of_filtering_schemes_folder,
+            'introspection_models',
+            path_postfix,
+        )
+        model_file = os.path.join(output_dir, 'introspection_model')
+        if os.path.isfile(model_file):
+            logger.info("Model already exists. Gonna skip.")    
+            continue
+
         csvs = glob.glob(os.path.join(
             succ_folder,
             '*.csv',
         ))
-        path_postfix = os.path.relpath(succ_folder, datasets_of_filtering_schemes_folder)
         list_of_mat = []
         for j in csvs:
             df = pd.read_csv(j, sep=',')
@@ -49,18 +59,12 @@ def run():
             logger.error("Failed to train_introspection_model: %s"%e)
             continue
 
-        d = os.path.join(
-            datasets_of_filtering_schemes_folder,
-            'introspection_models',
-            path_postfix,
-        )
-        if not os.path.isdir(d):
-            os.makedirs(d)
+        if not os.path.isdir(output_dir):
+            os.makedirs(output_dir)
         joblib.dump(
             result['model'],
-            os.path.join(d, 'introspection_model')
+            model_file,
         )
-    
         model_info = { 
             'model_type': model_type,
             'find_best_model_in_this_config': model_config,
@@ -69,7 +73,7 @@ def run():
         model_info.update(result['model_info']),
         json.dump(
             model_info,
-            open(os.path.join(d, 'introspection_model_info'), 'w'),
+            open(os.path.join(output_dir, 'introspection_model_info'), 'w'),
             indent=4,
         )
 
