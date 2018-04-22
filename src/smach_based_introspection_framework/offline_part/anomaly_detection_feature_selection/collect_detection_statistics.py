@@ -30,25 +30,10 @@ def run():
     consoleHandler.setLevel(logging.INFO)
     logger.addHandler(consoleHandler)
 
-    succ_folders = glob.glob(os.path.join(
-        datasets_of_filtering_schemes_folder,
-        'No.* filtering scheme',
-        'successful_skills',
-        'skill *',
-    )) 
-
-    unsucc_folders = glob.glob(os.path.join(
-        datasets_of_filtering_schemes_folder,
-        'No.* filtering scheme',
-        'unsuccessful_skills',
-        'skill *',
-    ))
-
     model_folders = glob.glob(os.path.join(
         datasets_of_filtering_schemes_folder,
         'introspection_models',
         'No.* filtering scheme', 
-        'successful_skills',
         'skill *',
     ))
 
@@ -56,15 +41,18 @@ def run():
         logger.info(os.path.realpath(model_folder))
         model = joblib.load(os.path.join(model_folder, 'introspection_model'))
         path_postfix = os.path.relpath(model_folder, os.path.join(datasets_of_filtering_schemes_folder, 'introspection_models'))
-        succ_folder = os.path.join(datasets_of_filtering_schemes_folder, path_postfix)
-        unsucc_folder = succ_folder.replace("successful_skills", "unsuccessful_skills")
-        model_stat = {
-            "TP": 0,
-            "TN": 0,
-            "FP": 0,
-            "FN": 0,
-        }
+
+        output_dir = os.path.join(
+            datasets_of_filtering_schemes_folder,
+            'introspection_statistics',
+            path_postfix,
+        )
+        stat_file = os.path.join(output_dir, os.path.basename(output_dir)+' stat.csv')
+
+        succ_folder = os.path.join(datasets_of_filtering_schemes_folder, path_postfix).replace(os.sep+"skill", os.sep+"successful_skills"+os.sep+"skill")
+        unsucc_folder = os.path.join(datasets_of_filtering_schemes_folder, path_postfix).replace(os.sep+"skill", os.sep+"unsuccessful_skills"+os.sep+"skill")
         stat_df = pd.DataFrame(columns=['sample name', 'anomaly type', 'TP', 'TN', 'FP', 'FN'])
+
         for csv in glob.glob(os.path.join(succ_folder, '*.csv')):
             logger.info(csv)
             df = pd.read_csv(csv, sep=',')
@@ -75,7 +63,7 @@ def run():
                 stat['FP'] = 1
             else:
                 stat['TN'] = 1
-            stat.update({"sample name": csv})
+            stat.update({"sample name": os.path.basename(csv)})
             stat_df = stat_df.append(stat, ignore_index=True)
 
         for csv in glob.glob(os.path.join(unsucc_folder, '*', '*.csv')):
@@ -98,8 +86,12 @@ def run():
                     stat['FP'] = 1
                 else:
                     stat['TP'] = 1
-            stat.update({"sample name": csv, 'anomaly_type': anomaly_type})
+            stat.update({"sample name": os.path.basename(csv), 'anomaly type': anomaly_type})
             stat_df = stat_df.append(stat, ignore_index=True)
+
+        if not os.path.isdir(output_dir):
+            os.makedirs(output_dir)
+        stat_df.to_csv(stat_file)
 
 
 if __name__ == '__main__':
