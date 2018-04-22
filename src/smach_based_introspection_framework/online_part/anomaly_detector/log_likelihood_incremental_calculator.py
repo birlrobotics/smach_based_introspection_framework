@@ -73,7 +73,6 @@ class BNPYModelIncrementalLoglikCalculator(object):
             self.fwdlattice = np.zeros((1, self.n_components))
             for i in range(self.n_components):
                 self.fwdlattice[0,i] = self.log_startprob[i] + framelogprob[0,i]
-            print "I am here"
         else:
             self.fwdlattice = np.append(self.fwdlattice, np.zeros((1, self.n_components)), axis=0)
             for j in range(self.n_components):
