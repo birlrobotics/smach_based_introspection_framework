@@ -58,22 +58,26 @@ def run():
         path_postfix = os.path.relpath(model_folder, os.path.join(datasets_of_filtering_schemes_folder, 'introspection_models'))
         succ_folder = os.path.join(datasets_of_filtering_schemes_folder, path_postfix)
         unsucc_folder = succ_folder.replace("successful_skills", "unsuccessful_skills")
-        logger.info(os.path.realpath(succ_folder))
-        logger.info(os.path.realpath(unsucc_folder))
         model_stat = {
             "TP": 0,
             "TN": 0,
             "FP": 0,
             "FN": 0,
         }
+        stat_df = pd.DataFrame(columns=['sample name', 'anomaly type', 'TP', 'TN', 'FP', 'FN'])
         for csv in glob.glob(os.path.join(succ_folder, '*.csv')):
             logger.info(csv)
             df = pd.read_csv(csv, sep=',')
             anomaly_t = get_first_anomaly_signal_time(model, df.values[:, 1:], df.values[:, 0].reshape(-1))
+            
+            stat = {}
             if anomaly_t is not None:
-                model_stat['FP'] += 1
+                stat['FP'] = 1
             else:
-                model_stat['TN'] += 1
+                stat['TN'] = 1
+            stat.update({"sample name": csv})
+            stat_df = stat_df.append(stat, ignore_index=True)
+
         for csv in glob.glob(os.path.join(unsucc_folder, '*', '*.csv')):
             logger.info(csv)
             df = pd.read_csv(csv, sep=',')
@@ -81,17 +85,22 @@ def run():
                 os.path.dirname(csv),
                 'anomaly_label_and_signal_time.pkl'
             ), 'r'))
+            anomaly_type = anomaly_label_and_signal_time[0]
             anomaly_t_by_human = anomaly_label_and_signal_time[1].to_sec()
             anomaly_t = get_first_anomaly_signal_time(model, df.values[:, 1:], df.values[:, 0].reshape(-1))
+
+            stat = {}
             if anomaly_t is None:
-                model_stat['FN'] += 1
+                stat['FN'] = 1
             else:
                 t_diff = abs(anomaly_t_by_human-anomaly_t)
                 if t_diff > 1:
-                    model_stat['FP'] += 1
+                    stat['FP'] = 1
                 else:
-                    model_stat['TP'] += 1
-        logger.info(model_stat)
+                    stat['TP'] = 1
+            stat.update({"sample name": csv, 'anomaly_type': anomaly_type})
+            stat_df = stat_df.append(stat, ignore_index=True)
+
 
 if __name__ == '__main__':
     run()
