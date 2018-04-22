@@ -96,6 +96,5 @@ def run():
             os.makedirs(output_dir)
         stat_df.to_csv(stat_file)
 
-
 if __name__ == '__main__':
     run()
