@@ -48,6 +48,9 @@ def run():
             path_postfix,
         )
         stat_file = os.path.join(output_dir, os.path.basename(output_dir)+' stat.csv')
+        if os.path.isfile(stat_file):
+            logger.info("Stat file already exists, gonna skip")
+            continue
 
         succ_folder = os.path.join(datasets_of_filtering_schemes_folder, path_postfix).replace(os.sep+"skill", os.sep+"successful_skills"+os.sep+"skill")
         unsucc_folder = os.path.join(datasets_of_filtering_schemes_folder, path_postfix).replace(os.sep+"skill", os.sep+"unsuccessful_skills"+os.sep+"skill")
