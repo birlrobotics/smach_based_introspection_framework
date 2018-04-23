@@ -7,6 +7,7 @@ from smach_based_introspection_framework.msg import tactile_static
 filtering_schemes = []
 
 
+# A new scheme
 tfc = RosTopicFilteringScheme()
 tfc.add_filter(
     "/robotiq_force_torque_wrench", 
@@ -16,6 +17,7 @@ tfc.add_filter(
 filtering_schemes.append(tfc)
 
 
+# A new scheme
 tfc = RosTopicFilteringScheme()
 tfc.add_filter(
     "/robotiq_force_torque_wrench", 
@@ -25,6 +27,7 @@ tfc.add_filter(
 filtering_schemes.append(tfc)
 
 
+# A new scheme
 tfc = RosTopicFilteringScheme()
 tfc.add_filter(
     "/robotiq_force_torque_wrench", 
@@ -39,6 +42,7 @@ tfc.add_filter(
 filtering_schemes.append(tfc)
 
 
+# A new scheme
 tfc = RosTopicFilteringScheme()
 tfc.add_filter(
     "/robot/limb/right/endpoint_state", 
@@ -47,11 +51,46 @@ tfc.add_filter(
 )
 filtering_schemes.append(tfc)
 
-
+# A new scheme
 tfc = RosTopicFilteringScheme()
 tfc.add_filter(
     "/tactile_sensor_data", 
     tactile_static,
     msg_filters.HongminTactileFeatureMaxFilter(),
+)
+filtering_schemes.append(tfc)
+
+
+# A new scheme
+tfc = RosTopicFilteringScheme()
+tfc.add_filter(
+    "/tactile_sensor_data", 
+    tactile_static,
+    msg_filters.HongminTactileFeatureMaxFilter(),
+)
+tfc.add_filter(
+    "/robotiq_force_torque_wrench", 
+    WrenchStamped, 
+    msg_filters.WrenchStampedNormFilter(),
+)
+tfc.add_filter(
+    "/robot/limb/right/endpoint_state", 
+    EndpointState,
+    msg_filters.BaxterEndpointTwistNormFilter(),
+)
+filtering_schemes.append(tfc)
+
+
+# A new scheme
+tfc = RosTopicFilteringScheme()
+tfc.add_filter(
+    "/tactile_sensor_data", 
+    tactile_static,
+    msg_filters.HongminTactileFeatureMaxFilter(),
+)
+tfc.add_filter(
+    "/robotiq_force_torque_wrench", 
+    WrenchStamped, 
+    msg_filters.WrenchStampedNormFilter(),
 )
 filtering_schemes.append(tfc)
