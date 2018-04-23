@@ -8,9 +8,9 @@ coloredlogs.install()
 
 if __name__ == '__main__':
     logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     consoleHandler = logging.StreamHandler()
-    consoleHandler.setLevel(logging.DEBUG)
+    consoleHandler.setLevel(logging.INFO)
     logger.addHandler(consoleHandler)
     generate_succ_and_unsucc_datasets.run()
     generate_dataset_plots.run()

@@ -73,7 +73,8 @@ class HongminTactileFeatureMaxFilter(TopicMsgFilter):
         super(HongminTactileFeatureMaxFilter, self).__init__()
 
     def convert(self, msg):
-        return [msg.tactile_values_4, tactile_values_9] 
+        return [msg.tactile_values_4, msg.tactile_values_9] 
+
     def vector_size(self):
         return 2 
 
