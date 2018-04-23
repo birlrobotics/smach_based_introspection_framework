@@ -40,10 +40,24 @@ def run():
 
         df['scheme_no'] = scheme_no
         df['skill_no'] = skill_no
+        df = df.fillna({"anomaly type": "success"}).fillna(0)
     
         big_df = big_df.append(df)
-    ipdb.set_trace()
-    #TODO sumarize and generate human readiable txt report.
+    big_df = big_df.drop(['sample name', big_df.columns[0]], axis=1).set_index(['scheme_no', 'skill_no', 'anomaly type'])
+    big_df = big_df.astype(int)
+    report = open(os.path.join(datasets_of_filtering_schemes_folder, 'report.txt'), 'w') 
+    report.write("granularity: scheme\n")
+    report.write("-"*30+"\n")
+    report.write(str(big_df.groupby(level=[0]).sum()))
+    report.write("\n\n")
+    report.write("granularity: skill\n")
+    report.write("-"*30+"\n")
+    report.write(str(big_df.groupby(level=[0, 1]).sum()))
+    report.write("\n\n")
+    report.write("granularity: anomaly type\n")
+    report.write("-"*30+"\n")
+    report.write(str(big_df.groupby(level=[0, 1, 2]).sum()))
+    report.write("\n\n")
 
 if __name__ == '__main__':
     run()
