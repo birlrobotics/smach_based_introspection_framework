@@ -68,6 +68,7 @@ def run():
                     setup_and_get_scheme_folder(scheme_count, filtering_scheme, exp_dir),
                     'successful_skills',
                     'skill %s'%tag,
+                    'No.%s successful skill from %s'%(skill_count, os.path.basename(exp_dir)),
                     'No.%s successful skill from %s.csv'%(skill_count, os.path.basename(exp_dir))
                 )
                 generate_and_save_csv(output_csv, er, st, et, filtering_scheme, ortt, logger)

@@ -56,7 +56,7 @@ def run():
         unsucc_folder = os.path.join(datasets_of_filtering_schemes_folder, path_postfix).replace(os.sep+"skill", os.sep+"unsuccessful_skills"+os.sep+"skill")
         stat_df = pd.DataFrame(columns=['sample name', 'anomaly type', 'TP', 'TN', 'FP', 'FN'])
 
-        for csv in glob.glob(os.path.join(succ_folder, '*.csv')):
+        for csv in glob.glob(os.path.join(succ_folder, '*', '*.csv')):
             logger.info(csv)
             df = pd.read_csv(csv, sep=',')
             anomaly_t = get_first_anomaly_signal_time(model, df.values[:, 1:], df.values[:, 0].reshape(-1))

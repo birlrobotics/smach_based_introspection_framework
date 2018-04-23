@@ -43,7 +43,7 @@ def run():
 
         csvs = glob.glob(os.path.join(
             succ_folder,
-            '*.csv',
+            '*', '*.csv',
         ))
         list_of_mat = []
         for j in csvs:
