@@ -67,3 +67,18 @@ class BaxterEndpointTwistNormFilter(TopicMsgFilter):
             'baxter_enpoint_pose.twist.linear.norm', \
             'baxter_enpoint_pose.twist.angular.norm', \
         ] 
+
+class HongminTactileFeatureMaxFilter(TopicMsgFilter):
+    def __init__(self):
+        super(HongminTactileFeatureMaxFilter, self).__init__()
+
+    def convert(self, msg):
+        return [msg.tactile_values_4, tactile_values_9] 
+    def vector_size(self):
+        return 2 
+
+    def vector_meaning(self):
+        return [
+            'left_tactile_sensor.max', \
+            'right_tactile_sensor.max', \
+        ] 

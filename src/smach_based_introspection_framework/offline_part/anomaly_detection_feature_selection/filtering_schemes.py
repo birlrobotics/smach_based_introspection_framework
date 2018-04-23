@@ -2,6 +2,7 @@ from geometry_msgs.msg import WrenchStamped
 from baxter_core_msgs.msg import EndpointState 
 import msg_filters
 from rostopics_to_timeseries import RosTopicFilteringScheme
+from smach_based_introspection_framework.msg import tactile_static
 
 filtering_schemes = []
 
@@ -43,5 +44,14 @@ tfc.add_filter(
     "/robot/limb/right/endpoint_state", 
     EndpointState,
     msg_filters.BaxterEndpointTwistNormFilter(),
+)
+filtering_schemes.append(tfc)
+
+
+tfc = RosTopicFilteringScheme()
+tfc.add_filter(
+    "/tactile_sensor_data", 
+    tactile_static,
+    msg_filters.HongminTactileFeatureMaxFilter(),
 )
 filtering_schemes.append(tfc)
