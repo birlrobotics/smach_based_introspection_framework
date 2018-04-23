@@ -51,10 +51,6 @@ def generate_and_save_csv(output_csv, er, st, et, filtering_scheme, ortt, logger
     
 def run():
     logger = logging.getLogger('FilteringRecordsWithSchemes')
-    logger.setLevel(logging.INFO)
-    consoleHandler = logging.StreamHandler()
-    consoleHandler.setLevel(logging.INFO)
-    logger.addHandler(consoleHandler)
     exp_dirs = [i for i in glob.glob(os.path.join(experiment_record_folder, '*')) if os.path.isdir(i)]
     exp_dirs.sort() 
     for scheme_count, filtering_scheme in enumerate(filtering_schemes):
@@ -97,4 +93,9 @@ def run():
                     break
 
 if __name__ == '__main__':
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    consoleHandler = logging.StreamHandler()
+    consoleHandler.setLevel(logging.DEBUG)
+    logger.addHandler(consoleHandler)
     run()
