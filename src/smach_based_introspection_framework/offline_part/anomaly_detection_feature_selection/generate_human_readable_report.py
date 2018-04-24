@@ -7,6 +7,10 @@ import coloredlogs, logging
 import pandas as pd
 import ipdb
 import re
+from filtering_schemes import filtering_schemes
+
+
+pd.options.display.max_rows = 999
 
 def run():
     logger = logging.getLogger('GenReport')
@@ -45,7 +49,18 @@ def run():
         big_df = big_df.append(df)
     big_df = big_df.drop(['sample name', big_df.columns[0]], axis=1).set_index(['scheme_no', 'skill_no', 'anomaly type'])
     big_df = big_df.astype(int)
+
     report = open(os.path.join(datasets_of_filtering_schemes_folder, 'report.txt'), 'w') 
+    report.write("scheme info\n")
+    report.write("="*30+"\n")
+    for scheme_count, filtering_scheme in enumerate(filtering_schemes):
+        report.write("scheme %s:\n"%scheme_count)
+        report.write("-"*30+"\n")
+        report.write(str(filtering_scheme.timeseries_header))
+        report.write("\n\n")
+
+    report.write("scheme performance\n")
+    report.write("="*30+"\n")
     report.write("granularity: scheme\n")
     report.write("-"*30+"\n")
     report.write(str(big_df.groupby(level=[0]).sum()))
