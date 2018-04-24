@@ -30,7 +30,7 @@ def run():
     )) 
     for succ_folder in succ_folders:
         logger.info(succ_folder)
-        path_postfix = os.path.relpath(succ_folder, datasets_of_filtering_schemes_folder)
+        path_postfix = os.path.relpath(succ_folder, datasets_of_filtering_schemes_folder).replace("successful_skills"+os.sep, "")
         output_dir = os.path.join(
             datasets_of_filtering_schemes_folder,
             'introspection_models',
@@ -43,7 +43,7 @@ def run():
 
         csvs = glob.glob(os.path.join(
             succ_folder,
-            '*.csv',
+            '*', '*.csv',
         ))
         list_of_mat = []
         for j in csvs:

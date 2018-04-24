@@ -94,10 +94,10 @@ model_config = {
     'n_iteration': 1000,
     'K': 10,
     'alloModel' : 'HDPHMM',
-    'obsModel'  : 'AutoRegGauss',
+    'obsModel'  : 'Gauss',
     'varMethod' : ListOfParams(['memoVB']),
     'ECovMat'   : ListOfParams(['covdata']), #diagcovdata
- }
+}
 
 
 anomaly_window_size_in_sec = 4

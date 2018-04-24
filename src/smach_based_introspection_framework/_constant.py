@@ -56,6 +56,10 @@ datasets_of_filtering_schemes_folder = os.path.join(
     introspection_data_folder,
     "datasets_of_filtering_schemes_folder")
 
+cache_folder = os.path.join(
+    introspection_data_folder,
+    "cache_folder")
+
 SUCCESSULLY_EXECUTED_SKILL = 0
 UNSUCCESSFULLY_EXECUTED_SKILL = 1
 

@@ -35,11 +35,16 @@ def setup_and_get_scheme_folder(scheme_count, filtering_scheme, exp_dir):
 
 def generate_and_save_csv(output_csv, er, st, et, filtering_scheme, ortt, logger):
     if not os.path.isfile(output_csv):
-        t, mat = ortt.get_timeseries_mat(
-            er.rosbag,
-            st,
-            et,
-        )
+        try:
+            t, mat = ortt.get_timeseries_mat(
+                er.rosbag,
+                st,
+                et,
+            )
+        except Exception as e:
+            logger.error("Fail to get timeseries_mat: %s"%e)
+            return
+        
         df = pd.DataFrame(mat, columns=filtering_scheme.timeseries_header, index=t)
         output_dir = os.path.dirname(output_csv)
         if not os.path.isdir(output_dir):
@@ -51,16 +56,12 @@ def generate_and_save_csv(output_csv, er, st, et, filtering_scheme, ortt, logger
     
 def run():
     logger = logging.getLogger('FilteringRecordsWithSchemes')
-    logger.setLevel(logging.INFO)
-    consoleHandler = logging.StreamHandler()
-    consoleHandler.setLevel(logging.INFO)
-    logger.addHandler(consoleHandler)
     exp_dirs = [i for i in glob.glob(os.path.join(experiment_record_folder, '*')) if os.path.isdir(i)]
     exp_dirs.sort() 
-    for scheme_count, filtering_scheme in enumerate(filtering_schemes):
-        for exp_dir in exp_dirs:
-            logger.info(exp_dir)
-            er = ExperimentRecord(exp_dir)
+    for exp_dir in exp_dirs:
+        logger.info(exp_dir)
+        er = ExperimentRecord(exp_dir)
+        for scheme_count, filtering_scheme in enumerate(filtering_schemes):
             ortt = OfflineRostopicsToTimeseries(filtering_scheme, rate=10) 
             for skill_count, (tag, (st, et)) in enumerate(er.successful_tag_ranges):
                 logger.debug("No.%s successful skill"%skill_count)
@@ -68,6 +69,7 @@ def run():
                     setup_and_get_scheme_folder(scheme_count, filtering_scheme, exp_dir),
                     'successful_skills',
                     'skill %s'%tag,
+                    'No.%s successful skill from %s'%(skill_count, os.path.basename(exp_dir)),
                     'No.%s successful skill from %s.csv'%(skill_count, os.path.basename(exp_dir))
                 )
                 generate_and_save_csv(output_csv, er, st, et, filtering_scheme, ortt, logger)
@@ -96,4 +98,9 @@ def run():
                     break
 
 if __name__ == '__main__':
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    consoleHandler = logging.StreamHandler()
+    consoleHandler.setLevel(logging.DEBUG)
+    logger.addHandler(consoleHandler)
     run()

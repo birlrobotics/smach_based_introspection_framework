@@ -3,26 +3,34 @@ import glob
 import rosbag
 import ipdb
 import coloredlogs, logging
-coloredlogs.install()
-
+import pickle
 from smach_based_introspection_framework._constant import (
     anomaly_label_file,
+    cache_folder,
 )
+coloredlogs.install()
 
 class ExperimentRecord(object):
     def __init__(self, folder_path):
         self.folder_path = folder_path
         logger = logging.getLogger('ExpRecordOf...%s'%str(folder_path)[-20:])
-        logger.setLevel(logging.INFO)
-        consoleHandler = logging.StreamHandler()
-        consoleHandler.setLevel(logging.INFO)
-        logger.addHandler(consoleHandler)
         self.logger = logger
         
 
     @property
     def tag_ranges(self):
         if hasattr(self, "_tag_ranges"):
+            return self._tag_ranges
+
+        cache_file = os.path.join(
+            cache_folder, 
+            "tag_ranges_cache", 
+            os.path.basename(self.folder_path)+'\'s tag_ranges.pkl'
+        )
+
+        if os.path.isfile(cache_file):
+            self._tag_ranges = pickle.load(open(cache_file, 'r')) 
+            self.logger.debug("tag ranges cache found.")
             return self._tag_ranges
 
         last_tag = None
@@ -41,6 +49,10 @@ class ExperimentRecord(object):
         ranges.append((last_tag, (last_tag_starts_at, time)))
 
         self._tag_ranges = ranges
+        cache_output_dir = os.path.dirname(cache_file)
+        if not os.path.isdir(cache_output_dir):
+            os.makedirs(cache_output_dir)
+        pickle.dump(self._tag_ranges, open(cache_file, 'wb'))
         return self._tag_ranges
 
     @property
