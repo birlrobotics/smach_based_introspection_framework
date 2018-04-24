@@ -142,6 +142,12 @@ topics_to_be_recorded_into_rosbag = [
     '/robotiq_force_torque_wrench',
     '/tactile_sensor_data',
     '/observation/goal_vector',
+    '/TactileSensor4/StaticData',
+    '/TactileSensor4/Dynamic',
+    '/TactileSensor4/EulerAngle',
+    '/TactileSensor4/Gyroscope',
+    '/TactileSensor4/Magnetometer',
+    '/TactileSensor4/Accelerometer',
 ]
 
 for tu in info_of_topics_to_timeseries:
