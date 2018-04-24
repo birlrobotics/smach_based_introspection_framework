@@ -67,8 +67,7 @@ class BNPYModelIncrementalLoglikCalculator(object):
         doc_range = [0, length]
         dataset = bnpy.data.GroupXData(X, doc_range, length, Xprev)
 
-        LP = self.model.calc_local_params(dataset)
-        framelogprob = LP['E_log_soft_ev'] 
+        framelogprob = self.model.obsModel.calcLogSoftEvMatrix_FromPost(dataset)
         if self.fwdlattice is None:
             self.fwdlattice = np.zeros((1, self.n_components))
             for i in range(self.n_components):
