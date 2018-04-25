@@ -36,17 +36,17 @@ class ExperimentRecord(object):
         last_tag = None
         last_tag_starts_at = None
         ranges = []
-        for count, (topic, msg, time) in enumerate(self.rosbag.read_messages('/tag_multimodal')):
+        for count, (topic, msg, record_time) in enumerate(self.rosbag.read_messages('/tag_multimodal')):
             cur_tag = int(msg.tag)
             if last_tag is None:
                 last_tag = cur_tag
-                last_tag_starts_at = time
+                last_tag_starts_at = msg.header.stamp
 
             if cur_tag != last_tag:
-                ranges.append((last_tag, (last_tag_starts_at, time)))
+                ranges.append((last_tag, (last_tag_starts_at, msg.header.stamp)))
                 last_tag = cur_tag
-                last_tag_starts_at = time
-        ranges.append((last_tag, (last_tag_starts_at, time)))
+                last_tag_starts_at = msg.header.stamp
+        ranges.append((last_tag, (last_tag_starts_at, msg.header.stamp)))
 
         self._tag_ranges = ranges
         cache_output_dir = os.path.dirname(cache_file)
@@ -120,7 +120,7 @@ class ExperimentRecord(object):
 
         signals = []
         anomaly_start_time = None
-        for count, (topic, msg, time) in enumerate(self.rosbag.read_messages('/anomaly_detection_signal')):
+        for count, (topic, msg, record_time) in enumerate(self.rosbag.read_messages('/anomaly_detection_signal')):
             cur_anomaly_time = msg.stamp
             if anomaly_start_time is None or \
                 (cur_anomaly_time-anomaly_start_time).to_sec > 2:
