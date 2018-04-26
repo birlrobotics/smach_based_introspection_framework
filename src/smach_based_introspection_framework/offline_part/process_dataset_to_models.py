@@ -105,7 +105,7 @@ def run():
     prog = re.compile(r'nominal_skill_(\d+)_anomaly_type_(.*)')
     anomaly_paths = glob.glob(os.path.join(latest_dataset_folder, "anomaly_data", '*'))
     all_anomaly_type = []
-    for i in glob.glob(os.path.join(latest_dataset_folder, "anomaly_data", '*')):
+    for i in anomaly_paths:
         m = prog.match(os.path.basename(i))
         all_anomaly_type.append(m.group(2))
     for anomaly_type in np.unique(all_anomaly_type):
