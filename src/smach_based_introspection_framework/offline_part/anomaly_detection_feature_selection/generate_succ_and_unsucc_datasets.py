@@ -43,7 +43,7 @@ def generate_and_save_csv(output_csv, er, st, et, filtering_scheme, ortt, logger
             )
         except Exception as e:
             logger.error("Fail to get timeseries_mat: %s"%e)
-            return
+            raise e
         
         df = pd.DataFrame(mat, columns=filtering_scheme.timeseries_header, index=t)
         output_dir = os.path.dirname(output_csv)
@@ -96,6 +96,16 @@ def run():
                     logger.error("Exception: %s"%e)
                     shutil.rmtree(os.path.dirname(output_csv), ignore_errors=True) 
                     break
+
+            logger.debug("whole experiment")
+            output_csv = os.path.join(
+                setup_and_get_scheme_folder(scheme_count, filtering_scheme, exp_dir),
+                'whole_experiment',
+                '%s'%(os.path.basename(exp_dir)),
+                '%s.csv'%(os.path.basename(exp_dir)),
+            )
+            generate_and_save_csv(output_csv, er, None, None, filtering_scheme, ortt, logger)
+
 
 if __name__ == '__main__':
     logger = logging.getLogger()

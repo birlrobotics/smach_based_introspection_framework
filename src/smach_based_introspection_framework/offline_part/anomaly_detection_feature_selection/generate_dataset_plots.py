@@ -30,7 +30,13 @@ def run():
         'skill *',
     )) 
 
-    for folder in itertools.chain(succ_folders, unsucc_folders):
+    whole_exp_folders = glob.glob(os.path.join(
+        datasets_of_filtering_schemes_folder,
+        'No.* filtering scheme',
+        'whole_experiment',
+    )) 
+
+    for folder in itertools.chain(succ_folders, unsucc_folders, whole_exp_folders):
         logger.info(folder)
         path_postfix = os.path.relpath(folder, datasets_of_filtering_schemes_folder)
 
@@ -60,8 +66,7 @@ def run():
 
             if not os.path.isdir(output_dir):
                 os.makedirs(output_dir)
-            ax.set_xlim(right=min(ax.get_xlim()[1], 20))
-            fig.set_size_inches(16, 16)
+            fig.set_size_inches(64, 16)
             fig.savefig(fig_file)
 
 if __name__ == '__main__':

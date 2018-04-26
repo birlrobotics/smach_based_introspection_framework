@@ -83,3 +83,39 @@ class HongminTactileFeatureMaxFilter(TopicMsgFilter):
             'left_tactile_sensor.max', \
             'right_tactile_sensor.max', \
         ] 
+
+class TactileStaticMaxFilter(TopicMsgFilter):
+    def __init__(self):
+        super(TactileStaticMaxFilter, self).__init__()
+
+    def convert(self, msg):
+        return [max(\
+            max(msg.taxels[0].values),
+            max(msg.taxels[1].values),
+        )]
+
+    def vector_size(self):
+        return 1
+
+    def vector_meaning(self):
+        return [
+            'tactile_static_data.max', \
+        ] 
+
+class TactileDynamicAbsMaxFilter(TopicMsgFilter):
+    def __init__(self):
+        super(TactileDynamicAbsMaxFilter, self).__init__()
+
+    def convert(self, msg):
+        return [max(\
+            abs(msg.data[0].value), 
+            abs(msg.data[1].value), 
+        )]
+
+    def vector_size(self):
+        return 1
+
+    def vector_meaning(self):
+        return [
+            'tactile_dynamic_data.absmax', \
+        ] 
