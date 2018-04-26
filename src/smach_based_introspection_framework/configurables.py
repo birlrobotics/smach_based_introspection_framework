@@ -94,7 +94,7 @@ model_config = {
     'n_iteration': 1000,
     'K': 10,
     'alloModel' : 'HDPHMM',
-    'obsModel'  : 'Gauss',
+    'obsModel'  : 'AutoRegGauss',
     'varMethod' : ListOfParams(['memoVB']),
     'ECovMat'   : ListOfParams(['covdata']), #diagcovdata
 }
