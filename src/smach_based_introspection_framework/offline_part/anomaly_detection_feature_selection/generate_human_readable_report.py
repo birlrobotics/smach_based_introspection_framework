@@ -9,14 +9,18 @@ import ipdb
 import re
 from filtering_schemes import filtering_schemes
 
-
-pd.options.display.max_rows = 999
+pd.set_option("display.max_rows", None)
+pd.set_option("display.max_columns", None)
+pd.set_option("display.width", 1000)
+pd.set_option("display.precision", 3)
 
 def append_metrics(df_):
     df = df_.copy()
     df['precision'] = df['TP']/(df['TP']+df['FP']) 
     df['recall'] = df['TP']/(df['TP']+df['FN']) 
-    df['F1score'] = 2/(1/df['recall']+1/df['precision'])
+    df['F1score'] = 2*df['TP']/(2*df['TP']+df['FP']+df['FN'])
+
+    df['accuracy'] = (df['TP']+df['TN'])/(df['TP']+df['TN']+df['FP']+df['FN']) 
     return df
 
 def run():
