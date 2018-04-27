@@ -12,6 +12,13 @@ from filtering_schemes import filtering_schemes
 
 pd.options.display.max_rows = 999
 
+def append_metrics(df_):
+    df = df_.copy()
+    df['precision'] = df['TP']/(df['TP']+df['FP']) 
+    df['recall'] = df['TP']/(df['TP']+df['FN']) 
+    df['F1score'] = 2/(1/df['recall']+1/df['precision'])
+    return df
+
 def run():
     logger = logging.getLogger('GenReport')
     logger.setLevel(logging.INFO)
@@ -63,15 +70,15 @@ def run():
     report.write("="*30+"\n")
     report.write("granularity: scheme\n")
     report.write("-"*30+"\n")
-    report.write(str(big_df.groupby(level=[0]).sum()))
+    report.write(str(append_metrics(big_df.groupby(level=[0]).sum())))
     report.write("\n\n")
     report.write("granularity: skill\n")
     report.write("-"*30+"\n")
-    report.write(str(big_df.groupby(level=[0, 1]).sum()))
+    report.write(str(append_metrics(big_df.groupby(level=[0, 1]).sum())))
     report.write("\n\n")
     report.write("granularity: anomaly type\n")
     report.write("-"*30+"\n")
-    report.write(str(big_df.groupby(level=[0, 1, 2]).sum()))
+    report.write(str(append_metrics(big_df.groupby(level=[0, 1, 2]).sum())))
     report.write("\n\n")
 
 if __name__ == '__main__':

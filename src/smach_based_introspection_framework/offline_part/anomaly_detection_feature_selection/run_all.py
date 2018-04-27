@@ -13,7 +13,10 @@ if __name__ == '__main__':
     consoleHandler.setLevel(logging.INFO)
     logger.addHandler(consoleHandler)
     generate_succ_and_unsucc_datasets.run()
-    generate_dataset_plots.run()
+    try:
+        generate_dataset_plots.run()
+    except:
+        pass
     generate_introspection_models.run()
     collect_detection_statistics.run()
     generate_human_readable_report.run()
