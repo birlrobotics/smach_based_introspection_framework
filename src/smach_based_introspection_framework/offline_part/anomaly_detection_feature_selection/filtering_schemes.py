@@ -11,31 +11,39 @@ filtering_schemes = []
 args = []
 
 # A new scheme
-args.append([
+args.append([[
     "/TactileSensor4/StaticData", 
     tactilesensors4.msg.StaticData,
-    msg_filters.TactileStaticMaxFilter(),
-])
+    msg_filters.TactileStaticStdFilter(),
+]])
+args.append([[
+    "/TactileSensor4/StaticData", 
+    tactilesensors4.msg.StaticData,
+    msg_filters.TactileStaticMeanFilter(),
+]])
 args.append([
-    "/TactileSensor4/Dynamic", 
-    tactilesensors4.msg.Dynamic,
-    msg_filters.TactileDynamicAbsMaxFilter(),
-])
-args.append([
-    "/robotiq_force_torque_wrench", 
-    WrenchStamped, 
-    msg_filters.WrenchStampedNormFilter(),
-])
-args.append([
-    "/robot/limb/right/endpoint_state", 
-    EndpointState,
-    msg_filters.BaxterEndpointTwistNormFilter(),
+    [
+        "/TactileSensor4/Dynamic", 
+        tactilesensors4.msg.Dynamic,
+        msg_filters.TactileDynamicAbsMaxFilter(),
+    ],
+    [
+        "/robotiq_force_torque_wrench", 
+        WrenchStamped, 
+        msg_filters.WrenchStampedNormFilter(),
+    ],
+    [
+        "/robot/limb/right/endpoint_state", 
+        EndpointState,
+        msg_filters.BaxterEndpointTwistNormFilter(),
+    ],
 ])
 
 for prod in itertools.product(*[(None, i) for i in args]):
     tfc = RosTopicFilteringScheme()
     for j in prod:
         if j is not None:
-            tfc.add_filter(*j)
+            for k in j:
+                tfc.add_filter(*k)
     if len(tfc.timeseries_header) != 0:
         filtering_schemes.append(tfc)

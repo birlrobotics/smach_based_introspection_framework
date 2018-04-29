@@ -102,6 +102,43 @@ class TactileStaticMaxFilter(TopicMsgFilter):
             'tactile_static_data.max', \
         ] 
 
+class TactileStaticMeanFilter(TopicMsgFilter):
+    def __init__(self):
+        super(TactileStaticMeanFilter, self).__init__()
+
+    def convert(self, msg):
+        return [np.mean([\
+            np.mean(msg.taxels[0].values),
+            np.mean(msg.taxels[1].values),
+        ])]
+
+    def vector_size(self):
+        return 1
+
+    def vector_meaning(self):
+        return [
+            'tactile_static_data.mean', \
+        ] 
+
+class TactileStaticStdFilter(TopicMsgFilter):
+    def __init__(self):
+        super(TactileStaticStdFilter, self).__init__()
+
+    def convert(self, msg):
+        return [
+            np.std(msg.taxels[0].values),
+            np.std(msg.taxels[1].values),
+        ]
+
+    def vector_size(self):
+        return 2
+
+    def vector_meaning(self):
+        return [
+            'tactile_static_data.left.std', \
+            'tactile_static_data.right.std', \
+        ] 
+
 class TactileDynamicAbsMaxFilter(TopicMsgFilter):
     def __init__(self):
         super(TactileDynamicAbsMaxFilter, self).__init__()
