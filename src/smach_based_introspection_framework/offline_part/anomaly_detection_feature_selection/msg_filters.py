@@ -1,5 +1,6 @@
 from rostopics_to_timeseries import TopicMsgFilter
 import numpy as np
+from collections import deque
 
 class WrenchStampedFilter(TopicMsgFilter):
     def __init__(self):
@@ -202,4 +203,69 @@ class TactileDynamicAbsMaxFilter(TopicMsgFilter):
     def vector_meaning():
         return [
             'tactile_dynamic_data.absmax', \
+        ] 
+
+class TactileStaticStdEdgeDetectorSize3Filter(TopicMsgFilter):
+    def __init__(self):
+        super(TactileStaticStdEdgeDetectorSize3Filter, self).__init__()
+        self.prev_f = deque()
+
+    def convert(self, msg):
+        cur_f = [
+            np.std(msg.taxels[0].values),
+            np.std(msg.taxels[1].values),
+        ]
+        self.prev_f.append(cur_f)
+        if len(self.prev_f) < 3:
+            ret = [0, 0]
+        else:
+            ret = [
+                self.prev_f[0][0]+self.prev_f[2][0]-2*self.prev_f[1][0], 
+                self.prev_f[0][1]+self.prev_f[2][1]-2*self.prev_f[1][1], 
+            ]
+            self.prev_f.popleft()
+        return ret
+
+    @staticmethod
+    def vector_size():
+        return 2
+
+    @staticmethod
+    def vector_meaning():
+        return [
+            'tactile_static_data.left.std.EdgeDetectorSize3', \
+            'tactile_static_data.right.std.EdgeDetectorSize3', \
+        ] 
+
+
+class TactileStaticStdEdgeDetectorSize5Filter(TopicMsgFilter):
+    def __init__(self):
+        super(TactileStaticStdEdgeDetectorSize5Filter, self).__init__()
+        self.prev_f = deque()
+
+    def convert(self, msg):
+        cur_f = [
+            np.std(msg.taxels[0].values),
+            np.std(msg.taxels[1].values),
+        ]
+        self.prev_f.append(cur_f)
+        if len(self.prev_f) < 5:
+            ret = [0, 0]
+        else:
+            ret = [
+                -2*self.prev_f[0][0]-self.prev_f[1][0]+self.prev_f[3][0]+2*self.prev_f[4][0], 
+                -2*self.prev_f[0][1]-self.prev_f[1][1]+self.prev_f[3][1]+2*self.prev_f[4][1], 
+            ]
+            self.prev_f.popleft()
+        return ret
+
+    @staticmethod
+    def vector_size():
+        return 2
+
+    @staticmethod
+    def vector_meaning():
+        return [
+            'tactile_static_data.left.std.EdgeDetectorSize5', \
+            'tactile_static_data.right.std.EdgeDetectorSize5', \
         ] 

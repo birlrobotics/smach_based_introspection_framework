@@ -78,5 +78,10 @@ def run():
         )
 
 if __name__ == '__main__':
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    consoleHandler = logging.StreamHandler()
+    consoleHandler.setLevel(logging.DEBUG)
+    logger.addHandler(consoleHandler)
     run()
     

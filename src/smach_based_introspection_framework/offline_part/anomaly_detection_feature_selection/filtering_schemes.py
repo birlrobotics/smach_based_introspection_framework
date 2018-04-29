@@ -10,22 +10,16 @@ filtering_schemes = []
 
 args = []
 
-
-args.append([[
-    "/TactileSensor4/StaticData", 
-    tactilesensors4.msg.StaticData,
-    msg_filters.TactileStaticStdFilter,
-]])
-args.append([[
-    "/TactileSensor4/StaticData", 
-    tactilesensors4.msg.StaticData,
-    msg_filters.TactileStaticMeanFilter,
-]])
 args.append([
     [
         "/TactileSensor4/StaticData", 
         tactilesensors4.msg.StaticData,
-        msg_filters.TactileStaticStd1stDerivativeFilter,
+        msg_filters.TactileStaticStdFilter,
+    ],
+    [
+        "/TactileSensor4/StaticData", 
+        tactilesensors4.msg.StaticData,
+        msg_filters.TactileStaticMeanFilter,
     ],
     [
         "/TactileSensor4/Dynamic", 

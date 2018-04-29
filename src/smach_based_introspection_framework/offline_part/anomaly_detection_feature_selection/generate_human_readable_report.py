@@ -85,5 +85,7 @@ def run():
     report.write(str(append_metrics(big_df.groupby(level=[0, 1, 2]).sum())))
     report.write("\n\n")
 
+    return big_df
+
 if __name__ == '__main__':
     run()
