@@ -12,10 +12,12 @@ class WrenchStampedFilter(TopicMsgFilter):
             msg.wrench.force.z,\
         ]
 
-    def vector_size(self):
+    @staticmethod
+    def vector_size():
         return 3
 
-    def vector_meaning(self):
+    @staticmethod
+    def vector_meaning():
         return ['wrench.force.%s'%i for i in ['x', 'y', 'z']] 
 
 class WrenchStampedNormFilter(TopicMsgFilter):
@@ -34,10 +36,13 @@ class WrenchStampedNormFilter(TopicMsgFilter):
             msg.wrench.torque.z,\
         ])
         return [force_norm, torque_norm] 
-    def vector_size(self):
+
+    @staticmethod
+    def vector_size():
         return 2 
 
-    def vector_meaning(self):
+    @staticmethod
+    def vector_meaning():
         return [
             'robotiq_force_sensor.wrench.force.norm', \
             'robotiq_force_sensor.wrench.torque.norm',\
@@ -59,10 +64,13 @@ class BaxterEndpointTwistNormFilter(TopicMsgFilter):
             msg.twist.angular.z,\
         ])
         return [linear_norm, angular_norm] 
-    def vector_size(self):
+
+    @staticmethod
+    def vector_size():
         return 2 
 
-    def vector_meaning(self):
+    @staticmethod
+    def vector_meaning():
         return [
             'baxter_enpoint_pose.twist.linear.norm', \
             'baxter_enpoint_pose.twist.angular.norm', \
@@ -75,10 +83,12 @@ class HongminTactileFeatureMaxFilter(TopicMsgFilter):
     def convert(self, msg):
         return [msg.tactile_values_4, msg.tactile_values_9] 
 
-    def vector_size(self):
+    @staticmethod
+    def vector_size():
         return 2 
 
-    def vector_meaning(self):
+    @staticmethod
+    def vector_meaning():
         return [
             'left_tactile_sensor.max', \
             'right_tactile_sensor.max', \
@@ -94,10 +104,12 @@ class TactileStaticMaxFilter(TopicMsgFilter):
             max(msg.taxels[1].values),
         )]
 
-    def vector_size(self):
+    @staticmethod
+    def vector_size():
         return 1
 
-    def vector_meaning(self):
+    @staticmethod
+    def vector_meaning():
         return [
             'tactile_static_data.max', \
         ] 
@@ -112,10 +124,12 @@ class TactileStaticMeanFilter(TopicMsgFilter):
             np.mean(msg.taxels[1].values),
         ])]
 
-    def vector_size(self):
+    @staticmethod
+    def vector_size():
         return 1
 
-    def vector_meaning(self):
+    @staticmethod
+    def vector_meaning():
         return [
             'tactile_static_data.mean', \
         ] 
@@ -130,14 +144,45 @@ class TactileStaticStdFilter(TopicMsgFilter):
             np.std(msg.taxels[1].values),
         ]
 
-    def vector_size(self):
+    @staticmethod
+    def vector_size():
         return 2
 
-    def vector_meaning(self):
+    @staticmethod
+    def vector_meaning():
         return [
             'tactile_static_data.left.std', \
             'tactile_static_data.right.std', \
         ] 
+
+class TactileStaticStd1stDerivativeFilter(TopicMsgFilter):
+    def __init__(self):
+        super(TactileStaticStd1stDerivativeFilter, self).__init__()
+        self.prev_f = None
+
+    def convert(self, msg):
+        cur_f = [
+            np.std(msg.taxels[0].values),
+            np.std(msg.taxels[1].values),
+        ]
+        if self.prev_f is None:
+            ret = [0, 0]
+        else:
+            ret = [cur_f[0]-self.prev_f[0], cur_f[1]-self.prev_f[1]]
+        self.prev_f = cur_f
+        return ret
+
+    @staticmethod
+    def vector_size():
+        return 2
+
+    @staticmethod
+    def vector_meaning():
+        return [
+            'tactile_static_data.left.std.1stderivative', \
+            'tactile_static_data.right.std.1stderivative', \
+        ] 
+
 
 class TactileDynamicAbsMaxFilter(TopicMsgFilter):
     def __init__(self):
@@ -149,10 +194,12 @@ class TactileDynamicAbsMaxFilter(TopicMsgFilter):
             abs(msg.data[1].value), 
         )]
 
-    def vector_size(self):
+    @staticmethod
+    def vector_size():
         return 1
 
-    def vector_meaning(self):
+    @staticmethod
+    def vector_meaning():
         return [
             'tactile_dynamic_data.absmax', \
         ] 

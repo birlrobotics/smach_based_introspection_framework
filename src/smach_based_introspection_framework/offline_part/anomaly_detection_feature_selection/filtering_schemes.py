@@ -10,32 +10,37 @@ filtering_schemes = []
 
 args = []
 
-# A new scheme
+
 args.append([[
     "/TactileSensor4/StaticData", 
     tactilesensors4.msg.StaticData,
-    msg_filters.TactileStaticStdFilter(),
+    msg_filters.TactileStaticStdFilter,
 ]])
 args.append([[
     "/TactileSensor4/StaticData", 
     tactilesensors4.msg.StaticData,
-    msg_filters.TactileStaticMeanFilter(),
+    msg_filters.TactileStaticMeanFilter,
 ]])
 args.append([
     [
+        "/TactileSensor4/StaticData", 
+        tactilesensors4.msg.StaticData,
+        msg_filters.TactileStaticStd1stDerivativeFilter,
+    ],
+    [
         "/TactileSensor4/Dynamic", 
         tactilesensors4.msg.Dynamic,
-        msg_filters.TactileDynamicAbsMaxFilter(),
+        msg_filters.TactileDynamicAbsMaxFilter,
     ],
     [
         "/robotiq_force_torque_wrench", 
         WrenchStamped, 
-        msg_filters.WrenchStampedNormFilter(),
+        msg_filters.WrenchStampedNormFilter,
     ],
     [
         "/robot/limb/right/endpoint_state", 
         EndpointState,
-        msg_filters.BaxterEndpointTwistNormFilter(),
+        msg_filters.BaxterEndpointTwistNormFilter,
     ],
 ])
 
