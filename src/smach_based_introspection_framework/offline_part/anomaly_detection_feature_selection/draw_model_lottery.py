@@ -48,6 +48,17 @@ if __name__ == '__main__':
         for idx, c in enumerate(col_names):
             summary_df.loc[postfix, c] = values[idx]
 
+        col_names = ['scheme0_skill5_OS '+i for i in at_level.columns]
+        values = at_level.loc[('0', '5', 'object_slip')].reshape(-1)
+        for idx, c in enumerate(col_names):
+            summary_df.loc[postfix, c] = values[idx]
+
+        col_names = ['scheme0_skill5_NO '+i for i in at_level.columns]
+        values = at_level.loc[('0', '5', 'no_object')].reshape(-1)
+        for idx, c in enumerate(col_names):
+            summary_df.loc[postfix, c] = values[idx]
+
+
         summary_df.to_csv(os.path.join(datasets_of_filtering_schemes_folder, 'lottery_summary.csv'))
 
         shutil.move(
