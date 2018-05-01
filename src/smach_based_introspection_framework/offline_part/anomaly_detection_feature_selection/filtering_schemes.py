@@ -1,6 +1,6 @@
 from geometry_msgs.msg import WrenchStamped
 from baxter_core_msgs.msg import EndpointState 
-import msg_filters
+import msg_filters_with_scaling
 from rostopics_to_timeseries import RosTopicFilteringScheme
 from smach_based_introspection_framework.msg import tactile_static
 import tactilesensors4.msg
@@ -14,27 +14,22 @@ args.append([
     [
         "/TactileSensor4/StaticData", 
         tactilesensors4.msg.StaticData,
-        msg_filters.TactileStaticStdFilter,
-    ],
-    [
-        "/TactileSensor4/StaticData", 
-        tactilesensors4.msg.StaticData,
-        msg_filters.TactileStaticMeanFilter,
+        msg_filters_with_scaling.TactileStaticStdFilter,
     ],
     [
         "/TactileSensor4/Dynamic", 
         tactilesensors4.msg.Dynamic,
-        msg_filters.TactileDynamicAbsMaxFilter,
+        msg_filters_with_scaling.TactileDynamicAbsMaxFilter,
     ],
     [
         "/robotiq_force_torque_wrench", 
         WrenchStamped, 
-        msg_filters.WrenchStampedNormFilter,
+        msg_filters_with_scaling.WrenchStampedNormFilter,
     ],
     [
         "/robot/limb/right/endpoint_state", 
         EndpointState,
-        msg_filters.BaxterEndpointTwistNormFilter,
+        msg_filters_with_scaling.BaxterEndpointTwistNormFilter,
     ],
 ])
 
