@@ -91,10 +91,7 @@ def run():
                     else:
                         stat['TP'] = 1
                 else:
-                    if anomaly_t < anomaly_t_by_human+1:
-                        stat['TP'] = 1
-                    else:
-                        stat['FP'] = 1
+                    stat['TP'] = 1
                         
             stat.update({"sample name": os.path.basename(csv), 'anomaly type': anomaly_type})
             stat_df = stat_df.append(stat, ignore_index=True)
