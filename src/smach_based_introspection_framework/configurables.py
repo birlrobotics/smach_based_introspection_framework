@@ -3,6 +3,11 @@ from parameters_combinator import ListOfParams
 from smach_based_introspection_framework.msg import (
     Tag_MultiModal,
 )
+from rostopics_to_timeseries import RosTopicFilteringScheme
+import baxter_core_msgs.msg
+import tactilesensors4.msg
+import geometry_msgs.msg
+from smach_based_introspection_framework.offline_part.anomaly_detection_feature_selection import msg_filters_with_scaling
 
 HUMAN_AS_MODEL_MODE = True
 
@@ -109,28 +114,29 @@ anomaly_handcoded_labels = {0: 'object_slip',
                             3: 'no_object',}
 anomaly_classifier_model_path = '/home/birl_wu/baxter_ws/src/SPAI/smach_based_introspection_framework/anomaly_classifier'
 
-# New config that is about to remove some old ones above
 
-info_of_topics_to_timeseries = [
-#    (
-#        "/tag_multimodal",
-#        Tag_MultiModal,
-#        lambda m: [m.tactile_texel_sum]
-#    ),
-#      (
-#          "/tag_multimodal",
-#          Tag_MultiModal,
-#          lambda m: [
-#              m.wrench_stamped.wrench.force.x,
-#              m.wrench_stamped.wrench.force.y,
-#              m.wrench_stamped.wrench.force.z,
-#              m.wrench_stamped.wrench.torque.x,
-#              m.wrench_stamped.wrench.torque.y,
-#              m.wrench_stamped.wrench.torque.z,
-#          ]
-#      ),
-]
-timeseries_rate = 1
+tfc = RosTopicFilteringScheme()
+tfc.add_filter(
+    "/TactileSensor4/StaticData", 
+    tactilesensors4.msg.StaticData,
+    msg_filters_with_scaling.TactileStaticStdFilter,
+)
+tfc.add_filter(
+    "/TactileSensor4/Dynamic", 
+    tactilesensors4.msg.Dynamic,
+    msg_filters_with_scaling.TactileDynamicAbsMaxFilter,
+)
+tfc.add_filter(
+    "/robotiq_force_torque_wrench", 
+    geometry_msgs.msg.WrenchStamped, 
+    msg_filters_with_scaling.WrenchStampedNormFilter,
+)
+tfc.add_filter(
+    "/robot/limb/right/endpoint_state", 
+    baxter_core_msgs.msg.EndpointState,
+    msg_filters_with_scaling.BaxterEndpointTwistNormFilter,
+)
+timeseries_rate = 10
 
 topics_to_be_recorded_into_rosbag = [
     '/tag_multimodal',
@@ -143,7 +149,3 @@ topics_to_be_recorded_into_rosbag = [
     '/tactile_sensor_data',
     '/observation/goal_vector',
 ]
-
-for tu in info_of_topics_to_timeseries:
-    if tu[0] not in topics_to_be_recorded_into_rosbag:
-        raise Exception("%s not in topics_to_be_recorded_into_rosbag but in info_of_topics_to_timeseries"%tu[0])
