@@ -29,6 +29,7 @@ class TimeseriesReceiverProc(multiprocessing.Process):
         self.smach_state = msg.tag
 
     def callback_timeseries(self, msg):
+        import rospy
         if self.smach_state is None:
             rospy.logwarn("TimeseriesReceiverProc did not receive smach_state, so no message will be passed via queue.")
         else:

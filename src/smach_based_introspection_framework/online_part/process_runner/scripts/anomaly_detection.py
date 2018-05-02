@@ -7,8 +7,8 @@ from smach_based_introspection_framework.configurables import (
 from smach_based_introspection_framework._constant import (
     latest_model_folder,
 )
-from smach_based_introspection_framework.online_part.data_collection.ConvertTagTopicToInterestedVectorProc import (
-    ConvertTagTopicToInterestedVectorProc,
+from smach_based_introspection_framework.online_part.data_collection.TimeseriesReceiverProc import (
+    TimeseriesReceiverProc,
     data_frame_idx,
     smach_state_idx,
     data_header_idx,
@@ -45,9 +45,9 @@ class IdSkillThenDetectAnomaly(multiprocessing.Process):
 
         model_group_by_state = {}
         threshold_constant_group_by_state = {}
-        prog = re.compile(r'tag_(\d+)')
+        prog = re.compile(r'(skill |tag_)(\d+)')
         for i in glob.glob(os.path.join(latest_model_folder, "*", "introspection_model")):
-            tag = int(prog.match(os.path.basename(os.path.dirname(i))).group(1))
+            tag = int(prog.match(os.path.basename(os.path.dirname(i))).group(2))
             model = joblib.load(i) 
             hmm_model = model['hmm_model']
             threshold_for_introspection = model['threshold_for_introspection']
@@ -117,8 +117,7 @@ class IdSkillThenDetectAnomaly(multiprocessing.Process):
 
 if __name__ == '__main__':
     com_queue_of_receiver = multiprocessing.Queue()
-    process_receiver = ConvertTagTopicToInterestedVectorProc(
-        interested_data_fields,
+    process_receiver = TimeseriesReceiverProc(
         com_queue_of_receiver,
     )
     process_receiver.daemon = True
