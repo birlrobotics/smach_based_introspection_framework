@@ -58,7 +58,8 @@ class BNPYModelIncrementalLoglikCalculator(object):
         import bnpy
         if self.preSample is None:
             self.preSample = sample
-            return 0
+            Xprev  = np.array([sample])
+            X      = np.array([sample])            
         else:
             Xprev = self.preSample
             X = sample
@@ -66,7 +67,7 @@ class BNPYModelIncrementalLoglikCalculator(object):
         length = 1
         doc_range = [0, length]
         dataset = bnpy.data.GroupXData(X, doc_range, length, Xprev)
-
+        '''
         LP = self.model.calc_local_params(dataset)
         framelogprob = LP['E_log_soft_ev'] 
         if self.fwdlattice is None:
@@ -81,6 +82,18 @@ class BNPYModelIncrementalLoglikCalculator(object):
                     self.work_buffer[i] = self.fwdlattice[-2,i] + self.log_transmat[i,j]
                 self.fwdlattice[-1,j] = logsumexp(self.work_buffer) + framelogprob[0,j]
         curr_log = logsumexp(self.fwdlattice[-1])
+        '''
+        
+        logSoftEv = self.model.obsModel.calcLogSoftEvMatrix_FromPost(dataset)
+        SoftEv, lognormC = bnpy.allocmodel.hmm.HMMUtil.expLogLik(logSoftEv)
+        PiMat = np.exp(self.log_transmat)
+        if self.fwdlattice is None:
+            self.fwdlattice = np.exp(self.log_startprob) * SoftEv 
+        else:
+            self.fwdlattice = np.dot(PiMat.T, self.fwdlattice[0]) * SoftEv
+        margPrObs = np.sum(self.fwdlattice)
+        self.fwdlattice /= margPrObs
+        curr_log = np.log(margPrObs) + lognormC        
         return curr_log
 
 class BasicCalculator(object):
