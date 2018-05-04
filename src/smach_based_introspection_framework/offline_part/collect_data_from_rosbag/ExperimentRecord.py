@@ -3,20 +3,17 @@ import glob
 import rosbag
 import ipdb
 import coloredlogs, logging
-coloredlogs.install()
-
+import pickle
 from smach_based_introspection_framework._constant import (
     anomaly_label_file,
+    cache_folder,
 )
+coloredlogs.install()
 
 class ExperimentRecord(object):
     def __init__(self, folder_path):
         self.folder_path = folder_path
         logger = logging.getLogger('ExpRecordOf...%s'%str(folder_path)[-20:])
-        logger.setLevel(logging.INFO)
-        consoleHandler = logging.StreamHandler()
-        consoleHandler.setLevel(logging.INFO)
-        logger.addHandler(consoleHandler)
         self.logger = logger
         
 
@@ -25,22 +22,37 @@ class ExperimentRecord(object):
         if hasattr(self, "_tag_ranges"):
             return self._tag_ranges
 
+        cache_file = os.path.join(
+            cache_folder, 
+            "tag_ranges_cache", 
+            os.path.basename(self.folder_path)+'\'s tag_ranges.pkl'
+        )
+
+        if os.path.isfile(cache_file):
+            self._tag_ranges = pickle.load(open(cache_file, 'r')) 
+            self.logger.debug("tag ranges cache found.")
+            return self._tag_ranges
+
         last_tag = None
         last_tag_starts_at = None
         ranges = []
-        for count, (topic, msg, time) in enumerate(self.rosbag.read_messages('/tag_multimodal')):
+        for count, (topic, msg, record_time) in enumerate(self.rosbag.read_messages('/tag_multimodal')):
             cur_tag = int(msg.tag)
             if last_tag is None:
                 last_tag = cur_tag
-                last_tag_starts_at = time
+                last_tag_starts_at = msg.header.stamp
 
             if cur_tag != last_tag:
-                ranges.append((last_tag, (last_tag_starts_at, time)))
+                ranges.append((last_tag, (last_tag_starts_at, msg.header.stamp)))
                 last_tag = cur_tag
-                last_tag_starts_at = time
-        ranges.append((last_tag, (last_tag_starts_at, time)))
+                last_tag_starts_at = msg.header.stamp
+        ranges.append((last_tag, (last_tag_starts_at, msg.header.stamp)))
 
         self._tag_ranges = ranges
+        cache_output_dir = os.path.dirname(cache_file)
+        if not os.path.isdir(cache_output_dir):
+            os.makedirs(cache_output_dir)
+        pickle.dump(self._tag_ranges, open(cache_file, 'wb'))
         return self._tag_ranges
 
     @property
@@ -108,7 +120,7 @@ class ExperimentRecord(object):
 
         signals = []
         anomaly_start_time = None
-        for count, (topic, msg, time) in enumerate(self.rosbag.read_messages('/anomaly_detection_signal')):
+        for count, (topic, msg, record_time) in enumerate(self.rosbag.read_messages('/anomaly_detection_signal')):
             cur_anomaly_time = msg.stamp
             if anomaly_start_time is None or \
                 (cur_anomaly_time-anomaly_start_time).to_sec > 2:
@@ -117,6 +129,8 @@ class ExperimentRecord(object):
                 signals.append(anomaly_start_time)
         if len(signals) > len(self.anomaly_labels):
             raise Exception("anomaly signals amount, %s, does not match anomaly labels, %s."%(len(signals), len(self.anomaly_labels)))
+        elif len(signals) != len(self.unsuccessful_tag_ranges):
+            raise Exception("anomaly signals amount, %s, does not match unsuccessful skill amount, %s."%(len(signals), len(self.unsuccessful_tag_ranges)))
         elif len(signals) < len(self.anomaly_labels):
             self.logger.warn("anomaly signals amount, %s, does not match anomaly labels, %s. But I will try to pair them in reverse order."%(len(signals), len(self.anomaly_labels)))
             labels = self.anomaly_labels[-len(signals):]
@@ -143,7 +157,7 @@ if __name__ == '__main__':
     pp = pprint.PrettyPrinter(indent=4)
 
     base_path = os.path.dirname(os.path.realpath(__file__))
-    er = ExperimentRecord(os.path.join(base_path, 'test_data', 'experiment_at_2018y04m10d20H47M31S'))
+    er = ExperimentRecord('/home/sklaw/ros/indigo/birl_ws/src/smach_based_introspection_framework/src/smach_based_introspection_framework/../../introspection_data_folder/experiment_record_folder/experiment_at_2018y04m02d21H34M33S')
 
 
     print '\ntag_ranges', '-'*20

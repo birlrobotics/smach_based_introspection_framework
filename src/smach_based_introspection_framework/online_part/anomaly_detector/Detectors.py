@@ -3,6 +3,12 @@ from log_likelihood_incremental_calculator import (
 )
 import numpy as np
 import ipdb
+import logging
+logger = logging.getLogger('anomaly_detector')
+logger.setLevel(logging.INFO)
+consoleHandler = logging.StreamHandler()
+consoleHandler.setLevel(logging.INFO)
+logger.addHandler(consoleHandler)
 
 class BaseDetector(object):
     def __init__(self, model_group_by_state):
@@ -75,13 +81,13 @@ class DetectorBasedOnGradientOfLoglikCurve(BaseDetector):
         now_threshold = None
 
         if now_skill is None:
-            print 'now_skill is None so we can\'t perform anomaly detection.'
+            logger.debug('now_skill is None so we can\'t perform anomaly detection.')
             self.metric_observation.append(now_gradient)
             self.metric_threshold.append(now_threshold)
             return now_skill, None, now_gradient, now_threshold
     
         if now_skill != prev_skill:
-            print "now_skill != prev_skill, gonna switch model and restart anomaly detection."
+            logger.debug("now_skill != prev_skill, gonna switch model and restart anomaly detection.")
             self.calculator = get_calculator(self.model_group_by_state[now_skill])
             self.prev_loglik = None
 
@@ -92,7 +98,7 @@ class DetectorBasedOnGradientOfLoglikCurve(BaseDetector):
         threshold_constant = self.threshold_constant_group_by_state[now_skill]
 
         if prev_loglik is None:
-            print 'we don\' have prev_loglik for now_skill, gonna wait one more run.'
+            logger.debug('we don\' have prev_loglik for now_skill, gonna wait one more run.')
             self.metric_observation.append(now_gradient)
             self.metric_threshold.append(now_threshold)
             return now_skill, None, now_gradient, now_threshold
