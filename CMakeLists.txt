@@ -67,6 +67,7 @@ add_message_files(
   tactile_static.msg
   Tag_MultiModal.msg 
   GoalVector.msg
+  Float64Stamped.msg
 )
 
 ## Generate services in the 'srv' folder

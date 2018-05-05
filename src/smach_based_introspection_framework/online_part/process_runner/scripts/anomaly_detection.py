@@ -23,6 +23,7 @@ from std_msgs.msg import (
     Int8,
     Float64,
 )
+from smach_based_introspection_framework.msg import Float64Stamped
 import glob
 import re
 import os
@@ -67,8 +68,8 @@ class IdSkillThenDetectAnomaly(multiprocessing.Process):
 
         rospy.init_node("IdSkillThenDetectAnomaly", anonymous=True)
         anomaly_detection_signal_pub = rospy.Publisher("/anomaly_detection_signal", Header, queue_size=100)
-        anomaly_detection_metric_pub = rospy.Publisher("/anomaly_detection_metric_%s"%self.anomaly_detection_metric, Float64, queue_size=100)
-        anomaly_detection_threshold_pub = rospy.Publisher("/anomaly_detection_threshold_%s"%self.anomaly_detection_metric, Float64, queue_size=100)
+        anomaly_detection_metric_pub = rospy.Publisher("/scaled_and_stamped_anomaly_detection_metric_%s"%self.anomaly_detection_metric, Float64Stamped, queue_size=100)
+        anomaly_detection_threshold_pub = rospy.Publisher("/scaled_and_stamped_anomaly_detection_threshold_%s"%self.anomaly_detection_metric, Float64Stamped, queue_size=100)
         identified_skill_pub = rospy.Publisher("/identified_skill_%s"%self.anomaly_detection_metric, Int8, queue_size=100)
 
         arrived_state = 0 
@@ -112,8 +113,10 @@ class IdSkillThenDetectAnomaly(multiprocessing.Process):
                 identified_skill_pub.publish(now_skill) 
 
             if metric is not None and threshold is not None:
-                anomaly_detection_metric_pub.publish(metric)
-                anomaly_detection_threshold_pub.publish(threshold)
+                metric /= abs(threshold)
+                threshold /= abs(threshold)
+                anomaly_detection_metric_pub.publish(Float64Stamped(data_header, metric))
+                anomaly_detection_threshold_pub.publish(Float64Stamped(data_header, threshold))
 
 if __name__ == '__main__':
     com_queue_of_receiver = multiprocessing.Queue()
