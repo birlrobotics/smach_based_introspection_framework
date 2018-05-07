@@ -49,6 +49,53 @@ class WrenchStampedNormFilter(TopicMsgFilter):
             'robotiq_force_sensor.wrench.torque.norm.dividedby0.4',\
         ] 
 
+
+class WrenchStampedForceNormFilter(TopicMsgFilter):
+    def __init__(self):
+        super(WrenchStampedForceNormFilter, self).__init__()
+
+    def convert(self, msg):
+        force_norm = np.linalg.norm([
+            msg.wrench.force.x,\
+            msg.wrench.force.y,\
+            msg.wrench.force.z,\
+        ])
+        return [force_norm/10.0] 
+
+    @staticmethod
+    def vector_size():
+        return 1
+
+    @staticmethod
+    def vector_meaning():
+        return [
+            'robotiq_force_sensor.wrench.force.norm.dividedby10', \
+        ] 
+
+class WrenchStampedTorqueNormFilter(TopicMsgFilter):
+    def __init__(self):
+        super(WrenchStampedTorqueNormFilter, self).__init__()
+
+    def convert(self, msg):
+        torque_norm = np.linalg.norm([
+            msg.wrench.torque.x,\
+            msg.wrench.torque.y,\
+            msg.wrench.torque.z,\
+        ])
+        return [torque_norm/0.4] 
+
+    @staticmethod
+    def vector_size():
+        return 1
+
+    @staticmethod
+    def vector_meaning():
+        return [
+            'robotiq_force_sensor.wrench.torque.norm.dividedby0.4',\
+        ] 
+
+
+
 class BaxterEndpointTwistNormFilter(TopicMsgFilter):
     def __init__(self):
         super(BaxterEndpointTwistNormFilter, self).__init__()
