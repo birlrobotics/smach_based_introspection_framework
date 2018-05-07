@@ -115,7 +115,8 @@ anomaly_handcoded_labels = {0: 'object_slip',
 anomaly_classifier_model_path = '/home/birl_wu/baxter_ws/src/SPAI/smach_based_introspection_framework/anomaly_classifier'
 
 
-tfc = RosTopicFilteringScheme()
+timeseries_rate = 10
+tfc = RosTopicFilteringScheme(timeseries_rate)
 tfc.add_filter(
     "/TactileSensor4/StaticData", 
     tactilesensors4.msg.StaticData,
@@ -136,7 +137,6 @@ tfc.add_filter(
     baxter_core_msgs.msg.EndpointState,
     msg_filters_with_scaling.BaxterEndpointTwistNormFilter,
 )
-timeseries_rate = 10
 
 topics_to_be_recorded_into_rosbag = [
     '/tag_multimodal',

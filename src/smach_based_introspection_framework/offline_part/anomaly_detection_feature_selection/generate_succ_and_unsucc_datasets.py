@@ -62,7 +62,7 @@ def run():
         logger.info(exp_dir)
         er = ExperimentRecord(exp_dir)
         for scheme_count, filtering_scheme in enumerate(filtering_schemes):
-            ortt = OfflineRostopicsToTimeseries(filtering_scheme, rate=10) 
+            ortt = OfflineRostopicsToTimeseries(filtering_scheme) 
             for skill_count, (tag, (st, et)) in enumerate(er.successful_tag_ranges):
                 logger.debug("No.%s successful skill"%skill_count)
                 output_csv = os.path.join(
