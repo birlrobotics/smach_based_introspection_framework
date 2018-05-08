@@ -8,6 +8,8 @@ import baxter_core_msgs.msg
 import tactilesensors4.msg
 import geometry_msgs.msg
 from smach_based_introspection_framework.offline_part.anomaly_detection_feature_selection import msg_filters_with_scaling
+from rostopics_to_timeseries.Smoother import WindowBasedSmoother_factory
+from scipy import signal
 
 HUMAN_AS_MODEL_MODE = True
 
@@ -123,6 +125,11 @@ tfc.add_filter(
     msg_filters_with_scaling.TactileStaticStdFilter,
 )
 tfc.add_filter(
+    "/robotiq_force_torque_wrench", 
+    geometry_msgs.msg.WrenchStamped, 
+    msg_filters_with_scaling.WrenchStampedForceNormFilter,
+)
+tfc.add_filter(
     "/TactileSensor4/Dynamic", 
     tactilesensors4.msg.Dynamic,
     msg_filters_with_scaling.TactileDynamicAbsMaxFilter,
@@ -130,13 +137,15 @@ tfc.add_filter(
 tfc.add_filter(
     "/robotiq_force_torque_wrench", 
     geometry_msgs.msg.WrenchStamped, 
-    msg_filters_with_scaling.WrenchStampedNormFilter,
+    msg_filters_with_scaling.WrenchStampedTorqueNormFilter,
 )
 tfc.add_filter(
     "/robot/limb/right/endpoint_state", 
     baxter_core_msgs.msg.EndpointState,
     msg_filters_with_scaling.BaxterEndpointTwistNormFilter,
 )
+tfc.smoother_class = WindowBasedSmoother_factory(signal.boxcar(5))
+
 
 topics_to_be_recorded_into_rosbag = [
     '/tag_multimodal',
