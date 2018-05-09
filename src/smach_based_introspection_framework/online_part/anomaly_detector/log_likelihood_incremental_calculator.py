@@ -58,8 +58,8 @@ class BNPYModelIncrementalLoglikCalculator(object):
         import bnpy
         if self.preSample is None:
             self.preSample = sample
-            Xprev  = np.array([sample])
-            X      = np.array([sample])            
+            Xprev  = np.array(sample)
+            X      = np.array(sample)            
         else:
             Xprev = self.preSample
             X = sample
