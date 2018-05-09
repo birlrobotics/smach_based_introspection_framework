@@ -84,11 +84,15 @@ def run():
             if anomaly_t is None:
                 stat['FN'] = 1
             else:
-                t_diff = abs(anomaly_t_by_human-anomaly_t)
-                if t_diff > 1:
-                    stat['FP'] = 1
+                if anomaly_type != 'no_object':
+                    t_diff = abs(anomaly_t_by_human-anomaly_t)
+                    if t_diff > 1:
+                        stat['FP'] = 1
+                    else:
+                        stat['TP'] = 1
                 else:
                     stat['TP'] = 1
+                        
             stat.update({"sample name": os.path.basename(csv), 'anomaly type': anomaly_type})
             stat_df = stat_df.append(stat, ignore_index=True)
 

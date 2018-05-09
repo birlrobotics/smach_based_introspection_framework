@@ -1,96 +1,71 @@
 from geometry_msgs.msg import WrenchStamped
 from baxter_core_msgs.msg import EndpointState 
-import msg_filters
+import msg_filters_with_scaling
 from rostopics_to_timeseries import RosTopicFilteringScheme
 from smach_based_introspection_framework.msg import tactile_static
+import tactilesensors4.msg
+import itertools
+from smach_based_introspection_framework.configurables import (
+    timeseries_rate,
+)
+from rostopics_to_timeseries.Smoother import WindowBasedSmoother_factory
+from scipy import signal
 
 filtering_schemes = []
 
+fixed_filters = [
+    [
+        "/TactileSensor4/StaticData", 
+        tactilesensors4.msg.StaticData,
+        msg_filters_with_scaling.TactileStaticStdFilter,
+    ],
+    [
+        "/robotiq_force_torque_wrench", 
+        WrenchStamped, 
+        msg_filters_with_scaling.WrenchStampedForceNormFilter,
+    ],
+]
 
-# A new scheme
-tfc = RosTopicFilteringScheme()
-tfc.add_filter(
-    "/robotiq_force_torque_wrench", 
-    WrenchStamped, 
-    msg_filters.WrenchStampedFilter(),
-)
-filtering_schemes.append(tfc)
+filters_args = []
+filters_args.append([
+    [
+        "/TactileSensor4/Dynamic", 
+        tactilesensors4.msg.Dynamic,
+        msg_filters_with_scaling.TactileDynamicAbsMaxFilter,
+    ],
+])
+filters_args.append([
+    [
+        "/robotiq_force_torque_wrench", 
+        WrenchStamped, 
+        msg_filters_with_scaling.WrenchStampedTorqueNormFilter,
+    ],
+])
+filters_args.append([
+    [
+        "/robot/limb/right/endpoint_state", 
+        EndpointState,
+        msg_filters_with_scaling.BaxterEndpointTwistNormFilter,
+    ],
+])
 
+smoother_args = []
+smoother_args.append(WindowBasedSmoother_factory(signal.triang(5)))
+smoother_args.append(WindowBasedSmoother_factory(signal.boxcar(5)))
+smoother_args.append(None)
 
-# A new scheme
-tfc = RosTopicFilteringScheme()
-tfc.add_filter(
-    "/robotiq_force_torque_wrench", 
-    WrenchStamped, 
-    msg_filters.WrenchStampedNormFilter(),
-)
-filtering_schemes.append(tfc)
+for smoother_class in smoother_args:
+    for prod in itertools.product(*[(None, i) for i in filters_args]):
+        tfc = RosTopicFilteringScheme(timeseries_rate)
+        if smoother_class is not None:
+            tfc.smoother_class = smoother_class
+        for k in fixed_filters:
+            tfc.add_filter(*k)
 
+        for j in prod:
+            if j is not None:
+                for k in j:
+                    tfc.add_filter(*k)
 
-# A new scheme
-tfc = RosTopicFilteringScheme()
-tfc.add_filter(
-    "/robotiq_force_torque_wrench", 
-    WrenchStamped, 
-    msg_filters.WrenchStampedNormFilter(),
-)
-tfc.add_filter(
-    "/robot/limb/right/endpoint_state", 
-    EndpointState,
-    msg_filters.BaxterEndpointTwistNormFilter(),
-)
-filtering_schemes.append(tfc)
-
-
-# A new scheme
-tfc = RosTopicFilteringScheme()
-tfc.add_filter(
-    "/robot/limb/right/endpoint_state", 
-    EndpointState,
-    msg_filters.BaxterEndpointTwistNormFilter(),
-)
-filtering_schemes.append(tfc)
-
-# A new scheme
-tfc = RosTopicFilteringScheme()
-tfc.add_filter(
-    "/tactile_sensor_data", 
-    tactile_static,
-    msg_filters.HongminTactileFeatureMaxFilter(),
-)
-filtering_schemes.append(tfc)
-
-
-# A new scheme
-tfc = RosTopicFilteringScheme()
-tfc.add_filter(
-    "/tactile_sensor_data", 
-    tactile_static,
-    msg_filters.HongminTactileFeatureMaxFilter(),
-)
-tfc.add_filter(
-    "/robotiq_force_torque_wrench", 
-    WrenchStamped, 
-    msg_filters.WrenchStampedNormFilter(),
-)
-tfc.add_filter(
-    "/robot/limb/right/endpoint_state", 
-    EndpointState,
-    msg_filters.BaxterEndpointTwistNormFilter(),
-)
-filtering_schemes.append(tfc)
-
-
-# A new scheme
-tfc = RosTopicFilteringScheme()
-tfc.add_filter(
-    "/tactile_sensor_data", 
-    tactile_static,
-    msg_filters.HongminTactileFeatureMaxFilter(),
-)
-tfc.add_filter(
-    "/robotiq_force_torque_wrench", 
-    WrenchStamped, 
-    msg_filters.WrenchStampedNormFilter(),
-)
-filtering_schemes.append(tfc)
+        if len(tfc.timeseries_header) != 0:
+            filtering_schemes.append(tfc)

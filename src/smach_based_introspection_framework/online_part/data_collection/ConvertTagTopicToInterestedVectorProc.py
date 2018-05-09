@@ -1,4 +1,3 @@
-import multiprocessing
 import copy
 from smach_based_introspection_framework.msg import (
     Tag_MultiModal,
@@ -79,9 +78,7 @@ if __name__ == "__main__":
     )
     process_receiver.daemon = True
 
-
     process_receiver.start()
-
 
     samples = []
     while not rospy.is_shutdown():
