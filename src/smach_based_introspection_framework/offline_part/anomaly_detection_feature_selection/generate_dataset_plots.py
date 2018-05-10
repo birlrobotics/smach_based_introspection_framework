@@ -67,7 +67,8 @@ def run():
             if not os.path.isdir(output_dir):
                 os.makedirs(output_dir)
             fig.set_size_inches(64, 16)
-            fig.savefig(fig_file)
+            with open(fig_file, 'w') as f:
+                fig.savefig(f)
             plt.close(fig)
 
 if __name__ == '__main__':
