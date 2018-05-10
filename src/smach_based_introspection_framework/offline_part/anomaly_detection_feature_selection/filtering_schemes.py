@@ -24,35 +24,27 @@ fixed_filters = [
         WrenchStamped, 
         msg_filters_with_scaling.WrenchStampedForceNormFilter,
     ],
-]
-
-filters_args = []
-filters_args.append([
     [
         "/TactileSensor4/Dynamic", 
         tactilesensors4.msg.Dynamic,
         msg_filters_with_scaling.TactileDynamicAbsMaxFilter,
     ],
-])
-filters_args.append([
     [
         "/robotiq_force_torque_wrench", 
         WrenchStamped, 
         msg_filters_with_scaling.WrenchStampedTorqueNormFilter,
     ],
-])
-filters_args.append([
     [
         "/robot/limb/right/endpoint_state", 
         EndpointState,
         msg_filters_with_scaling.BaxterEndpointTwistNormFilter,
     ],
-])
+]
+
+filters_args = []
 
 smoother_args = []
-smoother_args.append(WindowBasedSmoother_factory(signal.triang(5)))
 smoother_args.append(WindowBasedSmoother_factory(signal.boxcar(5)))
-smoother_args.append(None)
 
 for smoother_class in smoother_args:
     for prod in itertools.product(*[(None, i) for i in filters_args]):

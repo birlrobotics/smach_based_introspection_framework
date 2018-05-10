@@ -105,6 +105,13 @@ def run():
                 '%s.csv'%(os.path.basename(exp_dir)),
             )
             generate_and_save_csv(output_csv, er, None, None, filtering_scheme, ortt, logger)
+            with open(os.path.join(os.path.dirname(output_csv), "tag_ranges.pkl"), 'wb') as f:
+                pickle.dump(er.tag_ranges, f)
+            try:
+                with open(os.path.join(os.path.dirname(output_csv), "anomaly_signals.pkl"), 'wb') as f:
+                    pickle.dump(er.anomaly_signals, f)
+            except:
+                logger.info("No anomalies")
 
 
 if __name__ == '__main__':
