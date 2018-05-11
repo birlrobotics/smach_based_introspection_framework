@@ -11,7 +11,7 @@ from smach_based_introspection_framework.offline_part.anomaly_detection_feature_
 from rostopics_to_timeseries.Smoother import WindowBasedSmoother_factory
 from scipy import signal
 
-HUMAN_AS_MODEL_MODE = True
+HUMAN_AS_MODEL_MODE = False
 
 dmp_cmd_fields = [
     '.endpoint_state.pose.position.x',
@@ -145,7 +145,6 @@ tfc.add_filter(
     msg_filters_with_scaling.BaxterEndpointTwistNormFilter,
 )
 tfc.smoother_class = WindowBasedSmoother_factory(signal.boxcar(5))
-
 
 topics_to_be_recorded_into_rosbag = [
     '/tag_multimodal',

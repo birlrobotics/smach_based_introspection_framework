@@ -81,19 +81,20 @@ def toggle_introspection(start, sm=None):
             topics_to_be_recorded_into_rosbag
         )
         rosbag_proc.start()
-        tmt_proc = TagMultimodalTopicProc()
-        tmt_proc.start()
+        # tmt_proc = TagMultimodalTopicProc()
+        # tmt_proc.start()
         sis = smach_ros.IntrospectionServer('MY_SERVER', sm, '/SM_ROOT')
         sis.start()
 
         if not HUMAN_AS_MODEL_MODE:
-            ad_proc = AnomalyDetectionProc()
-            ad_proc.start()
-            ac_proc = AnomalyClassificationProc()
-            ac_proc.start()
+            # ad_proc = AnomalyDetectionProc()
+            # ad_proc.start()
+            # ac_proc = AnomalyClassificationProc()
+            # ac_proc.start()
+            pass
 
-        ts_proc = TimeseriesProc()
-        ts_proc.start()
+        # ts_proc = TimeseriesProc()
+        # ts_proc.start()
         goal_proc = GoalProc()
         goal_proc.start()
         listen_HMM_anomaly_signal()
