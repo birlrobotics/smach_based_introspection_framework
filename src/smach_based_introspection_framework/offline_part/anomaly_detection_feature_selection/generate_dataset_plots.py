@@ -83,7 +83,7 @@ def run():
                             if int(tag) < 0:
                                 c = 'red'
                             else:
-                                c = 'blue'
+                                c = 'green'
                             ax.axvline(start, c=c)
                             ax.text(start, ymax-0.05*(ymax-ymin), 'tag %s'%tag, color=c, rotation=-90)
                         else:
@@ -94,8 +94,8 @@ def run():
                         ax.text(at, ymax-0.25*(ymax-ymin), '%s'%atype, color='purple', rotation=-90)
 
                     ax.set_title("%s %s"%(exp_name, col_name))
-                    output_f = os.path.join(l2_output_dir, "dim %s.png"%col_name)
-                    fig.set_size_inches(64, 16)
+                    output_f = os.path.join(l2_output_dir, "dim %s.png"%col_name.replace('/', 'divide'))
+                    fig.set_size_inches(16, 4)
                     with open(output_f, 'w') as f:
                         fig.savefig(f)
                     plt.close(fig)
@@ -127,11 +127,11 @@ def run():
             ax.plot(*value)
             ax.set_title(path_postfix+'\n'+key)
     
-            fig_file = os.path.join(output_dir, "featuer %s.png"%key)
+            fig_file = os.path.join(output_dir, "featuer %s.png"%key.replace("/", 'divide'))
 
             if not os.path.isdir(output_dir):
                 os.makedirs(output_dir)
-            fig.set_size_inches(64, 16)
+            fig.set_size_inches(16, 4)
             with open(fig_file, 'w') as f:
                 fig.savefig(f)
             plt.close(fig)

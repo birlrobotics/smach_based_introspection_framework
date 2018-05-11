@@ -20,24 +20,29 @@ fixed_filters = [
         msg_filters_with_scaling.TactileStaticStdFilter,
     ],
     [
-        "/robotiq_force_torque_wrench", 
-        WrenchStamped, 
-        msg_filters_with_scaling.WrenchStampedForceNormFilter,
-    ],
-    [
         "/TactileSensor4/Dynamic", 
         tactilesensors4.msg.Dynamic,
-        msg_filters_with_scaling.TactileDynamicAbsMaxFilter,
+        msg_filters_with_scaling.TactileDynamicFilter,
     ],
     [
         "/robotiq_force_torque_wrench", 
         WrenchStamped, 
-        msg_filters_with_scaling.WrenchStampedTorqueNormFilter,
+        msg_filters_with_scaling.WrenchStampedNormFilter,
+    ],
+    [
+        "/robotiq_force_torque_wrench", 
+        WrenchStamped, 
+        msg_filters_with_scaling.WrenchStampedFilter,
     ],
     [
         "/robot/limb/right/endpoint_state", 
         EndpointState,
         msg_filters_with_scaling.BaxterEndpointTwistNormFilter,
+    ],
+    [
+        "/robot/limb/right/endpoint_state", 
+        EndpointState,
+        msg_filters_with_scaling.BaxterEndpointTwistFilter,
     ],
 ]
 

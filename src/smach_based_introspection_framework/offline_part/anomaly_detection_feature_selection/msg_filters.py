@@ -11,15 +11,19 @@ class WrenchStampedFilter(TopicMsgFilter):
             msg.wrench.force.x,\
             msg.wrench.force.y,\
             msg.wrench.force.z,\
+            msg.wrench.torque.x,\
+            msg.wrench.torque.y,\
+            msg.wrench.torque.z,\
         ]
 
     @staticmethod
     def vector_size():
-        return 3
+        return 6
 
     @staticmethod
     def vector_meaning():
-        return ['wrench.force.%s'%i for i in ['x', 'y', 'z']] 
+        return ['wrench.force.%s'%i for i in ['x', 'y', 'z']]+\
+            ['wrench.torque.%s'%i for i in ['x', 'y', 'z']]
 
 class WrenchStampedNormFilter(TopicMsgFilter):
     def __init__(self):
@@ -122,6 +126,29 @@ class BaxterEndpointTwistNormFilter(TopicMsgFilter):
             'baxter_enpoint_pose.twist.angular.norm', \
         ] 
 
+class BaxterEndpointTwistFilter(TopicMsgFilter):
+    def __init__(self):
+        super(BaxterEndpointTwistFilter, self).__init__()
+
+    def convert(self, msg):
+        return [
+            msg.twist.linear.x,\
+            msg.twist.linear.y,\
+            msg.twist.linear.z,\
+            msg.twist.angular.x,\
+            msg.twist.angular.y,\
+            msg.twist.angular.z,\
+        ]
+
+    @staticmethod
+    def vector_size():
+        return 6
+
+    @staticmethod
+    def vector_meaning():
+        return ['baxter_enpoint_pose.twist.linear.%s'%i for i in ['x', 'y', 'z']]+\
+            ['baxter_enpoint_pose.twist.angular.%s'%i for i in ['x', 'y', 'z']]
+
 class HongminTactileFeatureMaxFilter(TopicMsgFilter):
     def __init__(self):
         super(HongminTactileFeatureMaxFilter, self).__init__()
@@ -165,19 +192,20 @@ class TactileStaticMeanFilter(TopicMsgFilter):
         super(TactileStaticMeanFilter, self).__init__()
 
     def convert(self, msg):
-        return [np.mean([\
+        return [
             np.mean(msg.taxels[0].values),
             np.mean(msg.taxels[1].values),
-        ])]
+        ]
 
     @staticmethod
     def vector_size():
-        return 1
+        return 2
 
     @staticmethod
     def vector_meaning():
         return [
-            'tactile_static_data.mean', \
+            'tactile_static_data.mean.left', \
+            'tactile_static_data.mean.right', \
         ] 
 
 class TactileStaticStdFilter(TopicMsgFilter):
@@ -248,6 +276,27 @@ class TactileDynamicAbsMaxFilter(TopicMsgFilter):
     def vector_meaning():
         return [
             'tactile_dynamic_data.absmax', \
+        ] 
+
+class TactileDynamicFilter(TopicMsgFilter):
+    def __init__(self):
+        super(TactileDynamicFilter, self).__init__()
+
+    def convert(self, msg):
+        return [
+            msg.data[0].value,
+            msg.data[1].value, 
+        ]
+
+    @staticmethod
+    def vector_size():
+        return 2
+
+    @staticmethod
+    def vector_meaning():
+        return [
+            'tactile_dynamic_data.left', \
+            'tactile_dynamic_data.right', \
         ] 
 
 class TactileStaticStdEdgeDetectorSize3Filter(TopicMsgFilter):
