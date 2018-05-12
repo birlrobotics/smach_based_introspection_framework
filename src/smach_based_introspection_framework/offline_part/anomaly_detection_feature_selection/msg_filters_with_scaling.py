@@ -7,19 +7,26 @@ class WrenchStampedFilter(TopicMsgFilter):
         super(WrenchStampedFilter, self).__init__()
 
     def convert(self, msg):
-        return [\
+        ret = np.array([\
             msg.wrench.force.x,\
             msg.wrench.force.y,\
             msg.wrench.force.z,\
-        ]
+            msg.wrench.torque.x,\
+            msg.wrench.torque.y,\
+            msg.wrench.torque.z,\
+        ])
+
+        return ret/10.0
 
     @staticmethod
     def vector_size():
-        return 3
+        return 6
 
     @staticmethod
     def vector_meaning():
-        return ['wrench.force.%s'%i for i in ['x', 'y', 'z']] 
+        return ['wrench.force.%s.ret/10.0'%i for i in ['x', 'y', 'z']]+\
+            ['wrench.torque.%s.ret/10.0'%i for i in ['x', 'y', 'z']]
+
 
 class WrenchStampedNormFilter(TopicMsgFilter):
     def __init__(self):
@@ -187,10 +194,12 @@ class TactileStaticStdFilter(TopicMsgFilter):
         super(TactileStaticStdFilter, self).__init__()
 
     def convert(self, msg):
-        return [
-            np.std(msg.taxels[0].values)/300.0,
-            np.std(msg.taxels[1].values)/300.0,
-        ]
+        ret = np.array([
+            np.std(msg.taxels[0].values),
+            np.std(msg.taxels[1].values),
+        ])
+        return ret/300.0
+        
 
     @staticmethod
     def vector_size():
@@ -199,8 +208,8 @@ class TactileStaticStdFilter(TopicMsgFilter):
     @staticmethod
     def vector_meaning():
         return [
-            'tactile_static_data.left.std.dividedby300', \
-            'tactile_static_data.right.std.dividedby300', \
+            'tactile_static_data.left.std.ret/300.0', \
+            'tactile_static_data.right.std.ret/300.0', \
         ] 
 
 class TactileStaticStd1stDerivativeFilter(TopicMsgFilter):
@@ -316,3 +325,48 @@ class TactileStaticStdEdgeDetectorSize5Filter(TopicMsgFilter):
             'tactile_static_data.left.std.EdgeDetectorSize5', \
             'tactile_static_data.right.std.EdgeDetectorSize5', \
         ] 
+
+class TactileDynamicFilter(TopicMsgFilter):
+    def __init__(self):
+        super(TactileDynamicFilter, self).__init__()
+
+    def convert(self, msg):
+        ret = np.array([
+            msg.data[0].value,
+            msg.data[1].value, 
+        ])
+        return np.clip(ret/2000.0, -1, 1)
+
+    @staticmethod
+    def vector_size():
+        return 2
+
+    @staticmethod
+    def vector_meaning():
+        return [
+            'tactile_dynamic_data.left.clip(ret/2000.0, -1, 1)', \
+            'tactile_dynamic_data.right.clip(ret/2000.0, -1, 1)', \
+        ] 
+
+class BaxterEndpointTwistFilter(TopicMsgFilter):
+    def __init__(self):
+        super(BaxterEndpointTwistFilter, self).__init__()
+
+    def convert(self, msg):
+        return [
+            msg.twist.linear.x,\
+            msg.twist.linear.y,\
+            msg.twist.linear.z,\
+            msg.twist.angular.x,\
+            msg.twist.angular.y,\
+            msg.twist.angular.z,\
+        ]
+
+    @staticmethod
+    def vector_size():
+        return 6
+
+    @staticmethod
+    def vector_meaning():
+        return ['baxter_enpoint_pose.twist.linear.%s'%i for i in ['x', 'y', 'z']]+\
+            ['baxter_enpoint_pose.twist.angular.%s'%i for i in ['x', 'y', 'z']]
