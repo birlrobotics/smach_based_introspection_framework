@@ -125,25 +125,31 @@ tfc.add_filter(
     msg_filters_with_scaling.TactileStaticStdFilter,
 )
 tfc.add_filter(
-    "/robotiq_force_torque_wrench", 
-    geometry_msgs.msg.WrenchStamped, 
-    msg_filters_with_scaling.WrenchStampedForceNormFilter,
-)
-tfc.add_filter(
     "/TactileSensor4/Dynamic", 
     tactilesensors4.msg.Dynamic,
-    msg_filters_with_scaling.TactileDynamicAbsMaxFilter,
+    msg_filters_with_scaling.TactileDynamicFilter,
 )
 tfc.add_filter(
     "/robotiq_force_torque_wrench", 
-    geometry_msgs.msg.WrenchStamped, 
-    msg_filters_with_scaling.WrenchStampedTorqueNormFilter,
+    WrenchStamped, 
+    msg_filters_with_scaling.WrenchStampedNormFilter,
+)
+tfc.add_filter(
+    "/robotiq_force_torque_wrench", 
+    WrenchStamped, 
+    msg_filters_with_scaling.WrenchStampedFilter,
 )
 tfc.add_filter(
     "/robot/limb/right/endpoint_state", 
-    baxter_core_msgs.msg.EndpointState,
+    EndpointState,
     msg_filters_with_scaling.BaxterEndpointTwistNormFilter,
 )
+tfc.add_filter(
+    "/robot/limb/right/endpoint_state", 
+    EndpointState,
+    msg_filters_with_scaling.BaxterEndpointTwistFilter,
+)
+
 tfc.smoother_class = WindowBasedSmoother_factory(signal.boxcar(5))
 
 
