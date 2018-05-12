@@ -198,7 +198,7 @@ class TactileStaticStdFilter(TopicMsgFilter):
             np.std(msg.taxels[0].values),
             np.std(msg.taxels[1].values),
         ])
-        return np.clip(ret/50.0, -1, 1)
+        return ret/300.0
         
 
     @staticmethod
@@ -208,8 +208,8 @@ class TactileStaticStdFilter(TopicMsgFilter):
     @staticmethod
     def vector_meaning():
         return [
-            'tactile_static_data.left.std.clip(ret/50.0, -1, 1)', \
-            'tactile_static_data.right.std.clip(ret/50.0, -1, 1)', \
+            'tactile_static_data.left.std.ret/300.0', \
+            'tactile_static_data.right.std.ret/300.0', \
         ] 
 
 class TactileStaticStd1stDerivativeFilter(TopicMsgFilter):
