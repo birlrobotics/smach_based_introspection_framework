@@ -8,7 +8,7 @@ from rostopics_to_timeseries import RosTopicFilteringScheme
 import baxter_core_msgs.msg
 import tactilesensors4.msg
 import geometry_msgs.msg
-from smach_based_introspection_framework.offline_part.anomaly_detection_feature_selection import msg_filters_with_scaling
+from smach_based_introspection_framework.offline_part.anomaly_detection_feature_selection import msg_filters_with_scaling, msg_filters_with_scaling_and_clip
 from rostopics_to_timeseries.Smoother import WindowBasedSmoother_factory
 from scipy import signal
 
@@ -88,11 +88,10 @@ for data_type in data_type_split:
 
 score_metric = '_score_metric_sum_of_loglik_'
 
-'''
 model_type = 'hmmlearn\'s HMM'
 model_config = {
-  'n_components': ListOfParams([1,3,5,7]),
-  'covariance_type': ListOfParams(['diag', 'spherical', 'full', 'tied']),
+  'n_components': ListOfParams([1,3,5,7, 9]),
+  'covariance_type': ListOfParams(['full']),
   'n_iter': 1000,
 }
 
@@ -106,6 +105,7 @@ model_config = {
     'varMethod' : ListOfParams(['memoVB']),
     'ECovMat'   : ListOfParams(['covdata']), #diagcovdata
 }
+'''
 
 
 anomaly_window_size_in_sec = 4
@@ -123,7 +123,7 @@ tfc = RosTopicFilteringScheme(timeseries_rate)
 tfc.add_filter(
     "/TactileSensor4/StaticData", 
     tactilesensors4.msg.StaticData,
-    msg_filters_with_scaling.TactileStaticStdFilter,
+    msg_filters_with_scaling_and_clip.TactileStaticStdScaleClipMaxFilter,
 )
 tfc.add_filter(
     "/TactileSensor4/Dynamic", 
