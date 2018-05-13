@@ -21,11 +21,6 @@ fixed_filters = [
         msg_filters_with_scaling_and_clip.TactileStaticStdScaleClipMaxFilter,
     ],
     [
-        "/TactileSensor4/Dynamic", 
-        tactilesensors4.msg.Dynamic,
-        msg_filters_with_scaling.TactileDynamicFilter,
-    ],
-    [
         "/robotiq_force_torque_wrench", 
         WrenchStamped, 
         msg_filters_with_scaling.WrenchStampedNormFilter,
