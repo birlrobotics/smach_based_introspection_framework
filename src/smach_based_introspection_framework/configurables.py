@@ -88,11 +88,10 @@ for data_type in data_type_split:
 
 score_metric = '_score_metric_sum_of_loglik_'
 
-'''
 model_type = 'hmmlearn\'s HMM'
 model_config = {
-  'n_components': ListOfParams([1,3,5,7]),
-  'covariance_type': ListOfParams(['diag', 'spherical', 'full', 'tied']),
+  'n_components': ListOfParams([1,3,5,7, 9]),
+  'covariance_type': ListOfParams(['full']),
   'n_iter': 1000,
 }
 
@@ -106,6 +105,7 @@ model_config = {
     'varMethod' : ListOfParams(['memoVB']),
     'ECovMat'   : ListOfParams(['covdata']), #diagcovdata
 }
+'''
 
 
 anomaly_window_size_in_sec = 4
