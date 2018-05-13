@@ -126,11 +126,6 @@ tfc.add_filter(
     msg_filters_with_scaling_and_clip.TactileStaticStdScaleClipMaxFilter,
 )
 tfc.add_filter(
-    "/TactileSensor4/Dynamic", 
-    tactilesensors4.msg.Dynamic,
-    msg_filters_with_scaling.TactileDynamicFilter,
-)
-tfc.add_filter(
     "/robotiq_force_torque_wrench", 
     WrenchStamped, 
     msg_filters_with_scaling.WrenchStampedNormFilter,
