@@ -8,7 +8,7 @@ from rostopics_to_timeseries import RosTopicFilteringScheme
 import baxter_core_msgs.msg
 import tactilesensors4.msg
 import geometry_msgs.msg
-from smach_based_introspection_framework.offline_part.anomaly_detection_feature_selection import msg_filters_with_scaling
+from smach_based_introspection_framework.offline_part.anomaly_detection_feature_selection import msg_filters_with_scaling, msg_filters_with_scaling_and_clip
 from rostopics_to_timeseries.Smoother import WindowBasedSmoother_factory
 from scipy import signal
 
@@ -123,7 +123,7 @@ tfc = RosTopicFilteringScheme(timeseries_rate)
 tfc.add_filter(
     "/TactileSensor4/StaticData", 
     tactilesensors4.msg.StaticData,
-    msg_filters_with_scaling.TactileStaticStdFilter,
+    msg_filters_with_scaling_and_clip.TactileStaticStdScaleClipMaxFilter,
 )
 tfc.add_filter(
     "/TactileSensor4/Dynamic", 
