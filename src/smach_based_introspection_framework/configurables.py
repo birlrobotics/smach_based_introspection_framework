@@ -11,7 +11,7 @@ from smach_based_introspection_framework.offline_part.anomaly_detection_feature_
 from rostopics_to_timeseries.Smoother import WindowBasedSmoother_factory
 from scipy import signal
 
-HUMAN_AS_MODEL_MODE = True
+HUMAN_AS_MODEL_MODE = False
 
 dmp_cmd_fields = [
     '.endpoint_state.pose.position.x',
@@ -41,6 +41,16 @@ data_fields_store = {
         '.endpoint_state.twist.angular.y',
         '.endpoint_state.twist.angular.z',
     ],
+
+    'endpoint_state_wrench':[
+        '.endpoint_state.wrench.force.x',
+        '.endpoint_state.wrench.force.y',
+        '.endpoint_state.wrench.force.z',
+        '.endpoint_state.wrench.torque.x',
+        '.endpoint_state.wrench.torque.y',
+        '.endpoint_state.wrench.torque.z',
+    ],
+    
     'wrench': [
          '.wrench_stamped.wrench.force.x',
          '.wrench_stamped.wrench.force.y',
@@ -79,6 +89,7 @@ data_fields_store = {
         '.tactile_values.tactile_values_9',
 ],
 }
+    
 data_type_chosen = 'endpoint_twist_and_wrench'
 data_type_split = data_type_chosen.split("_and_")
 interested_data_fields = []
@@ -99,7 +110,7 @@ model_config = {
 model_type = 'BNPY\'s HMM'
 model_config = {
     'n_iteration': 1000,
-    'K': 10,
+    'K': 5,
     'alloModel' : 'HDPHMM',
     'obsModel'  : 'Gauss',
     'varMethod' : ListOfParams(['memoVB']),
