@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import multiprocessing
 import Queue
 from smach_based_introspection_framework.online_part.data_collection.StoreVectorToRedisProc import (
@@ -35,6 +36,7 @@ from birl_hmm.hmm_training import (hmm_util,)
 import glob
 import re
 from sklearn.externals import joblib
+from scipy.stats import norm
 
 def plot_resampled_anomaly_df(resampled_anomaly_df):
     import datetime
@@ -70,31 +72,20 @@ def classify_against_all_types(mat, happen_in_state):
         if int(tag) != int(happen_in_state):
             continue
 
-        model = joblib.load(os.path.join(i, 'classifier_model'))
-        hmm_model = model['hmm_model']
-        '''
-        threshold_for_classification = model['threshold_for_classification']
-        score = hmm_model.score(mat) 
-        confidence = score/threshold_for_classification
+        model        = joblib.load(os.path.join(i, 'classifier_model'))
+        hmm_model    = model['hmm_model']
+        mean_and_std = model['mean_and_std_of_the_norm_distribution']
+        
+        score      = hmm_model.score(mat)
+        confidence = norm.cdf(score, mean_and_std[0], mean_and_std[1])
         ret.append((
             anomaly_type,
             {
                 "score":score, 
-                "threshold_for_classification":threshold_for_classification, 
                 "confidence":confidence,
             },
         ))
-
-        '''
-        confidence = hmm_util.fast_log_curve_calculation(mat, hmm_model)[-1]
-        ret.append((
-            anomaly_type,
-            {
-                "confidence":confidence,
-                
-            },
-        ))
-
+        
     return ret
 
 
