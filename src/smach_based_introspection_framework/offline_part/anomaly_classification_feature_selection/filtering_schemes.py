@@ -7,7 +7,7 @@ from smach_based_introspection_framework.msg import tactile_static
 import tactilesensors4.msg
 import itertools
 from smach_based_introspection_framework.configurables import (
-    timeseries_rate,
+    anomaly_resample_hz,
 )
 from rostopics_to_timeseries.Smoother import WindowBasedSmoother_factory
 from scipy import signal
@@ -49,7 +49,7 @@ smoother_args.append(WindowBasedSmoother_factory(signal.boxcar(5)))
 
 for smoother_class in smoother_args:
     for prod in itertools.product(*[(None, i) for i in filters_args]):
-        tfc = RosTopicFilteringScheme(timeseries_rate)
+        tfc = RosTopicFilteringScheme(anomaly_resample_hz)
         if smoother_class is not None:
             tfc.smoother_class = smoother_class
         for k in fixed_filters:
