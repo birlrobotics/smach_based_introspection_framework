@@ -37,5 +37,7 @@ def run(list_of_mat, model_type, model_config, score_metric):
             'training_report': tried_models,
             'size_of_train_set': len(list_of_train_mat),
             'size_of_test_set': len(list_of_test_mat),
+            'mean_and_std_of_the_norm_distribution': mean_and_std_of_the_norm_distribution,
+            'loklik of all input mat': list_of_loklik,
         }
     }

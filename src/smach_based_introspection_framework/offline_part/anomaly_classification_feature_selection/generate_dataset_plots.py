@@ -14,18 +14,18 @@ import ipdb
 def run():
     logger = logging.getLogger('GenPlots')
 
-    whole_exp_folders = glob.glob(os.path.join(
+    folders = glob.glob(os.path.join(
         anomaly_classification_feature_selection_folder,
         'No.* filtering scheme',
         'anomalies_grouped_by_type',
         'anomaly_type_(*)',
     )) 
 
-    logger.info(whole_exp_folders)
+    logger.info(folders)
 
     at_extractor = re.compile(r'anomaly_type_\((.*)\)')
 
-    for folder in itertools.chain(whole_exp_folders):
+    for folder in itertools.chain(folders):
         logger.info(folder)
         path_postfix = os.path.relpath(folder, anomaly_classification_feature_selection_folder)
 
