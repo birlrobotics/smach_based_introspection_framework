@@ -146,6 +146,9 @@ class ExperimentRecord(object):
             return self._anomaly_labels
 
         txt_path = os.path.join(self.folder_path, anomaly_label_file)
+        if not os.path.isfile(txt_path):
+            return []
+
         lines = open(txt_path, 'r').readlines()
         labels = [i.strip() for i in lines]
         labels = [i for i in labels if i != ""]
