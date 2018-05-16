@@ -5,7 +5,7 @@ from scipy.stats import norm
 import ipdb
 
 def run(list_of_mat, model_type, model_config, score_metric):
-    list_of_train_mat, list_of_test_mat = train_test_split(list_of_mat, test_size=0.25, random_state=0)
+    list_of_train_mat, list_of_test_mat = train_test_split(list_of_mat, test_size=0.25)
     
     if len(list_of_train_mat) == 0:
         raise Exception('Contains 0 train samples, failed to train introspection model')
