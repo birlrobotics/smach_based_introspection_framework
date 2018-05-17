@@ -3,6 +3,7 @@ from smach_based_introspection_framework._constant import (
     anomaly_classification_feature_selection_folder,
 )
 from smach_based_introspection_framework.configurables import model_type, model_config, score_metric
+from smach_based_introspection_framework.online_part.anomaly_classifier.Classifier import NormalDistributedConfidenceClassifier
 import glob
 import os
 import pandas as pd
@@ -14,9 +15,8 @@ import json
 import re
 
 
+at_extractor = re.compile(r'anomaly_type_\((.*)\)')
 def get_models_of_scheme(scheme_folder, logger):
-    at_extractor = re.compile(r'anomaly_type_\((.*)\)')
-
     models_grouped_by_type = {}
 
     for model_file in glob.glob(os.path.join(scheme_folder, 'anomaly_type_(*)', 'classifier_model')):
@@ -46,11 +46,28 @@ def run():
         logger.info(scheme_folder)
 
         models_grouped_by_type = get_models_of_scheme(scheme_folder, logger)
+        c = NormalDistributedConfidenceClassifier(models_grouped_by_type)
 
         path_postfix = os.path.relpath(scheme_folder, os.path.join(anomaly_classification_feature_selection_folder, 'classifier_models'))
         
-        logger.info(path_postfix)
-        logger.info(models_grouped_by_type)
+        anomaly_csvs = glob.glob(os.path.join(
+            anomaly_classification_feature_selection_folder,
+            path_postfix,
+            'anomalies_grouped_by_type',
+            'anomaly_type_(*)',
+            '*',
+            '*.csv',
+        ))
+
+        for anomaly_csv in anomaly_csvs:
+            anomaly_type = at_extractor.search(anomaly_csv).group(1)
+            with open(anomaly_csv, 'r') as f:
+                ano_df = pd.read_csv(f)
+                mat = ano_df.values[:, 1:]
+
+            ret = c.predict_proba(mat)
+            logger.info(anomaly_type)
+            logger.info(ret)
 
 if __name__ == '__main__':
     run()
