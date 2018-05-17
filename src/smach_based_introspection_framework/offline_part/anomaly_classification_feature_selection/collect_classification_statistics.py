@@ -13,6 +13,8 @@ import sys, traceback
 from sklearn.externals import joblib
 import json
 import re
+import numpy as np
+import copy
 
 
 at_extractor = re.compile(r'anomaly_type_\((.*)\)')
@@ -59,6 +61,8 @@ def run():
             '*.csv',
         ))
 
+        stat_df = pd.DataFrame()
+
         for anomaly_csv in anomaly_csvs:
             anomaly_type = at_extractor.search(anomaly_csv).group(1)
             with open(anomaly_csv, 'r') as f:
@@ -66,8 +70,34 @@ def run():
                 mat = ano_df.values[:, 1:]
 
             ret = c.predict_proba(mat)
-            logger.info(anomaly_type)
-            logger.info(ret)
+
+            d = dict([("proba_of_(%s)"%i[0], i[1]) for i in ret])
+            d['anomaly_csv'] = os.path.basename(anomaly_csv)
+            d['anomaly_type'] = anomaly_type
+
+            for threshold in np.arange(0.1, 1, 0.2):
+                now_d = copy.deepcopy(d)
+                now_d['confidence_threshold'] = threshold
+                if ret[-1][0] != anomaly_type:
+                    now_d['incorrect_predict'] = 1
+                elif ret[-1][1] < threshold:
+                    now_d['correct_predict_with_low_conf'] = 1
+                elif len(ret) > 1 and ret[-2][1] >= threshold:
+                    now_d['correct_predict_with_non_exclusive_high_conf'] = 1
+                else:
+                    now_d['correct_predict_with_exclusive_high_conf'] = 1
+        
+                stat_df = stat_df.append(now_d, ignore_index=True)
+
+        output_dir = os.path.join(
+            anomaly_classification_feature_selection_folder,
+            'classification_statistics',
+            path_postfix,
+        )
+        stat_file = os.path.join(output_dir, 'stat.csv')
+        if not os.path.isdir(output_dir):
+            os.makedirs(output_dir)
+        stat_df.to_csv(stat_file)
 
 if __name__ == '__main__':
     run()
