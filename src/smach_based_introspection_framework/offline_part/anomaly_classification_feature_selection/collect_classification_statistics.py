@@ -64,7 +64,7 @@ def run():
         stat_df = pd.DataFrame()
 
         for anomaly_csv in anomaly_csvs:
-            anomaly_type = at_extractor.search(anomaly_csv).group(1)
+            anomaly_type_given_by_human = at_extractor.search(anomaly_csv).group(1)
             with open(anomaly_csv, 'r') as f:
                 ano_df = pd.read_csv(f)
                 mat = ano_df.values[:, 1:]
@@ -73,21 +73,28 @@ def run():
 
             d = dict([("proba_of_(%s)"%i[0], i[1]) for i in ret])
             d['anomaly_csv'] = os.path.basename(anomaly_csv)
-            d['anomaly_type'] = anomaly_type
+            d['anomaly_type_given_by_human'] = anomaly_type_given_by_human
 
-            for threshold in np.arange(0.1, 1, 0.2):
-                now_d = copy.deepcopy(d)
-                now_d['confidence_threshold'] = threshold
-                if ret[-1][0] != anomaly_type:
-                    now_d['incorrect_predict'] = 1
-                elif ret[-1][1] < threshold:
-                    now_d['correct_predict_with_low_conf'] = 1
-                elif len(ret) > 1 and ret[-2][1] >= threshold:
-                    now_d['correct_predict_with_non_exclusive_high_conf'] = 1
-                else:
-                    now_d['correct_predict_with_exclusive_high_conf'] = 1
+            for threshold in np.arange(0.1, 1, 0.1):
+                d['confidence_threshold'] = threshold
+
+                for idx, tu in enumerate(ret[::-1]):
+                    l2_d = copy.deepcopy(d)
+                    l2_d['anomaly_type_being_tested'] = tu[0]
+
+                    confident = tu[1] >= threshold
+                    if tu[0] == anomaly_type_given_by_human:
+                        if confident:
+                            l2_d['TP'] = 1
+                        else:
+                            l2_d['FN'] = 1
+                    else:
+                        if confident:
+                            l2_d['FP'] = 1
+                        else:
+                            l2_d['TN'] = 1
         
-                stat_df = stat_df.append(now_d, ignore_index=True)
+                    stat_df = stat_df.append(l2_d, ignore_index=True)
 
         output_dir = os.path.join(
             anomaly_classification_feature_selection_folder,

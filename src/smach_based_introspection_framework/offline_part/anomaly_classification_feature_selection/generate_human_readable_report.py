@@ -55,8 +55,9 @@ def run():
         big_df = big_df.append(df)
 
     proba_cols = [i for i in big_df.columns if i.startswith("proba_of")]
-    big_df = big_df.drop(['anomaly_csv', big_df.columns[0]]+proba_cols, axis=1).set_index(['scheme_no', 'confidence_threshold', 'anomaly_type'])
+    big_df = big_df.drop(['anomaly_type_given_by_human', 'anomaly_csv', big_df.columns[0]]+proba_cols, axis=1).set_index(['scheme_no', 'confidence_threshold', 'anomaly_type_being_tested'])
     big_df = big_df.fillna(0).astype(int)
+
 
     report = open(os.path.join(anomaly_classification_feature_selection_folder, 'report.txt'), 'w') 
     report.write("scheme info\n")
