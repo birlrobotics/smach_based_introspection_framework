@@ -176,4 +176,5 @@ topics_to_be_recorded_into_rosbag = [
     '/TactileSensor4/Gyroscope',
     '/TactileSensor4/Magnetometer',
     '/TactileSensor4/Accelerometer',
+    'timeseries_topic_for_anomaly_detection',
 ]

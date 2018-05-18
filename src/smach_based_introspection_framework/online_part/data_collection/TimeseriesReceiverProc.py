@@ -17,11 +17,13 @@ class TimeseriesReceiverProc(multiprocessing.Process):
         self, 
         com_queue, 
         node_name="TimeseriesReceiverProc_node",
+        topic_name="/rostopics_to_timeseries_topic",
     ):
         multiprocessing.Process.__init__(self)     
 
         self.com_queue = com_queue
         self.node_name = node_name
+        self.topic_name = topic_name
 
         self.smach_state = None
 
@@ -41,7 +43,7 @@ class TimeseriesReceiverProc(multiprocessing.Process):
         rospy.init_node(self.node_name, anonymous=True)
         try:
             rospy.Subscriber("/tag_multimodal", Tag_MultiModal, self.callback_multimodal)
-            rospy.Subscriber("/rostopics_to_timeseries_topic", Timeseries, self.callback_timeseries)
+            rospy.Subscriber(self.topic_name, Timeseries, self.callback_timeseries)
             rospy.loginfo('TimeseriesReceiverProc: /tag_multimodal subscribed')
             rospy.spin()
         except Exception as e:
