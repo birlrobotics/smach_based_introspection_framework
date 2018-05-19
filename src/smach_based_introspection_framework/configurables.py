@@ -207,3 +207,5 @@ topics_to_be_recorded_into_rosbag = [
     'timeseries_topic_for_anomaly_detection',
     'timeseries_topic_for_anomaly_classification',
 ]
+
+anomaly_window_size_in_sec = None
