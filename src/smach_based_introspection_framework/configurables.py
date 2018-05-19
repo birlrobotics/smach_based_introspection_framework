@@ -119,7 +119,6 @@ model_config = {
 '''
 
 
-anomaly_window_size_in_sec = 4
 anomaly_resample_hz = 10
 anomaly_classification_confidence_threshold = 0.5
 anomaly_handcoded_labels = {0: 'object_slip',
@@ -127,6 +126,36 @@ anomaly_handcoded_labels = {0: 'object_slip',
                             2: 'human_collision',
                             3: 'no_object',}
 anomaly_classifier_model_path = '/home/birl_wu/baxter_ws/src/SPAI/smach_based_introspection_framework/anomaly_classifier'
+
+anomaly_window_size = [2, 2]
+anomaly_filtering_scheme = RosTopicFilteringScheme(anomaly_resample_hz)
+anomaly_filtering_scheme.add_filter(
+    "/TactileSensor4/StaticData", 
+    tactilesensors4.msg.StaticData,
+    msg_filters_with_scaling_and_clip.TactileStaticStdScaleClipMaxFilter,
+)
+anomaly_filtering_scheme.add_filter(
+    "/robotiq_force_torque_wrench", 
+    WrenchStamped, 
+    msg_filters_with_scaling.WrenchStampedNormFilter,
+)
+anomaly_filtering_scheme.add_filter(
+    "/robotiq_force_torque_wrench", 
+    WrenchStamped, 
+    msg_filters_with_scaling.WrenchStampedFilter,
+)
+anomaly_filtering_scheme.add_filter(
+    "/robot/limb/right/endpoint_state", 
+    EndpointState,
+    msg_filters_with_scaling.BaxterEndpointTwistNormFilter,
+)
+anomaly_filtering_scheme.add_filter(
+    "/robot/limb/right/endpoint_state", 
+    EndpointState,
+    msg_filters_with_scaling.BaxterEndpointTwistFilter,
+)
+anomaly_filtering_scheme.smoother_class = WindowBasedSmoother_factory(signal.boxcar(5))
+
 
 
 timeseries_rate = 10
@@ -156,7 +185,6 @@ tfc.add_filter(
     EndpointState,
     msg_filters_with_scaling.BaxterEndpointTwistFilter,
 )
-
 tfc.smoother_class = WindowBasedSmoother_factory(signal.boxcar(5))
 
 

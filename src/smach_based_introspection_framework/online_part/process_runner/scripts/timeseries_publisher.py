@@ -3,6 +3,7 @@ import multiprocessing
 import rospy
 from smach_based_introspection_framework.configurables import (
     tfc,
+    anomaly_filtering_scheme,
 )
 
 class TimeseriesPubProc(multiprocessing.Process):
@@ -35,6 +36,14 @@ if __name__ == '__main__':
     )
     ad_timeseries_pub.daemon = True
     ad_timeseries_pub.start()
+
+    ac_timeseries_pub = TimeseriesPubProc(
+        anomaly_filtering_scheme,
+        node_name="TimeseriesPubProc_node_for_anomaly_classification",
+        topic_name="timeseries_topic_for_anomaly_classification",
+    )
+    ac_timeseries_pub.daemon = True
+    ac_timeseries_pub.start()
 
 
     rospy.init_node("timeseries_publisher_master_node")
