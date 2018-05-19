@@ -62,7 +62,7 @@ def classify_against_all_types(mat, happen_in_state):
     models_grouped_by_type = {}
     prog = re.compile(r'anomaly_type_\(?([^\(\)]+)\)?')
     for model_file in glob.glob(os.path.join(latest_model_folder, '*', 'classifier_model')):
-        anomaly_type = prog.search(os.path.basename(model_file)).group(1)
+        anomaly_type = prog.search(model_file).group(1)
         with open(model_file, 'rb') as f:
             models_grouped_by_type[anomaly_type] = joblib.load(f)
 
