@@ -132,7 +132,7 @@ anomaly_filtering_scheme = RosTopicFilteringScheme(anomaly_resample_hz)
 anomaly_filtering_scheme.add_filter(
     "/TactileSensor4/StaticData", 
     tactilesensors4.msg.StaticData,
-    msg_filters_with_scaling_and_clip.TactileStaticStdScaleClipMaxFilter,
+    msg_filters.TactileStaticStdFilter,
 )
 anomaly_filtering_scheme.add_filter(
     "/robotiq_force_torque_wrench", 
