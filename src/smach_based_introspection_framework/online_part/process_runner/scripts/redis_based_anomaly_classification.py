@@ -120,7 +120,7 @@ def cb(req):
 
 if __name__ == '__main__':
     redis_proc = StoreTimeseriesInRedisProc(
-        node_name='StoreTimeseriesInRedisProc_node_for_AC'
+        node_name='StoreTimeseriesInRedisProc_node_for_AC',
         topic_name='timeseries_topic_for_anomaly_classification',
     )
     redis_proc.daemon = True
