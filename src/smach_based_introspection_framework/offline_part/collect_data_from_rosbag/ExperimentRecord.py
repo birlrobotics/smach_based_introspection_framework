@@ -56,6 +56,40 @@ class ExperimentRecord(object):
         return self._tag_ranges
 
     @property
+    def anomaly_signal_times(self):
+        if hasattr(self, "_anomaly_signal_times"):
+            return self._anomaly_signal_times
+
+        cache_file = os.path.join(
+            cache_folder, 
+            "anomaly_signal_times_cache", 
+            os.path.basename(self.folder_path)+'\'s anomaly_signal_times.pkl'
+        )
+
+        if os.path.isfile(cache_file):
+            self._anomaly_signal_times = pickle.load(open(cache_file, 'r')) 
+            self.logger.debug("anomaly signal times cache found.")
+            return self._anomaly_signal_times
+
+        signals = []
+        anomaly_start_time = None
+        for count, (topic, msg, record_time) in enumerate(self.rosbag.read_messages('/anomaly_detection_signal')):
+            cur_anomaly_time = msg.stamp
+            if anomaly_start_time is None or \
+                (cur_anomaly_time-anomaly_start_time).to_sec > 2:
+
+                anomaly_start_time = cur_anomaly_time
+                signals.append(anomaly_start_time)
+
+        self._anomaly_signal_times = signals
+        cache_output_dir = os.path.dirname(cache_file)
+        if not os.path.isdir(cache_output_dir):
+            os.makedirs(cache_output_dir)
+        pickle.dump(self._anomaly_signal_times, open(cache_file, 'wb'))
+        return self._anomaly_signal_times
+
+
+    @property
     def rosbag(self):
         if hasattr(self, "_rosbag"):
             return self._rosbag
@@ -118,15 +152,8 @@ class ExperimentRecord(object):
         if hasattr(self, '_anomaly_signals'):
             return self._anomaly_signals
 
-        signals = []
-        anomaly_start_time = None
-        for count, (topic, msg, record_time) in enumerate(self.rosbag.read_messages('/anomaly_detection_signal')):
-            cur_anomaly_time = msg.stamp
-            if anomaly_start_time is None or \
-                (cur_anomaly_time-anomaly_start_time).to_sec > 2:
+        signals = self.anomaly_signal_times
 
-                anomaly_start_time = cur_anomaly_time
-                signals.append(anomaly_start_time)
         if len(signals) > len(self.anomaly_labels):
             raise Exception("anomaly signals amount, %s, does not match anomaly labels, %s."%(len(signals), len(self.anomaly_labels)))
         elif len(signals) != len(self.unsuccessful_tag_ranges):
@@ -146,6 +173,9 @@ class ExperimentRecord(object):
             return self._anomaly_labels
 
         txt_path = os.path.join(self.folder_path, anomaly_label_file)
+        if not os.path.isfile(txt_path):
+            return []
+
         lines = open(txt_path, 'r').readlines()
         labels = [i.strip() for i in lines]
         labels = [i for i in labels if i != ""]

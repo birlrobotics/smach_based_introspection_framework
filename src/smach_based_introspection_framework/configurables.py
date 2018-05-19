@@ -42,6 +42,16 @@ data_fields_store = {
         '.endpoint_state.twist.angular.y',
         '.endpoint_state.twist.angular.z',
     ],
+
+    'endpoint_state_wrench':[
+        '.endpoint_state.wrench.force.x',
+        '.endpoint_state.wrench.force.y',
+        '.endpoint_state.wrench.force.z',
+        '.endpoint_state.wrench.torque.x',
+        '.endpoint_state.wrench.torque.y',
+        '.endpoint_state.wrench.torque.z',
+    ],
+    
     'wrench': [
          '.wrench_stamped.wrench.force.x',
          '.wrench_stamped.wrench.force.y',
@@ -80,6 +90,7 @@ data_fields_store = {
         '.tactile_values.tactile_values_9',
 ],
 }
+    
 data_type_chosen = 'endpoint_twist_and_wrench'
 data_type_split = data_type_chosen.split("_and_")
 interested_data_fields = []
@@ -99,7 +110,7 @@ model_config = {
 model_type = 'BNPY\'s HMM'
 model_config = {
     'n_iteration': 1000,
-    'K': 10,
+    'K': 5,
     'alloModel' : 'HDPHMM',
     'obsModel'  : 'Gauss',
     'varMethod' : ListOfParams(['memoVB']),
@@ -108,7 +119,6 @@ model_config = {
 '''
 
 
-anomaly_window_size_in_sec = 4
 anomaly_resample_hz = 10
 anomaly_classification_confidence_threshold = 0.5
 anomaly_handcoded_labels = {0: 'object_slip',
@@ -116,6 +126,36 @@ anomaly_handcoded_labels = {0: 'object_slip',
                             2: 'human_collision',
                             3: 'no_object',}
 anomaly_classifier_model_path = '/home/birl_wu/baxter_ws/src/SPAI/smach_based_introspection_framework/anomaly_classifier'
+
+anomaly_window_size = [2, 2]
+anomaly_filtering_scheme = RosTopicFilteringScheme(anomaly_resample_hz)
+anomaly_filtering_scheme.add_filter(
+    "/TactileSensor4/StaticData", 
+    tactilesensors4.msg.StaticData,
+    msg_filters_with_scaling_and_clip.TactileStaticStdScaleClipMaxFilter,
+)
+anomaly_filtering_scheme.add_filter(
+    "/robotiq_force_torque_wrench", 
+    WrenchStamped, 
+    msg_filters_with_scaling.WrenchStampedNormFilter,
+)
+anomaly_filtering_scheme.add_filter(
+    "/robotiq_force_torque_wrench", 
+    WrenchStamped, 
+    msg_filters_with_scaling.WrenchStampedFilter,
+)
+anomaly_filtering_scheme.add_filter(
+    "/robot/limb/right/endpoint_state", 
+    EndpointState,
+    msg_filters_with_scaling.BaxterEndpointTwistNormFilter,
+)
+anomaly_filtering_scheme.add_filter(
+    "/robot/limb/right/endpoint_state", 
+    EndpointState,
+    msg_filters_with_scaling.BaxterEndpointTwistFilter,
+)
+anomaly_filtering_scheme.smoother_class = WindowBasedSmoother_factory(signal.boxcar(5))
+
 
 
 timeseries_rate = 10
@@ -145,7 +185,6 @@ tfc.add_filter(
     EndpointState,
     msg_filters_with_scaling.BaxterEndpointTwistFilter,
 )
-
 tfc.smoother_class = WindowBasedSmoother_factory(signal.boxcar(5))
 
 topics_to_be_recorded_into_rosbag = [
@@ -164,4 +203,6 @@ topics_to_be_recorded_into_rosbag = [
     '/TactileSensor4/Gyroscope',
     '/TactileSensor4/Magnetometer',
     '/TactileSensor4/Accelerometer',
+    'timeseries_topic_for_anomaly_detection',
+    'timeseries_topic_for_anomaly_classification',
 ]

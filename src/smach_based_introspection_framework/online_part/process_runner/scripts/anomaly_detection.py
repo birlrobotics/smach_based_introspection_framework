@@ -122,6 +122,8 @@ if __name__ == '__main__':
     com_queue_of_receiver = multiprocessing.Queue()
     process_receiver = TimeseriesReceiverProc(
         com_queue_of_receiver,
+        node_name="TimeseriesReceiverProc_node_for_anomaly_detection",
+        topic_name="timeseries_topic_for_anomaly_detection",
     )
     process_receiver.daemon = True
 

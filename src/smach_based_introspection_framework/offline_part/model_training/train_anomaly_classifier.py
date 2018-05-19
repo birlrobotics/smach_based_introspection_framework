@@ -1,6 +1,7 @@
 from sklearn.model_selection import train_test_split
 from birl_hmm.hmm_training import train_model, hmm_util
 import numpy as np
+from scipy.stats import norm
 import ipdb
 
 def run(list_of_mat, model_type, model_config, score_metric):
@@ -24,24 +25,19 @@ def run(list_of_mat, model_type, model_config, score_metric):
         score_metric=score_metric,
     )
 
-    list_of_loklik = [best_model.score(i) for i in list_of_test_mat]
-    mat = np.matrix(list_of_loklik)
-    mean = mat.mean()
-    std = mat.std()
-    threshold = mean-2*std
-
+    list_of_loklik = [best_model.score(i) for i in list_of_mat]
+    mean_and_std_of_the_norm_distribution = norm.fit(list_of_loklik)
     return {
         'model': {
             'hmm_model':best_model,
-            'threshold_for_classification':threshold,
+            'mean_and_std_of_the_norm_distribution': mean_and_std_of_the_norm_distribution,
         },
         'model_info': {
             'test_score': test_score,
-            'threshold_for_classification':threshold,
-            'test_set_log_likelihood_mean':mean,
-            'test_set_log_likelihood_std':std,
             'training_report': tried_models,
             'size_of_train_set': len(list_of_train_mat),
             'size_of_test_set': len(list_of_test_mat),
+            'mean_and_std_of_the_norm_distribution': mean_and_std_of_the_norm_distribution,
+            'loklik of all input mat': list_of_loklik,
         }
     }
