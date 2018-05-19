@@ -120,7 +120,7 @@ model_config = {
 
 
 anomaly_resample_hz = 10
-anomaly_classification_confidence_threshold = 0.5
+anomaly_classification_confidence_threshold = 0.7
 anomaly_handcoded_labels = {0: 'object_slip',
                             1: 'tool_collision',
                             2: 'human_collision',
