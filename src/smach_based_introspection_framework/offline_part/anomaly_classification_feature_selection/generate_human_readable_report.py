@@ -18,13 +18,18 @@ pd.set_option("display.precision", 3)
 def append_metrics(df_):
     try:
         df = df_.copy()
+        for k in ['TP', 'TN', 'FP', 'FN']:
+            if k not in df.columns:
+                df[k] = 0
+
+	
         df['precision'] = df['TP']/(df['TP']+df['FP']) 
         df['recall'] = df['TP']/(df['TP']+df['FN']) 
         df['F1score'] = 2*df['TP']/(2*df['TP']+df['FP']+df['FN'])
 
         df['accuracy'] = (df['TP']+df['TN'])/(df['TP']+df['TN']+df['FP']+df['FN']) 
-    except:
-        pass
+    except Exception as e:
+        raise e
     return df
 
 def run():
@@ -55,7 +60,7 @@ def run():
         big_df = big_df.append(df)
 
     proba_cols = [i for i in big_df.columns if i.startswith("proba_of")]
-    big_df = big_df.drop(['anomaly_type_given_by_human', 'anomaly_csv', big_df.columns[0]]+proba_cols, axis=1).set_index(['scheme_no', 'confidence_threshold', 'anomaly_type_being_tested'])
+    big_df = big_df.drop(['Unnamed: 0', 'anomaly_type_given_by_human', 'anomaly_csv']+proba_cols, axis=1).set_index(['scheme_no', 'confidence_threshold', 'anomaly_type_being_tested'])
     big_df = big_df.fillna(0).astype(int)
 
 

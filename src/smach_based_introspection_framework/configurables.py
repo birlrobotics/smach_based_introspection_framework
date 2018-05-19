@@ -8,7 +8,7 @@ from rostopics_to_timeseries import RosTopicFilteringScheme
 import baxter_core_msgs.msg
 import tactilesensors4.msg
 import geometry_msgs.msg
-from smach_based_introspection_framework.offline_part.anomaly_detection_feature_selection import msg_filters_with_scaling, msg_filters_with_scaling_and_clip
+from smach_based_introspection_framework.offline_part.anomaly_detection_feature_selection import msg_filters, msg_filters_with_scaling, msg_filters_with_scaling_and_clip
 from rostopics_to_timeseries.Smoother import WindowBasedSmoother_factory
 from scipy import signal
 
@@ -99,6 +99,7 @@ for data_type in data_type_split:
 
 score_metric = '_score_metric_sum_of_loglik_'
 
+'''
 model_type = 'hmmlearn\'s HMM'
 model_config = {
   'n_components': ListOfParams([1,3,5,7, 9]),
@@ -116,7 +117,6 @@ model_config = {
     'varMethod' : ListOfParams(['memoVB']),
     'ECovMat'   : ListOfParams(['covdata']), #diagcovdata
 }
-'''
 
 
 anomaly_resample_hz = 10
@@ -163,27 +163,27 @@ tfc = RosTopicFilteringScheme(timeseries_rate)
 tfc.add_filter(
     "/TactileSensor4/StaticData", 
     tactilesensors4.msg.StaticData,
-    msg_filters_with_scaling_and_clip.TactileStaticStdScaleClipMaxFilter,
+    msg_filters.TactileStaticStdScaleClipMaxFilter,
 )
 tfc.add_filter(
     "/robotiq_force_torque_wrench", 
     WrenchStamped, 
-    msg_filters_with_scaling.WrenchStampedNormFilter,
+    msg_filters.WrenchStampedNormFilter,
 )
 tfc.add_filter(
     "/robotiq_force_torque_wrench", 
     WrenchStamped, 
-    msg_filters_with_scaling.WrenchStampedFilter,
+    msg_filters.WrenchStampedFilter,
 )
 tfc.add_filter(
     "/robot/limb/right/endpoint_state", 
     EndpointState,
-    msg_filters_with_scaling.BaxterEndpointTwistNormFilter,
+    msg_filters.BaxterEndpointTwistNormFilter,
 )
 tfc.add_filter(
     "/robot/limb/right/endpoint_state", 
     EndpointState,
-    msg_filters_with_scaling.BaxterEndpointTwistFilter,
+    msg_filters.BaxterEndpointTwistFilter,
 )
 tfc.smoother_class = WindowBasedSmoother_factory(signal.boxcar(5))
 
