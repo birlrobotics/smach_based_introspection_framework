@@ -76,7 +76,7 @@ class ExperimentRecord(object):
         for count, (topic, msg, record_time) in enumerate(self.rosbag.read_messages('/anomaly_detection_signal')):
             cur_anomaly_time = msg.stamp
             if anomaly_start_time is None or \
-                (cur_anomaly_time-anomaly_start_time).to_sec > 2:
+                (cur_anomaly_time-anomaly_start_time).to_sec() > 2:
 
                 anomaly_start_time = cur_anomaly_time
                 signals.append(anomaly_start_time)
