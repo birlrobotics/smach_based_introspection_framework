@@ -69,32 +69,27 @@ def run():
                 ano_df = pd.read_csv(f)
                 mat = ano_df.values[:, 1:]
 
-            ret = c.predict_proba(mat)
-
-            d = dict([("proba_of_(%s)"%i[0], i[1]) for i in ret])
+            predict_label = c.predict(mat)
+            
+            d = {}
             d['anomaly_csv'] = os.path.basename(anomaly_csv)
             d['anomaly_type_given_by_human'] = anomaly_type_given_by_human
 
-            for threshold in np.arange(0.1, 1, 0.1):
-                d['confidence_threshold'] = threshold
+            if predict_label == anomaly_type_given_by_human: 
+                l2_d = copy.deepcopy(d)
+                l2_d['anomaly_type_being_tested'] = anomaly_type_given_by_human
+                l2_d['TP'] = 1
+                stat_df = stat_df.append(l2_d, ignore_index=True)
+            else:
+                l2_d = copy.deepcopy(d)
+                l2_d['anomaly_type_being_tested'] = anomaly_type_given_by_human
+                l2_d['FN'] = 1
+                stat_df = stat_df.append(l2_d, ignore_index=True)
 
-                for idx, tu in enumerate(ret[::-1]):
-                    l2_d = copy.deepcopy(d)
-                    l2_d['anomaly_type_being_tested'] = tu[0]
-
-                    confident = tu[1] >= threshold
-                    if tu[0] == anomaly_type_given_by_human:
-                        if confident:
-                            l2_d['TP'] = 1
-                        else:
-                            l2_d['FN'] = 1
-                    else:
-                        if confident:
-                            l2_d['FP'] = 1
-                        else:
-                            l2_d['TN'] = 1
-        
-                    stat_df = stat_df.append(l2_d, ignore_index=True)
+                l2_d = copy.deepcopy(d)
+                l2_d['anomaly_type_being_tested'] = predict_label
+                l2_d['FP'] = 1
+                stat_df = stat_df.append(l2_d, ignore_index=True)
 
         output_dir = os.path.join(
             anomaly_classification_feature_selection_folder,
