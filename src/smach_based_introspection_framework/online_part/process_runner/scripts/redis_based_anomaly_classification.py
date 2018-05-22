@@ -33,7 +33,6 @@ from birl_hmm.hmm_training import (hmm_util,)
 import glob
 import re
 from sklearn.externals import joblib
-from scipy.stats import norm
 from smach_based_introspection_framework.online_part.anomaly_classifier.Classifier import NormalDistributedConfidenceClassifier
 
 def plot_resampled_anomaly_df(resampled_anomaly_df):

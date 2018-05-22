@@ -26,7 +26,14 @@ class NormalDistributedConfidenceClassifier(BaseClassifier):
 
 
     def predict(self, mat):
-        return self.predict_proba(mat)[-1][0]
+        ret = []                                                               
+        for anomaly_type, model in self.model_group_by_anomaly_type.iteritems():
+            hmm_model    = model['hmm_model']                                  
+            score      = hmm_model.score(mat)
+            ret.append((anomaly_type, score))
+
+        ret = sorted(ret, key=lambda x: x[1])
+        return ret[-1][0]
 
     def predict_proba(self, mat):
         from scipy.stats import norm
@@ -36,7 +43,7 @@ class NormalDistributedConfidenceClassifier(BaseClassifier):
             hmm_model    = model['hmm_model']                                  
             mean_and_std = model['mean_and_std_of_the_norm_distribution']      
             score      = hmm_model.score(mat)
-            confidence = norm.cdf(score, mean_and_std[0], mean_and_std[1])
+            confidence = norm.cdf(score, mean_and_std[0] - 3 * mean_and_std[1], mean_and_std[1])
 
             ret.append((anomaly_type, confidence))
 
