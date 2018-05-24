@@ -33,6 +33,7 @@ class NormalDistributedConfidenceClassifier(BaseClassifier):
             ret.append((anomaly_type, score))
 
         ret = sorted(ret, key=lambda x: x[1])
+        print ret
         return ret[-1][0]
 
     def predict_proba(self, mat):

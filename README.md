@@ -171,6 +171,10 @@ Important dependencies are listed below, they are all catkin packages so you can
 
 3. Now, you're all set. Run the experiment and when it's finished, you will have a mp4 file on ___RecordPC___. It's saved at ```introspection_data_folder/experiment_video_folder/*```
 
+## step-by-step
+1. run those basic operations refer to the 'birl_kitting_experiment' README.MD file;
+2. ...
+
 
 
 

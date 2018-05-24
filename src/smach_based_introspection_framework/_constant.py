@@ -8,7 +8,7 @@ introspection_data_folder = os.path.join(
     dir_of_this_script, 
     '..',
     '..',
-    "introspection_data_folder")
+    "introspection_data_folder.AC_offline_test")
 
 experiment_record_folder = os.path.join(
     introspection_data_folder,
