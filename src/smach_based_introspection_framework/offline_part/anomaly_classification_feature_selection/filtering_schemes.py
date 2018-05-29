@@ -19,30 +19,30 @@ fixed_filters = [
     [
         "/TactileSensor4/StaticData", 
         tactilesensors4.msg.StaticData,
-        msg_filters.TactileStaticStdFilter,
+        msg_filters_with_scaling_and_clip.TactileStaticStdScaleClipMaxFilter,
     ],
     [
         "/robotiq_force_torque_wrench", 
         WrenchStamped, 
-        msg_filters.WrenchStampedNormFilter,
+        msg_filters_with_scaling.WrenchStampedNormFilter,
     ],
     [
         "/robotiq_force_torque_wrench", 
         WrenchStamped, 
-        msg_filters.WrenchStampedFilter,
+        msg_filters_with_scaling.WrenchStampedFilter,
     ],
     [
         "/robot/limb/right/endpoint_state", 
         EndpointState,
-        msg_filters.BaxterEndpointTwistNormFilter,
+        msg_filters_with_scaling.BaxterEndpointTwistNormFilter,
     ],
     [
         "/robot/limb/right/endpoint_state", 
         EndpointState,
-        msg_filters.BaxterEndpointTwistFilter,
+        msg_filters_with_scaling.BaxterEndpointTwistFilter,
     ],
 ]
-
+    
 filters_args = []
 
 smoother_args = []
