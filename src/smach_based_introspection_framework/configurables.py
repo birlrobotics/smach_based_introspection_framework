@@ -157,33 +157,33 @@ anomaly_filtering_scheme.add_filter(
 
 
 timeseries_rate = 10
-adetect = RosTopicFilteringScheme(timeseries_rate)
-adetect.add_filter(
+tfc = RosTopicFilteringScheme(timeseries_rate)
+tfc.add_filter(
     "/TactileSensor4/StaticData", 
     tactilesensors4.msg.StaticData,
     msg_filters_with_scaling_and_clip.TactileStaticStdScaleClipMaxFilter,
 )
-adetect.add_filter(
+tfc.add_filter(
     "/robotiq_force_torque_wrench", 
     WrenchStamped, 
     msg_filters_with_scaling.WrenchStampedNormFilter,
 )
-adetect.add_filter(
+tfc.add_filter(
     "/robotiq_force_torque_wrench", 
     WrenchStamped, 
     msg_filters_with_scaling.WrenchStampedFilter,
 )
-adetect.add_filter(
+tfc.add_filter(
     "/robot/limb/right/endpoint_state", 
     EndpointState,
     msg_filters_with_scaling.BaxterEndpointTwistNormFilter,
 )
-adetect.add_filter(
+tfc.add_filter(
     "/robot/limb/right/endpoint_state", 
     EndpointState,
     msg_filters_with_scaling.BaxterEndpointTwistFilter,
 )
-adetect.smoother_class = WindowBasedSmoother_factory(signal.boxcar(5))
+tfc.smoother_class = WindowBasedSmoother_factory(signal.boxcar(5))
 
 topics_to_be_recorded_into_rosbag = [
     '/tag_multimodal',
