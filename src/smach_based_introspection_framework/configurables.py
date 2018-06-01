@@ -13,7 +13,6 @@ from rostopics_to_timeseries.Smoother import WindowBasedSmoother_factory
 from scipy import signal
 
 HUMAN_AS_MODEL_MODE = False
-
 dmp_cmd_fields = [
     '.endpoint_state.pose.position.x',
     '.endpoint_state.pose.position.y',
