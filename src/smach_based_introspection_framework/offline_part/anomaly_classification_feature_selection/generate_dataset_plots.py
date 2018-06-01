@@ -47,22 +47,25 @@ def run():
 
             df = pd.read_csv(csv)
             for idx, col_name in enumerate(df.columns):
+                fig, ax = plt.subplots(nrows=1, ncols=1)
                 if idx == 0:
                     xs = df.iloc[:, 0]
+                    df.plot(ax=ax, x=df.keys()[0],y=df.keys()[1::])
+                    ax.legend(loc=2, bbox_to_anchor=(1.05, 1), fancybox=True, shadow=True, ncol=1)
                 else:
-                    fig, ax = plt.subplots(nrows=1, ncols=1)
                     ys = df.iloc[:, idx]
-                    ax.plot(xs, ys)
-                    xmin,xmax = ax.get_xlim()
-                    ymin,ymax = ax.get_ylim()
+                    ax.plot(xs, ys)                    
+                xmin,xmax = ax.get_xlim()
+                ymin,ymax = ax.get_ylim()
 
-                    ax.axvline(anomaly_t, c='purple')
-                    ax.set_title("[%s] [%s] [%s]"%(anomaly_type, exp_name, col_name))
-                    output_f = os.path.join(l2_output_dir, "dim %s.png"%col_name.replace('/', 'divide'))
-                    fig.set_size_inches(16, 4)
-                    with open(output_f, 'w') as f:
-                        fig.savefig(f)
-                    plt.close(fig)
+                ax.axvline(anomaly_t, c='purple')
+                ax.text(anomaly_t, ymax-0.25*(ymax-ymin), '%s'%anomaly_type, color='purple', rotation=-90)                    
+                ax.set_title("[%s] [%s] [%s]"%(anomaly_type, exp_name, col_name))
+                output_f = os.path.join(l2_output_dir, "dim %s.png"%col_name.replace('/', 'divide'))
+                fig.set_size_inches(16, 4)
+                with open(output_f, 'w') as f:
+                    fig.savefig(f)
+                plt.close(fig)
 
 if __name__ == '__main__':
     run()

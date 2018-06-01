@@ -60,7 +60,7 @@ def run():
         big_df = big_df.append(df)
 
     proba_cols = [i for i in big_df.columns if i.startswith("proba_of")]
-    big_df = big_df.drop(['Unnamed: 0', 'anomaly_type_given_by_human', 'anomaly_csv']+proba_cols, axis=1).set_index(['scheme_no', 'confidence_threshold', 'anomaly_type_being_tested'])
+    big_df = big_df.drop(['Unnamed: 0', 'anomaly_type_given_by_human', 'anomaly_csv']+proba_cols, axis=1).set_index(['scheme_no', 'anomaly_type_being_tested'])
     big_df = big_df.fillna(0).astype(int)
 
 
@@ -77,11 +77,11 @@ def run():
     report.write("="*30+"\n")
     report.write("granularity: scheme\n")
     report.write("-"*30+"\n")
-    report.write(str(append_metrics(big_df.groupby(level=[0, 1]).sum())))
+    report.write(str(append_metrics(big_df.groupby(level=[0]).sum())))
     report.write("\n\n")
     report.write("granularity: anomaly type\n")
     report.write("-"*30+"\n")
-    report.write(str(append_metrics(big_df.groupby(level=[0, 1, 2]).sum())))
+    report.write(str(append_metrics(big_df.groupby(level=[0, 1]).sum())))
     report.write("\n\n")
 
     return big_df

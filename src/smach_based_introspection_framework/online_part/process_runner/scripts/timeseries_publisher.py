@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from rostopics_to_timeseries.RostopicsToTimeseries import OnlineRostopicsToTimeseries
 import multiprocessing 
 import rospy

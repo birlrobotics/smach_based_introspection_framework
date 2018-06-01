@@ -33,7 +33,6 @@ from birl_hmm.hmm_training import (hmm_util,)
 import glob
 import re
 from sklearn.externals import joblib
-from scipy.stats import norm
 from smach_based_introspection_framework.online_part.anomaly_classifier.Classifier import NormalDistributedConfidenceClassifier
 
 def plot_resampled_anomaly_df(resampled_anomaly_df):
@@ -67,9 +66,9 @@ def classify_against_all_types(mat, happen_in_state):
             models_grouped_by_type[anomaly_type] = joblib.load(f)
 
     c = NormalDistributedConfidenceClassifier(models_grouped_by_type)
-    ret = c.predict_proba(mat)
+    predict_label = c.predict(mat)
 
-    return [(i[0], {'confidence':i[1]}) for i in ret]
+    return [(predict_label, {'confidence':1})]
 
     '''
     # load the LSTM model
