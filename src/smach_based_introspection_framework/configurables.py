@@ -127,7 +127,7 @@ anomaly_handcoded_labels = {0: 'object_slip',
                             3: 'no_object',}
 anomaly_classifier_model_path = '/home/birl_wu/baxter_ws/src/SPAI/smach_based_introspection_framework/anomaly_classifier'
 
-anomaly_window_size = [3, 3]
+anomaly_window_size = [2, 2]
 anomaly_filtering_scheme = RosTopicFilteringScheme(anomaly_resample_hz)
 anomaly_filtering_scheme.add_filter(
     "/TactileSensor4/StaticData", 
@@ -154,7 +154,7 @@ anomaly_filtering_scheme.add_filter(
     EndpointState,
     msg_filters.BaxterEndpointTwistFilter,
 )
-#anomaly_filtering_scheme.smoother_class = WindowBasedSmoother_factory(signal.boxcar(5))
+anomaly_filtering_scheme.smoother_class = WindowBasedSmoother_factory(signal.boxcar(5))
 
 
 timeseries_rate = 10
