@@ -46,8 +46,8 @@ fixed_filters = [
 filters_args = []
 
 smoother_args = []
-#smoother_args.append(WindowBasedSmoother_factory(signal.boxcar(5)))
-smoother_args.append(None)
+smoother_args.append(WindowBasedSmoother_factory(signal.boxcar(5)))
+#smoother_args.append(None)
 for smoother_class in smoother_args:
     for prod in itertools.product(*[(None, i) for i in filters_args]):
         tfc = RosTopicFilteringScheme(anomaly_resample_hz)
