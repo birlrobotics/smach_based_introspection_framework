@@ -54,7 +54,7 @@ anomaly_label_file = "anomaly_labels.txt"
 
 datasets_of_filtering_schemes_folder = os.path.join(
     introspection_data_folder,
-    "datasets_of_filtering_schemes_folder")
+    "anomaly_detection_feature_selection_folder")
 
 anomaly_classification_feature_selection_folder = os.path.join(
     introspection_data_folder,

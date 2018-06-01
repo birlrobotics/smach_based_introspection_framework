@@ -19,35 +19,35 @@ fixed_filters = [
     [
         "/TactileSensor4/StaticData", 
         tactilesensors4.msg.StaticData,
-        msg_filters_with_scaling_and_clip.TactileStaticStdScaleClipMaxFilter,
+        msg_filters.TactileStaticStdFilter,
     ],
     [
         "/robotiq_force_torque_wrench", 
         WrenchStamped, 
-        msg_filters_with_scaling.WrenchStampedNormFilter,
+        msg_filters.WrenchStampedNormFilter,
     ],
     [
         "/robotiq_force_torque_wrench", 
         WrenchStamped, 
-        msg_filters_with_scaling.WrenchStampedFilter,
+        msg_filters.WrenchStampedFilter,
     ],
     [
         "/robot/limb/right/endpoint_state", 
         EndpointState,
-        msg_filters_with_scaling.BaxterEndpointTwistNormFilter,
+        msg_filters.BaxterEndpointTwistNormFilter,
     ],
     [
         "/robot/limb/right/endpoint_state", 
         EndpointState,
-        msg_filters_with_scaling.BaxterEndpointTwistFilter,
+        msg_filters.BaxterEndpointTwistFilter,
     ],
 ]
     
 filters_args = []
 
 smoother_args = []
-smoother_args.append(WindowBasedSmoother_factory(signal.boxcar(5)))
-
+#smoother_args.append(WindowBasedSmoother_factory(signal.boxcar(5)))
+smoother_args.append(None)
 for smoother_class in smoother_args:
     for prod in itertools.product(*[(None, i) for i in filters_args]):
         tfc = RosTopicFilteringScheme(anomaly_resample_hz)

@@ -4,7 +4,7 @@ from smach_based_introspection_framework._constant import (
     datasets_of_filtering_schemes_folder,
 )
 import glob
-import os
+import os,ipdb
 import pandas as pd
 import coloredlogs, logging
 import matplotlib.pyplot as plt
@@ -54,51 +54,55 @@ def run():
                     tag_starts_to_plot.append((tag, st.to_sec(), et.to_sec()))
 
             anomaly_t_to_plot = []
+            anomalies = []
             try:
                 with open(os.path.join(os.path.dirname(csv), "anomaly_signals.pkl"), 'rb') as f:
                     anomaly_signals = pickle.load(f) 
                     for atype, astamp in anomaly_signals:
                         anomaly_t_to_plot.append((atype, astamp.to_sec()))
+                        anomalies.append(atype)
             except:
                 pass
 
 
 
-            l2_output_dir = os.path.join(output_dir, exp_name)
+            l2_output_dir = os.path.join(output_dir, exp_name + "-" + "+".join(anomalies))
             if not os.path.isdir(l2_output_dir):
                 os.makedirs(l2_output_dir)
 
             df = pd.read_csv(csv)
             for idx, col_name in enumerate(df.columns):
+                fig, ax = plt.subplots(nrows=1, ncols=1)
                 if idx == 0:
                     xs = df.iloc[:, 0]
+                    df.plot(ax=ax, x=df.keys()[0],y=df.keys()[1::])
+                    ax.legend(loc=2, bbox_to_anchor=(1.05, 1), fancybox=True, shadow=True, ncol=1)
                 else:
-                    fig, ax = plt.subplots(nrows=1, ncols=1)
                     ys = df.iloc[:, idx]
                     ax.plot(xs, ys)
-                    xmin,xmax = ax.get_xlim()
-                    ymin,ymax = ax.get_ylim()
-                    for tag, start, end in tag_starts_to_plot:
-                        if int(tag) != 0:
-                            if int(tag) < 0:
-                                c = 'red'
-                            else:
-                                c = 'green'
-                            ax.axvline(start, c=c)
-                            ax.text(start, ymax-0.05*(ymax-ymin), 'tag %s'%tag, color=c, rotation=-90)
+                xmin,xmax = ax.get_xlim()
+                ymin,ymax = ax.get_ylim()
+                for tag, start, end in tag_starts_to_plot:
+                    if int(tag) != 0:
+                        if int(tag) < 0:
+                            c = 'red'
                         else:
-                            ax.axvline(start, c='gray')
+                            c = 'green'
+                        ax.axvline(start, c=c)
+                        ax.text(start, ymax-0.05*(ymax-ymin), 'tag %s'%tag, color=c, rotation=-90)
+                    else:
+                        ax.axvline(start, c='gray')
 
-                    for atype, at in anomaly_t_to_plot:
-                        ax.axvline(at, c='purple')
-                        ax.text(at, ymax-0.25*(ymax-ymin), '%s'%atype, color='purple', rotation=-90)
+                for atype, at in anomaly_t_to_plot:
+                    ax.axvline(at, c='purple')
+                    ax.text(at, ymax-0.25*(ymax-ymin), '%s'%atype, color='purple', rotation=-90)
 
-                    ax.set_title("%s %s"%(exp_name, col_name))
-                    output_f = os.path.join(l2_output_dir, "dim %s.png"%col_name.replace('/', 'divide'))
-                    fig.set_size_inches(16, 4)
-                    with open(output_f, 'w') as f:
-                        fig.savefig(f)
-                    plt.close(fig)
+                ax.set_title("%s %s"%(exp_name, col_name))
+                output_f = os.path.join(l2_output_dir, "dim %s.png"%col_name.replace('/', 'divide'))
+                fig.set_size_inches(18, 5)
+                with open(output_f, 'w') as f:
+                    fig.savefig(f)
+                plt.close(fig)
 
 
     for folder in itertools.chain(succ_folders, unsucc_folders):
