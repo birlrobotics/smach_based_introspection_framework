@@ -14,7 +14,7 @@ from rostopics_to_timeseries.Smoother import WindowBasedSmoother_factory
 from scipy import signal
 
 filtering_schemes = []
-
+'''
 fixed_filters = [
     [
         "/TactileSensor4/StaticData", 
@@ -42,7 +42,35 @@ fixed_filters = [
         msg_filters.BaxterEndpointTwistFilter,
     ],
 ]
-    
+'''
+fixed_filters = [
+    [
+        "/TactileSensor4/StaticData", 
+        tactilesensors4.msg.StaticData,
+        msg_filters_with_scaling.TactileStaticStdFilter,
+    ],
+    [
+        "/robotiq_force_torque_wrench", 
+        WrenchStamped, 
+        msg_filters_with_scaling.WrenchStampedNormFilter,
+    ],
+    [
+        "/robotiq_force_torque_wrench", 
+        WrenchStamped, 
+        msg_filters_with_scaling.WrenchStampedFilter,
+    ],
+    [
+        "/robot/limb/right/endpoint_state", 
+        EndpointState,
+        msg_filters_with_scaling.BaxterEndpointTwistNormFilter,
+    ],
+    [
+        "/robot/limb/right/endpoint_state", 
+        EndpointState,
+        msg_filters_with_scaling.BaxterEndpointTwistFilter,
+    ],
+]
+
 filters_args = []
 
 smoother_args = []

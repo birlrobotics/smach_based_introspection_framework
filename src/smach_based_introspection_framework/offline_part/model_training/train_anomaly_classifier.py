@@ -24,7 +24,6 @@ def run(list_of_mat, model_type, model_config, score_metric):
         model_config=model_config,
         score_metric=score_metric,
     )
-
     list_of_loklik = [best_model.score(i) for i in list_of_mat]
     mean_and_std_of_the_norm_distribution = norm.fit(list_of_loklik)
     return {
