@@ -9,7 +9,7 @@ import baxter_core_msgs.msg
 import tactilesensors4.msg
 import geometry_msgs.msg
 from smach_based_introspection_framework.offline_part.anomaly_detection_feature_selection import msg_filters, msg_filters_with_scaling, msg_filters_with_scaling_and_clip
-import smach_based_introspection_framework.offline_part.anomaly_classifcation_feature_selection.msg_filters_with_scaling as cl_msg_filters_with_scaling
+import smach_based_introspection_framework.offline_part.anomaly_classification_feature_selection.msg_filters_with_scaling as cl_msg_filters_with_scaling
 from rostopics_to_timeseries.Smoother import WindowBasedSmoother_factory
 from scipy import signal
 
@@ -111,9 +111,9 @@ model_config = {
 model_type = 'BNPY\'s HMM'
 model_config = {
     'n_iteration': 1000,
-    'K': 5,
+    'K': 10,
     'alloModel' : 'HDPHMM',
-    'obsModel'  : 'Gauss',
+    'obsModel'  : 'AutoRegGauss',
     'varMethod' : ListOfParams(['memoVB']),
     'ECovMat'   : ListOfParams(['covdata']), #diagcovdata
 }
