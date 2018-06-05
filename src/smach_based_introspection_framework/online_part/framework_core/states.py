@@ -77,7 +77,6 @@ class RollBackRecovery(smach.State):
         smach.State.__init__(self, outcomes)
         
     def execute(self, userdata):
-        return 'RecoveryFailed'
         global execution_history, reverting_statistics
         hmm_state_switch_client(ROLLBACK_RECOVERY_TAG)
 
