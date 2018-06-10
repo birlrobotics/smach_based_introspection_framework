@@ -11,6 +11,9 @@ import pprint
 import coloredlogs, logging
 import sys, traceback
 from sklearn.externals import joblib
+from sklearn.metrics import confusion_matrix
+import itertools
+import matplotlib.pyplot as plt
 import json
 import re
 import numpy as np
@@ -62,14 +65,17 @@ def run():
         ))
 
         stat_df = pd.DataFrame()
-
+        true_labels = []
+        pred_labels = []
         for anomaly_csv in anomaly_csvs:
             anomaly_type_given_by_human = at_extractor.search(anomaly_csv).group(1)
+            true_labels.append(anomaly_type_given_by_human)
             with open(anomaly_csv, 'r') as f:
                 ano_df = pd.read_csv(f)
                 mat = ano_df.values[:, 1:]
 
             predict_label = c.predict(mat)
+            pred_labels.append(predict_label)
             
             d = {}
             d['anomaly_csv'] = os.path.basename(anomaly_csv)
@@ -90,7 +96,7 @@ def run():
                 l2_d['anomaly_type_being_tested'] = predict_label
                 l2_d['FP'] = 1
                 stat_df = stat_df.append(l2_d, ignore_index=True)
-
+        
         output_dir = os.path.join(
             anomaly_classification_feature_selection_folder,
             'classification_statistics',
@@ -100,6 +106,54 @@ def run():
         if not os.path.isdir(output_dir):
             os.makedirs(output_dir)
         stat_df.to_csv(stat_file)
+
+        labels =  np.unique(true_labels)
+        cnf_matrix = confusion_matrix(true_labels, pred_labels, labels=labels)
+        np.set_printoptions(precision=2)
+        fig = plt.figure()
+        plot_confusion_matrix(cnf_matrix, classes=labels, title='Confusion matrix, without normalization' )
+        fig.savefig(os.path.join(output_dir, 'cnf_without_normalization.png'), dpi=300)
+        fig = plt.figure()
+        plot_confusion_matrix(cnf_matrix, classes=labels, normalize=True, title='Normalized confusion matrix' )
+        fig.savefig(os.path.join(output_dir, 'cnf_with_normalization.png'), dpi=300)
+        
+def plot_confusion_matrix(cm, classes,
+                          normalize=False,
+                          title='Confusion matrix',
+                          cmap=plt.cm.Blues):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    try:
+        if normalize:
+            cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+            print("Normalized confusion matrix")
+        else:
+            print('Confusion matrix, without normalization')
+    except FloatingPointError:
+        print ('Error occurred: invalid value encountered in divide')
+        sys.exit()
+    
+    print(cm)
+
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
 
 if __name__ == '__main__':
     run()
