@@ -200,7 +200,12 @@ def handle_anomaly(state_obj, robot, group):
 
     if need_human:
         hmm_state_switch_client(-1)
+
         label, success = human_help(nominal_tag)
+        if label == 'Unlabeled':
+            if predicted_proba > anomaly_classification_confidence_threshold:
+                label = predicted_label
+
         alf.write("%s\n"%label)
         set_latest_anomaly_type(label)
         return success
