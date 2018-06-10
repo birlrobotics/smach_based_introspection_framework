@@ -24,8 +24,8 @@ def introspect_moveit_exec(group, plan, timeout=1000):
         if get_event_flag() == ANOMALY_DETECTED:
             rospy.logerr("Moveit gonna stop")
             a_t = time.time()
-            while time.time()-a_t < 1:
-                group.stop()
+            rospy.sleep(0.1)
+            group.stop()
             return False
     
     if cb.result is None:

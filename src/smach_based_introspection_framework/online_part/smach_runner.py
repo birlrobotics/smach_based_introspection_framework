@@ -44,6 +44,7 @@ from smach_based_introspection_framework.srv import (
     ExperimentRecordingRequest,
     ExperimentRecordingResponse,
 )
+import time
 
 def shutdown():
     rospy.loginfo("Shuting down, PID: %s"%os.getpid())
@@ -147,15 +148,21 @@ def run(sm, reverting_statistics=None):
             toggle_introspection(False)
             rospy.loginfo(str(e))
             raise
+
         rospy.loginfo("introspection up.")
 
-        rospy.loginfo("start sm.")
-        outcome = sm.execute()
-        rospy.loginfo('sm.execute() returns %s'%outcome)
+        try:
+            rospy.loginfo("start sm.")
+            outcome = sm.execute()
+            rospy.loginfo('sm.execute() returns %s'%outcome)
+        except Exception as e:
+            rospy.logerr(str(e))
 
         toggle_introspection(False)
         rospy.loginfo("introspection down.")
 
     except:
+        pass
+    finally:
+        time.sleep(2)
         os.killpg(os.getpid(), signal.SIGINT)
-        raise
