@@ -67,6 +67,7 @@ def classify_against_all_types(mat, happen_in_state):
     
     if predict_label == 'human_collision_with_object':
         predict_label = 'human_collision'
+        print ("Warning: This setting only for the experiment testing!")
     
     return [(predict_label, {'confidence':1})]
 
