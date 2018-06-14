@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 ANOMALY_DETECTED = 0
 ANOMALY_NOT_DETECTED = 1
 
