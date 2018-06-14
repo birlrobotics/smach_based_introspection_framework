@@ -11,7 +11,7 @@ from smach_based_introspection_framework.srv import (
     AnomalyClassificationService, 
     AnomalyClassificationServiceResponse,
 )
-import ipdb
+
 import copy
 import numpy as np
 import matplotlib
@@ -20,8 +20,6 @@ import matplotlib.pyplot as plt
 import os
 import time
 from smach_based_introspection_framework.configurables import (
-    anomaly_classifier_model_path,
-    anomaly_handcoded_labels,
     anomaly_window_size,
     anomaly_filtering_scheme,
 )
@@ -53,10 +51,9 @@ def plot_resampled_anomaly_df(resampled_anomaly_df):
         ax.set_title(dim)
         fig.savefig(os.path.join(realtime_anomaly_plot_dir, (dim+'.png').strip('.')))
         plt.close(fig)
+        
 
-loaded_model  = None
 def classify_against_all_types(mat, happen_in_state):
-
 
     models_grouped_by_type = {}
     prog = re.compile(r'anomaly_type_\(?([^\(\)]+)\)?')
@@ -67,34 +64,11 @@ def classify_against_all_types(mat, happen_in_state):
 
     c = NormalDistributedConfidenceClassifier(models_grouped_by_type)
     predict_label = c.predict(mat)
-
-    return [(predict_label, {'confidence':1})]
-
-    '''
-    # load the LSTM model
-    global loaded_model
-    if loaded_model == None:
-        rospy.loginfo('loading anomaly_classifier_model')
-        import anomaly_model_generation
-        loaded_model = anomaly_model_generation.run()
-        loaded_model.load_weights(os.path.join(anomaly_classifier_model_path, 'baxter_pnp_weights.h5'))
-        loaded_model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics =['accuracy'])
-    else:
-        rospy.loginfo('model had been loaded!')
-    rospy.loginfo("\nPredicting")
-    pred = loaded_model.predict(mat.T[np.newaxis,...], batch_size=128)
-    anomaly_type = anomaly_handcoded_labels[np.argmax(pred)]
-    rospy.loginfo('Predicted class: ' + anomaly_type)
     
-    ret = []
-    ret.append((
-        anomaly_type,
-        {
-            "confidence":np.max(pred),
-        },
-    ))
-    return ret
-    '''   
+    if predict_label == 'human_collision_with_object':
+        predict_label = 'human_collision'
+    
+    return [(predict_label, {'confidence':1})]
 
 def cb(req):
     rospy.loginfo(req)
