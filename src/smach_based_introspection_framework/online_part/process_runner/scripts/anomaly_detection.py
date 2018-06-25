@@ -110,7 +110,8 @@ class IdSkillThenDetectAnomaly(multiprocessing.Process):
                 anomaly_detection_signal_pub.publish(data_header) 
     
             if now_skill is not None:
-                identified_skill_pub.publish(now_skill) 
+                # identified_skill_pub.publish(now_skill)
+                pass
 
             if metric is not None and threshold is not None:
                 metric /= abs(threshold)
