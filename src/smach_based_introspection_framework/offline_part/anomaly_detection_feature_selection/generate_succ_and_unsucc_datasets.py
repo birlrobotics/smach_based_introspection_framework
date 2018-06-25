@@ -104,6 +104,9 @@ def run():
                 '%s'%(os.path.basename(exp_dir)),
                 '%s.csv'%(os.path.basename(exp_dir)),
             )
+            if os.path.exists(output_csv):
+                logger.info(output_csv)
+                continue
             generate_and_save_csv(output_csv, er, None, None, filtering_scheme, ortt, logger)
             with open(os.path.join(os.path.dirname(output_csv), "tag_ranges.pkl"), 'wb') as f:
                 pickle.dump(er.tag_ranges, f)

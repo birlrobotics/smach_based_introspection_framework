@@ -14,6 +14,7 @@ import shutil
 import rospy
 import coloredlogs, logging
 import ac_variables
+import ipdb
 coloredlogs.install()
 
 def generate_and_save_csv(output_csv, er, st, et, filtering_scheme, ortt, logger):
@@ -78,6 +79,9 @@ def run():
                     'No.%s anomaly from %s'%(anomaly_count, os.path.basename(exp_dir)),
                     'No.%s anomaly from %s.csv'%(anomaly_count, os.path.basename(exp_dir))
                 )
+                if os.path.exists(output_csv):
+                    logger.info(output_csv)
+                    continue
                 generate_and_save_csv(output_csv, er, anomaly_time-rospy.Duration(secs_before), anomaly_time+rospy.Duration(secs_after), filtering_scheme, ortt, logger)
 
                 with open(os.path.join(os.path.dirname(output_csv), "anomaly_time.pkl"), 'wb') as f:

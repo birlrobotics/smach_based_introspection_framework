@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from geometry_msgs.msg import WrenchStamped
 from baxter_core_msgs.msg import EndpointState 
 from parameters_combinator import ListOfParams
@@ -105,14 +106,30 @@ model_config = {
   'covariance_type': ListOfParams(['full']),
   'n_iter': 1000,
 }
+'''
 
+# bnpy_info
+# Supported Allocation model:   ['FiniteHMM',' HDPHMM']
+# Supported Observation models: ['Gauss','DiagGauss','ZeroMeanGauss','AutoRegGauss']
+# Supported Variational methods:['memoVB']
 '''
 model_type = 'BNPY\'s HMM'
 model_config = {
     'n_iteration': 1000,
-    'K': 10,
+    'K': ListOfParams([5,10]),
+    'alloModel' : 'FiniteHMM',
+    'obsModel'  : ListOfParams(['AutoRegGauss', 'Gauss']),
+    'varMethod' : ListOfParams(['memoVB']),
+    'ECovMat'   : ListOfParams(['covdata']), #diagcovdata
+}
+'''
+
+model_type = 'BNPY\'s HMM'
+model_config = {
+    'n_iteration': 1000,
+    'K': ListOfParams([2, 3, 5, 7]),
     'alloModel' : 'HDPHMM',
-    'obsModel'  : 'AutoRegGauss',
+    'obsModel'  : ListOfParams(['AutoRegGauss']),
     'varMethod' : ListOfParams(['memoVB']),
     'ECovMat'   : ListOfParams(['covdata']), #diagcovdata
 }
@@ -121,12 +138,6 @@ model_config = {
 
 anomaly_resample_hz = 10
 anomaly_classification_confidence_threshold = 0.7
-anomaly_handcoded_labels = {0: 'object_slip',
-                            1: 'tool_collision',
-                            2: 'human_collision',
-                            3: 'no_object',}
-anomaly_classifier_model_path = '/home/birl_wu/baxter_ws/src/SPAI/smach_based_introspection_framework/anomaly_classifier'
-
 anomaly_window_size = [2, 2]
 anomaly_filtering_scheme = RosTopicFilteringScheme(anomaly_resample_hz)
 anomaly_filtering_scheme.add_filter(
