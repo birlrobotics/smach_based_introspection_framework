@@ -99,7 +99,6 @@ for data_type in data_type_split:
 
 score_metric = '_score_metric_sum_of_loglik_'
 
-'''
 model_type = 'hmmlearn\'s HMM'
 model_config = {
   'n_components': ListOfParams([1,3,5,7, 9]),
@@ -117,6 +116,7 @@ model_config = {
     'varMethod' : ListOfParams(['memoVB']),
     'ECovMat'   : ListOfParams(['covdata']), #diagcovdata
 }
+'''
 
 
 anomaly_resample_hz = 10
@@ -206,4 +206,4 @@ topics_to_be_recorded_into_rosbag = [
     'timeseries_topic_for_anomaly_classification',
 ]
 
-anomaly_window_size_in_sec = None
+anomaly_window_size_in_sec = 4

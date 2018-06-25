@@ -121,6 +121,11 @@ def get_dmp_plan(robot, group, dmp_model, goal, goal_modification_info=None):
             else:
                 break
         else:
+            rospy.loginfo("plan succeeded, press Enter to execute.")
+            # s = raw_input()
             break
+
+    if rospy.is_shutdown():
+        raise Exception("rospy.is_shutdown")
 
     return plan

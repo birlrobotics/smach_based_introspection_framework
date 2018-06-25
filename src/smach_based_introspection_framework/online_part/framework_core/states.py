@@ -110,7 +110,6 @@ def listen_HMM_anomaly_signal():
     def callback_hmm(msg):
         global latest_anomaly_t
         if get_event_flag() != ANOMALY_DETECTED:
-            rospy.logerr("hmm signaled an anomaly")
             set_event_flag(ANOMALY_DETECTED) 
             anomaly_t = msg.stamp.to_sec()
             if latest_anomaly_t is None:
