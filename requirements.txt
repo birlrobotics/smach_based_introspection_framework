@@ -1,0 +1,7 @@
+bnpy
+hmmlearn
+sklearn
+pydmps
+pyquaternion
+redis
+
