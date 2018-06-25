@@ -32,6 +32,8 @@ from smach_based_introspection_framework.configurables import (
     anomaly_resample_hz, 
 )
 import ipdb
+import coloredlogs, logging
+coloredlogs.install()
 
 def get_anomaly_labels(exp_dir):
     txt_path = os.path.join(exp_dir, anomaly_label_file)
@@ -161,6 +163,13 @@ def save_log_dict(log_dict):
         
                 
 def run():        
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    consoleHandler = logging.StreamHandler()
+    consoleHandler.setLevel(logging.INFO)
+    logger.addHandler(consoleHandler)
+
+
     if not os.path.isdir(experiment_record_folder):
         print experiment_record_folder, "not found."
         sys.exit(0)
@@ -278,7 +287,7 @@ def run():
                     df = i['extracted_anomaly'][1]
                     add_anomaly_data(nominal_skill_tag, anomaly_type, df, "no_%s_anomaly_in_%s"%(count, os.path.basename(exp_dir)))
         except Exception as e:
-            print "process exp_dir \"%s\"failed: %s"%(exp_dir,e )
+            logger.error("process exp_dir \"%s\"failed: %s"%(exp_dir,e ))
         else:
             log_dict[exp_dir] = True
         save_log_dict(log_dict)

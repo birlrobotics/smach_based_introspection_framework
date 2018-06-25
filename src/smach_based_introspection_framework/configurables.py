@@ -15,7 +15,6 @@ from rostopics_to_timeseries.Smoother import WindowBasedSmoother_factory
 from scipy import signal
 
 HUMAN_AS_MODEL_MODE = False
-
 dmp_cmd_fields = [
     '.endpoint_state.pose.position.x',
     '.endpoint_state.pose.position.y',
@@ -101,7 +100,6 @@ for data_type in data_type_split:
 
 score_metric = '_score_metric_sum_of_loglik_'
 
-'''
 model_type = 'hmmlearn\'s HMM'
 model_config = {
   'n_components': ListOfParams([1,3,5,7, 9]),
@@ -135,6 +133,7 @@ model_config = {
     'varMethod' : ListOfParams(['memoVB']),
     'ECovMat'   : ListOfParams(['covdata']), #diagcovdata
 }
+'''
 
 
 anomaly_resample_hz = 10
@@ -198,7 +197,6 @@ tfc.add_filter(
 )
 tfc.smoother_class = WindowBasedSmoother_factory(signal.boxcar(5))
 
-
 topics_to_be_recorded_into_rosbag = [
     '/tag_multimodal',
     '/anomaly_detection_signal',
@@ -219,4 +217,4 @@ topics_to_be_recorded_into_rosbag = [
     'timeseries_topic_for_anomaly_classification',
 ]
 
-anomaly_window_size_in_sec = None
+anomaly_window_size_in_sec = 4
