@@ -3,5 +3,6 @@ hmmlearn
 sklearn
 pydmps
 pyquaternion
+dtw
 redis
 

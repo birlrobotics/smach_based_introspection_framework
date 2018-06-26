@@ -5,7 +5,7 @@ import ipdb
 
 default_model_type = 'pydmps'
 default_model_config = {
-    'gen_ay': range(5, 50, 5),
+    'gen_ay': range(3, 30, 5),
 }
 
 def run(mat, model_type=default_model_type, model_config=default_model_config):

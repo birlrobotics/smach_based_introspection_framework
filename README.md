@@ -1,6 +1,12 @@
 
 # Package: smach_based_introspection_framework
 
+# Install the requirements
+```
+sudo pip install -r requirments.txt
+sudo apt-get install redis-server
+```
+
 # Why This Package Exists
 
 We want a finite-state-machine-based control framework for Rethink Robotics Baxter which satisfies the following needs:
