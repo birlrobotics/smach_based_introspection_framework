@@ -57,7 +57,7 @@ def run():
         except Exception as e:
             traceback.print_exc(file=sys.stdout)
             logger.error("Failed to train_introspection_model: %s"%e)
-            continue
+            raise Exception("Failed to train_introspection_model: %s"%e)            
 
         if not os.path.isdir(output_dir):
             os.makedirs(output_dir)
