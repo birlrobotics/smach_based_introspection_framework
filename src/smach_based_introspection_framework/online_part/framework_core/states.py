@@ -65,7 +65,7 @@ def write_exec_hist(state_instance, current_state_name, current_userdata, depend
 
 def hmm_state_switch_client(state):
     global mode_no_state_trainsition_report
-    rospy.wait_for_service('hmm_state_switch', timeout=3)
+    rospy.wait_for_service('hmm_state_switch', timeout=20)
     hmm_state_switch_proxy = rospy.ServiceProxy('hmm_state_switch',
                                                 State_Switch)
     req = State_SwitchRequest()
@@ -110,7 +110,6 @@ def listen_HMM_anomaly_signal():
     def callback_hmm(msg):
         global latest_anomaly_t
         if get_event_flag() != ANOMALY_DETECTED:
-            rospy.logerr("hmm signaled an anomaly")
             set_event_flag(ANOMALY_DETECTED) 
             anomaly_t = msg.stamp.to_sec()
             if latest_anomaly_t is None:

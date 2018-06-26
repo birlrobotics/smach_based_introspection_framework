@@ -44,6 +44,7 @@ from smach_based_introspection_framework.srv import (
     ExperimentRecordingRequest,
     ExperimentRecordingResponse,
 )
+import time
 
 def shutdown():
     rospy.loginfo("Shuting down, PID: %s"%os.getpid())
@@ -81,19 +82,20 @@ def toggle_introspection(start, sm=None):
             topics_to_be_recorded_into_rosbag
         )
         rosbag_proc.start()
-        tmt_proc = TagMultimodalTopicProc()
-        tmt_proc.start()
+        # tmt_proc = TagMultimodalTopicProc()
+        # tmt_proc.start()
         sis = smach_ros.IntrospectionServer('MY_SERVER', sm, '/SM_ROOT')
         sis.start()
 
         if not HUMAN_AS_MODEL_MODE:
-            ad_proc = AnomalyDetectionProc()
-            ad_proc.start()
-            ac_proc = AnomalyClassificationProc()
-            ac_proc.start()
+            # ad_proc = AnomalyDetectionProc()
+            # ad_proc.start()
+            # ac_proc = AnomalyClassificationProc()
+            # ac_proc.start()
+            pass
 
-        ts_proc = TimeseriesProc()
-        ts_proc.start()
+        # ts_proc = TimeseriesProc()
+        # ts_proc.start()
         goal_proc = GoalProc()
         goal_proc.start()
         listen_HMM_anomaly_signal()
@@ -134,7 +136,7 @@ def run(sm, reverting_statistics=None):
     try: 
         set_reverting_statistics(reverting_statistics)
         moveit_commander.roscpp_initialize(sys.argv)
-        rospy.init_node("smach_based_introspection_framework_node", log_level=rospy.DEBUG)
+        rospy.init_node("smach_based_introspection_framework_node", log_level=rospy.INFO)
         rospy.loginfo("PID: %s"%os.getpid())
         rospy.on_shutdown(shutdown)
 
@@ -146,15 +148,21 @@ def run(sm, reverting_statistics=None):
             toggle_introspection(False)
             rospy.loginfo(str(e))
             raise
+
         rospy.loginfo("introspection up.")
 
-        rospy.loginfo("start sm.")
-        outcome = sm.execute()
-        rospy.loginfo('sm.execute() returns %s'%outcome)
+        try:
+            rospy.loginfo("start sm.")
+            outcome = sm.execute()
+            rospy.loginfo('sm.execute() returns %s'%outcome)
+        except Exception as e:
+            rospy.logerr(str(e))
 
         toggle_introspection(False)
         rospy.loginfo("introspection down.")
 
     except:
+        pass
+    finally:
+        time.sleep(2)
         os.killpg(os.getpid(), signal.SIGINT)
-        raise

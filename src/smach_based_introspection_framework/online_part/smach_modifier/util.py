@@ -2,10 +2,12 @@ import rospy
 from control_msgs.msg import FollowJointTrajectoryActionResult
 import time
 from smach_based_introspection_framework.online_part.framework_core.states import (
+    set_event_flag,
     get_event_flag,
 )
 from smach_based_introspection_framework._constant import (
     ANOMALY_DETECTED,
+    ANOMALY_NOT_DETECTED,
 )
 
 def introspect_moveit_exec(group, plan, timeout=1000):
@@ -22,11 +24,17 @@ def introspect_moveit_exec(group, plan, timeout=1000):
     s_t = time.time()
     while not cb.result and not rospy.is_shutdown() and time.time()-s_t<timeout: 
         if get_event_flag() == ANOMALY_DETECTED:
-            rospy.logerr("Moveit gonna stop")
-            a_t = time.time()
-            while time.time()-a_t < 1:
+            if time.time()-s_t < 1.0:
+                set_event_flag(ANOMALY_NOT_DETECTED)
+            else:
+                rospy.logerr("hmm signaled an anomaly")
+                rospy.logerr("Moveit gonna stop")
+                a_t = time.time()
+                while time.time()-a_t < 1:
+                    group.stop()
+                rospy.sleep(0.1)
                 group.stop()
-            return False
+                return False
     
     if cb.result is None:
         rospy.logerr("dmp moveit exec did not return after %s secs. Time out."%timeout)

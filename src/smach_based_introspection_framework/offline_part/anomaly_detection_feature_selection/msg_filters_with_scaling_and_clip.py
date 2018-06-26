@@ -10,7 +10,7 @@ class TactileStaticStdScaleClipMaxFilter(TopicMsgFilter):
             np.std(msg.taxels[0].values),
             np.std(msg.taxels[1].values),
         ])
-        return [np.clip(ret/60.0, -1, 1).max()]
+        return [np.clip(ret/40.0, -1, 1).max()]
         
 
     @staticmethod
