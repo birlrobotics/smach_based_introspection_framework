@@ -1,3 +1,6 @@
+ipdb
+ipython
+readline
 bnpy
 hmmlearn
 sklearn

@@ -9,7 +9,6 @@ default_model_config = {
 }
 
 def run(mat, model_type=default_model_type, model_config=default_model_config):
-
     sorted_model_list = train_model.run(
         mat,
         model_type,

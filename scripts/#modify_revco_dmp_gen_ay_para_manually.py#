@@ -1,0 +1,16 @@
+:IMPORTuuu dill
+import os
+dmp_path = '/home/birl-spai-ubuntu14/baxter_ws/src/SPAI/smach_based_introspection_framework/introspection_data_folder/model_folder/latest/tag_1000'
+dmp_model = os.path.join(dmp_path, 'dmp_model')
+dmp = dill.load(open(dmp_model, 'rb'))
+print dmp
+print  ("please enter the new gen_ay value")
+s = raw_input()
+dmp['gen_ay'] = float(s)
+dill.dump(dmp, open(dmp_model,'wb'))
+
+dmp = dill.load(open(dmp_model, 'rb'))
+print ("new dmp config")
+print dmp
+
+

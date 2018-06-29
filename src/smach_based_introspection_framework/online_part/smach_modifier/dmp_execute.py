@@ -115,6 +115,7 @@ def get_dmp_plan(robot, group, dmp_model, goal, goal_modification_info=None):
         plan, fraction = _get_dmp_plan(robot, group, dmp_model, goal, goal_modification_info)
         if fraction < 1:
             rospy.loginfo("fraction %s, hit 'Enter' to plan again. or enter anything to move on."%fraction)
+            #dmp_model['gen_ay'] = numpy.random.randint(20)
             s = raw_input()
             if s == '':
                 continue
@@ -122,7 +123,7 @@ def get_dmp_plan(robot, group, dmp_model, goal, goal_modification_info=None):
                 break
         else:
             rospy.loginfo("plan succeeded, press Enter to execute.")
-            s = raw_input()
+            #s = raw_input()
             break
 
     if rospy.is_shutdown():
