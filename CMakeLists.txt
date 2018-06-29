@@ -20,7 +20,6 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   trajectory_msgs
   message_generation
-  birl_sensory_data_manager
   birl_hmm
   birl_motion_library
   birl_dmp
@@ -124,7 +123,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES smach_based_introspection_framework
-  CATKIN_DEPENDS actionlib baxter_core_msgs baxter_interface control_msgs geometry_msgs roscpp rospy sensor_msgs smach std_msgs trajectory_msgs message_runtime birl_sensory_data_manager birl_hmm birl_motion_library birl_dmp rostopics_to_timeseries parameters_combinator
+  CATKIN_DEPENDS actionlib baxter_core_msgs baxter_interface control_msgs geometry_msgs roscpp rospy sensor_msgs smach std_msgs trajectory_msgs message_runtime birl_hmm birl_motion_library birl_dmp rostopics_to_timeseries parameters_combinator
 #  DEPENDS system_lib
 )
 

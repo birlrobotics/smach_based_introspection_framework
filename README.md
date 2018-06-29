@@ -150,7 +150,6 @@ A minimal tutorial on this framework can be:
 Since this is a catkin package, you can find out full dependencies by running catkin_make. 
 Important dependencies are listed below, they are all catkin packages so you can just git clone them into your catkin workspace:
 
-- [birl_sensory_data_manager](https://github.com/birlrobotics/birl_sensory_data_manager)
 - [birl_hmm](https://github.com/birlrobotics/birl_hmm)
 - [birl_motion_library](https://github.com/birlrobotics/birl_motion_library)
 - [birl_baxter_dmp](https://github.com/birlrobotics/birl_baxter_dmp)
