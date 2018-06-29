@@ -61,7 +61,6 @@
   <build_depend>std_msgs</build_depend>
   <build_depend>trajectory_msgs</build_depend>
   <build_depend>birl_hmm</build_depend>
-  <build_depend>birl_motion_library</build_depend>
   <build_depend>rostopics_to_timeseries</build_depend>
   <build_depend>parameters_combinator</build_depend>
   <build_depend>birl_dmp</build_depend>
@@ -89,7 +88,6 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>trajectory_msgs</exec_depend>
   <exec_depend>birl_hmm</exec_depend>
-  <exec_depend>birl_motion_library</exec_depend>
   <exec_depend>rostopics_to_timeseries</exec_depend>
   <exec_depend>parameters_combinator</exec_depend>
   <exec_depend>dill</exec_depend>
