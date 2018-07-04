@@ -187,7 +187,8 @@ if __name__ == '__main__':
     pp = pprint.PrettyPrinter(indent=4)
 
     base_path = os.path.dirname(os.path.realpath(__file__))
-    er = ExperimentRecord('/home/sklaw/ros/indigo/birl_ws/src/smach_based_introspection_framework/src/smach_based_introspection_framework/../../introspection_data_folder/experiment_record_folder/experiment_at_2018y04m02d21H34M33S')
+    test_data = os.path.join(base_path,'test_data','experiment_at_2018y04m10d20H47M31S')
+    er = ExperimentRecord(test_data)
 
 
     print '\ntag_ranges', '-'*20
