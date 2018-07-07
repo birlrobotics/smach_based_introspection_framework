@@ -1,14 +1,16 @@
 import os
 import glob
 import rosbag
-import ipdb
-import coloredlogs, logging
+import logging
 import pickle
 from smach_based_introspection_framework._constant import (
     anomaly_label_file,
-    cache_folder,
+    RECOVERY_DEMONSTRATED_BY_HUMAN_TAG,
 )
-coloredlogs.install()
+import itertools
+from Anomaly import Anomaly
+from Skill import Skill
+from Demonstration import Demonstration
 
 class ExperimentRecord(object):
     def __init__(self, folder_path):
@@ -20,17 +22,6 @@ class ExperimentRecord(object):
     @property
     def tag_ranges(self):
         if hasattr(self, "_tag_ranges"):
-            return self._tag_ranges
-
-        cache_file = os.path.join(
-            cache_folder, 
-            "tag_ranges_cache", 
-            os.path.basename(self.folder_path)+'\'s tag_ranges.pkl'
-        )
-
-        if os.path.isfile(cache_file):
-            self._tag_ranges = pickle.load(open(cache_file, 'r')) 
-            self.logger.debug("tag ranges cache found.")
             return self._tag_ranges
 
         last_tag = None
@@ -49,10 +40,6 @@ class ExperimentRecord(object):
         ranges.append((last_tag, (last_tag_starts_at, msg.header.stamp)))
 
         self._tag_ranges = ranges
-        cache_output_dir = os.path.dirname(cache_file)
-        if not os.path.isdir(cache_output_dir):
-            os.makedirs(cache_output_dir)
-        pickle.dump(self._tag_ranges, open(cache_file, 'wb'))
         return self._tag_ranges
 
     @property
@@ -60,34 +47,20 @@ class ExperimentRecord(object):
         if hasattr(self, "_anomaly_signal_times"):
             return self._anomaly_signal_times
 
-        cache_file = os.path.join(
-            cache_folder, 
-            "anomaly_signal_times_cache", 
-            os.path.basename(self.folder_path)+'\'s anomaly_signal_times.pkl'
-        )
-
-        if os.path.isfile(cache_file):
-            self._anomaly_signal_times = pickle.load(open(cache_file, 'r')) 
-            self.logger.debug("anomaly signal times cache found.")
-            return self._anomaly_signal_times
-
         signals = []
-        anomaly_start_time = None
-        for count, (topic, msg, record_time) in enumerate(self.rosbag.read_messages('/anomaly_detection_signal')):
-            cur_anomaly_time = msg.stamp
-            if anomaly_start_time is None or \
-                (cur_anomaly_time-anomaly_start_time).to_sec() > 2:
-
-                anomaly_start_time = cur_anomaly_time
-                signals.append(anomaly_start_time)
+        for topic_name, msg, gen_time in self.rosbag.read_messages(topics=["/anomaly_detection_signal"]):
+            if len(signals) == 0:
+                signals.append(msg.stamp)
+            else:
+                time_diff = (msg.stamp-prev_msg.stamp).to_sec()
+                if time_diff > 1:
+                    signals.append(msg.stamp)
+                elif time_diff < 0:
+                    raise Exception("Weird error: anomaly signal messages read from rosbag are not in time-increasing order")
+            prev_msg = msg
 
         self._anomaly_signal_times = signals
-        cache_output_dir = os.path.dirname(cache_file)
-        if not os.path.isdir(cache_output_dir):
-            os.makedirs(cache_output_dir)
-        pickle.dump(self._anomaly_signal_times, open(cache_file, 'wb'))
         return self._anomaly_signal_times
-
 
     @property
     def rosbag(self):
@@ -182,12 +155,76 @@ class ExperimentRecord(object):
         self._anomaly_labels = labels
         return self._anomaly_labels
 
+    @property
+    def list_of_anomalies(self):
+        if hasattr(self, "_list_of_anomalies"):
+            return self._list_of_anomalies
+
+        signals = self.anomaly_signal_times
+        if len(signals) != len(self.anomaly_labels):
+            raise Exception("anomaly signals amount, %s, does not match anomaly labels, %s."%(len(signals), len(self.anomaly_labels)))
+        elif len(signals) != len(self.unsuccessful_tag_ranges):
+            raise Exception("anomaly signals amount, %s, does not match unsuccessful skill amount, %s."%(len(signals), len(self.unsuccessful_tag_ranges)))
+        else:
+            labels = self.anomaly_labels
+
+        list_of_anomalies = []
+        for label, signal in itertools.izip(labels, signals):
+            anomaly_instance = Anomaly()
+            anomaly_instance.label = label
+            anomaly_instance.time = signal
+
+            unsucc_skill_idx = None
+            for idx, (tag, (st, et)) in enumerate(self.unsuccessful_tag_ranges):
+                if st > signal:
+                    break
+                unsucc_skill_idx = idx
+
+            if unsucc_skill_idx is None:
+                raise Exception()
+            tup = self.unsuccessful_tag_ranges[unsucc_skill_idx]
+            skill = Skill()
+            skill.tag = str(tup[0])
+            skill.start_time = tup[1][0]
+            skill.end_time = tup[1][1]
+            anomaly_instance.skill_belonged_to = skill
+            list_of_anomalies.append(anomaly_instance)
+
+        self._list_of_anomalies = list_of_anomalies
+        return list_of_anomalies
+
+    @property
+    def list_of_demonstrations(self):
+        if hasattr(self, "_list_of_demonstrations"):
+            return self._list_of_demonstrations
+
+        list_of_demonstrations = []
+        for idx, (tag, (start_time, end_time)) in enumerate(self.tag_ranges):
+            if tag != RECOVERY_DEMONSTRATED_BY_HUMAN_TAG:
+                continue
+
+            demonstration = Demonstration()
+            demonstration.tag = str(RECOVERY_DEMONSTRATED_BY_HUMAN_TAG)
+            demonstration.start_time = start_time
+            demonstration.end_time = end_time
+
+            for anomaly in self.list_of_anomalies:
+                if demonstration.start_time > anomaly.time:
+                    demonstration.targeted_anomaly = anomaly
+                else:
+                    break
+
+            list_of_demonstrations.append(demonstration)
+
+        self._list_of_demonstrations = list_of_demonstrations
+        return list_of_demonstrations
+
 if __name__ == '__main__':
     import pprint
     pp = pprint.PrettyPrinter(indent=4)
 
     base_path = os.path.dirname(os.path.realpath(__file__))
-    er = ExperimentRecord('/home/sklaw/ros/indigo/birl_ws/src/smach_based_introspection_framework/src/smach_based_introspection_framework/../../introspection_data_folder/experiment_record_folder/experiment_at_2018y04m02d21H34M33S')
+    er = ExperimentRecord('./test_data/experiment_at_2018y04m10d20H40M57S')
 
 
     print '\ntag_ranges', '-'*20
@@ -198,3 +235,7 @@ if __name__ == '__main__':
     pp.pprint(er.successful_tag_ranges)
     print '\nanomaly_signals', '-'*20
     pp.pprint(er.anomaly_signals)
+    print '\nlist_of_anomalies', '-'*20
+    pp.pprint(er.list_of_anomalies)
+    print '\nlist_of_demonstrations', '-'*20
+    pp.pprint(er.list_of_demonstrations)
