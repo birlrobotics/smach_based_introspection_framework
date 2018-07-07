@@ -78,16 +78,16 @@ smoother_args.append(WindowBasedSmoother_factory(signal.boxcar(5)))
 #smoother_args.append(None)
 for smoother_class in smoother_args:
     for prod in itertools.product(*[(None, i) for i in filters_args]):
-        tfc = RosTopicFilteringScheme(anomaly_resample_hz)
+        anomaly_classification_timeseries_config = RosTopicFilteringScheme(anomaly_resample_hz)
         if smoother_class is not None:
-            tfc.smoother_class = smoother_class
+            anomaly_classification_timeseries_config.smoother_class = smoother_class
         for k in fixed_filters:
-            tfc.add_filter(*k)
+            anomaly_classification_timeseries_config.add_filter(*k)
 
         for j in prod:
             if j is not None:
                 for k in j:
-                    tfc.add_filter(*k)
+                    anomaly_classification_timeseries_config.add_filter(*k)
 
-        if len(tfc.timeseries_header) != 0:
-            filtering_schemes.append(tfc)
+        if len(anomaly_classification_timeseries_config.timeseries_header) != 0:
+            filtering_schemes.append(anomaly_classification_timeseries_config)

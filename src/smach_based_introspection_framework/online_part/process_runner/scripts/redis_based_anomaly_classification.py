@@ -21,7 +21,6 @@ import os
 import time
 from smach_based_introspection_framework.configurables import (
     anomaly_window_size,
-    anomaly_filtering_scheme,
 )
 from smach_based_introspection_framework._constant import (
     latest_model_folder,

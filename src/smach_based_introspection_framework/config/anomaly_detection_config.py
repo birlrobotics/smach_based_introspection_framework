@@ -7,30 +7,30 @@ from geometry_msgs.msg import WrenchStamped
 from scipy import signal
 
 timeseries_rate = 10
-tfc = RosTopicFilteringScheme(timeseries_rate)
-tfc.add_filter(
+anomaly_detection_timeseries_config = RosTopicFilteringScheme(timeseries_rate)
+anomaly_detection_timeseries_config.add_filter(
     "/TactileSensor4/StaticData", 
     tactilesensors4.msg.StaticData,
     msg_filters_with_scaling_and_clip.TactileStaticStdScaleClipMaxFilter,
 )
-tfc.add_filter(
+anomaly_detection_timeseries_config.add_filter(
     "/robotiq_force_torque_wrench", 
     WrenchStamped, 
     msg_filters_with_scaling.WrenchStampedNormFilter,
 )
-tfc.add_filter(
+anomaly_detection_timeseries_config.add_filter(
     "/robotiq_force_torque_wrench", 
     WrenchStamped, 
     msg_filters_with_scaling.WrenchStampedFilter,
 )
-tfc.add_filter(
+anomaly_detection_timeseries_config.add_filter(
     "/robot/limb/right/endpoint_state", 
     EndpointState,
     msg_filters_with_scaling.BaxterEndpointTwistNormFilter,
 )
-tfc.add_filter(
+anomaly_detection_timeseries_config.add_filter(
     "/robot/limb/right/endpoint_state", 
     EndpointState,
     msg_filters_with_scaling.BaxterEndpointTwistFilter,
 )
-tfc.smoother_class = WindowBasedSmoother_factory(signal.boxcar(5))
+anomaly_detection_timeseries_config.smoother_class = WindowBasedSmoother_factory(signal.boxcar(5))

@@ -3,8 +3,8 @@ from rostopics_to_timeseries.RostopicsToTimeseries import OnlineRostopicsToTimes
 import multiprocessing 
 import rospy
 from smach_based_introspection_framework.configurables import (
-    tfc,
-    anomaly_filtering_scheme,
+    anomaly_detection_timeseries_config,
+    anomaly_classification_timeseries_config,
 )
 
 class TimeseriesPubProc(multiprocessing.Process):
@@ -16,14 +16,14 @@ class TimeseriesPubProc(multiprocessing.Process):
     ):
         multiprocessing.Process.__init__(self)     
 
-        self.tfc = filtering_config
+        self.filtering_scheme = filtering_config
         self.node_name = node_name
         self.topic_name = topic_name
 
     def run(self):
         rospy.init_node(self.node_name, anonymous=True)
         # Pass in topic configuration and timeseries rate
-        onrt = OnlineRostopicsToTimeseries(self.tfc) 
+        onrt = OnlineRostopicsToTimeseries(self.filtering_scheme) 
         # Pass in the topic name that publishes the timeseries vector
         rospy.loginfo("%s starts timeseries publishing."%self.node_name)
         onrt.start_publishing_timeseries(self.topic_name) 
@@ -31,7 +31,7 @@ class TimeseriesPubProc(multiprocessing.Process):
 if __name__ == '__main__':
 
     ad_timeseries_pub = TimeseriesPubProc(
-        tfc,
+        anomaly_detection_timeseries_config,
         node_name="TimeseriesPubProc_node_for_anomaly_detection",
         topic_name="timeseries_topic_for_anomaly_detection",
     )
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     ad_timeseries_pub.start()
 
     ac_timeseries_pub = TimeseriesPubProc(
-        anomaly_filtering_scheme,
+        anomaly_classification_timeseries_config,
         node_name="TimeseriesPubProc_node_for_anomaly_classification",
         topic_name="timeseries_topic_for_anomaly_classification",
     )
