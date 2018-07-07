@@ -57,7 +57,7 @@ from smach_based_introspection_framework.config.anomaly_classification_config im
 )
 
 from smach_based_introspection_framework.config.anomaly_detection_config import (
-    timeseries_rate,
+    anomaly_detection_timeseries_hz,
     anomaly_detection_timeseries_config, 
 )
 
