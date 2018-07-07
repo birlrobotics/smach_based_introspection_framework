@@ -29,7 +29,7 @@ import datetime
 import json
 from smach_based_introspection_framework.configurables import (
     anomaly_window_size_in_sec, 
-    anomaly_resample_hz, 
+    anomaly_classification_timeseries_hz, 
 )
 import ipdb
 import coloredlogs, logging
@@ -255,7 +255,7 @@ def run():
                     "/tag_multimodal",
                     "/anomaly_detection_signal",
                     anomaly_window_size_in_sec,
-                    anomaly_resample_hz,
+                    anomaly_classification_timeseries_hz,
                 )
                 if len(ret) != 1:
                     raise Exception("Failed to extract anomalies from record.bag in %s"%exp_dir)

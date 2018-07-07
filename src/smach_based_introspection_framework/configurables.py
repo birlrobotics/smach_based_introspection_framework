@@ -50,7 +50,7 @@ model_config = {
 
 
 from smach_based_introspection_framework.config.anomaly_classification_config import (
-    anomaly_resample_hz, 
+    anomaly_classification_timeseries_hz, 
     anomaly_classification_confidence_threshold, 
     anomaly_window_size, 
     anomaly_classification_timeseries_config,

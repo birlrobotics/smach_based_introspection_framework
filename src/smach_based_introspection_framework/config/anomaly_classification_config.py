@@ -6,10 +6,10 @@ from baxter_core_msgs.msg import EndpointState
 from geometry_msgs.msg import WrenchStamped
 from scipy import signal
 
-anomaly_resample_hz = 10
+anomaly_classification_timeseries_hz = 10
 anomaly_classification_confidence_threshold = 0.7
 anomaly_window_size = [2, 2]
-anomaly_classification_timeseries_config = RosTopicFilteringScheme(anomaly_resample_hz)
+anomaly_classification_timeseries_config = RosTopicFilteringScheme(anomaly_classification_timeseries_hz)
 anomaly_classification_timeseries_config.add_filter(
     "/TactileSensor4/StaticData", 
     tactilesensors4.msg.StaticData,
