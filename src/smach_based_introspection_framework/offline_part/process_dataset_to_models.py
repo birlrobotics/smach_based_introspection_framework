@@ -1,194 +1,18 @@
-import process_experiment_record_to_dataset as e2d
 import glob
 import os
 from smach_based_introspection_framework._constant import (
-    folder_time_fmt,
     latest_dataset_folder,
     latest_model_folder,
-    anomaly_label_file,
-    model_folder,
-    RECOVERY_SKILL_BEGINS_AT
 )
 import re
-import pandas as pd
-from sklearn.externals import joblib
-import shutil
-import datetime
-import json
-import numpy as np
-from model_training import train_introspection_model, train_anomaly_classifier, train_dmp_model
-from smach_based_introspection_framework.offline_part import util 
-import ipdb
-import smach_based_introspection_framework.configurables as configurables 
 import logging
-import dill
-import sys
-import traceback
+import gen_introspection_model, gen_classification_model, gen_dmp_model
 
-model_type  = configurables.model_type  
-score_metric  = configurables.score_metric  
-model_config  = configurables.model_config  
 
 def get_latest_model_folder():
     if not os.path.isdir(latest_model_folder):
         os.makedirs(latest_model_folder)
     return latest_model_folder
-
-def gen_introspection_model(logger, skill_folder, output_dir):
-    model_file = os.path.join(output_dir, 'introspection_model')
-    if os.path.isfile(model_file):
-        logger.info("Model already exists. Gonna skip.")    
-        return 
-    csvs = glob.glob(os.path.join(
-        skill_folder,
-        '*',
-    ))
-    list_of_mat = []
-    for j in csvs:
-        df = pd.read_csv(j, sep=',')
-        # Exclude 1st column which is time index
-        list_of_mat.append(df.values[:, 1:])
-    try:
-        result = train_introspection_model.run(list_of_mat, model_type, model_config, score_metric, logger)
-        logger.info("Successfully trained introspection model")
-    except Exception as e:
-        logger.error("Failed to train_introspection_model: %s"%e)
-        logger.error("traceback: %s"%(traceback.format_exc()))
-        return
-        
-    if not os.path.isdir(output_dir):
-        os.makedirs(output_dir)
-    joblib.dump(
-        result['model'],
-        model_file,
-    )
-    model_info = { 
-        'model_type': model_type,
-        'find_best_model_in_this_config': model_config,
-        'score_metric': score_metric,
-    }
-    model_info.update(result['model_info']),
-    json.dump(
-        model_info,
-        open(os.path.join(output_dir, 'introspection_model_info'), 'w'),
-        indent=4,
-    )
-
-def gen_classification_model(logger, anomaly_folder, output_dir):
-    model_file = os.path.join(output_dir, 'classifier_model')
-    if os.path.isfile(model_file):
-        logger.info("Model already exists. Gonna skip.")    
-        return 
-    csvs = glob.glob(os.path.join(
-        anomaly_folder,
-        '*',
-    ))
-    list_of_mat = []
-    for j in csvs:
-        df = pd.read_csv(j, sep=',')
-        # Exclude 1st column which is time index
-        list_of_mat.append(df.values[:, 1:])
-    try:
-        result = train_anomaly_classifier.run(list_of_mat, model_type, model_config, score_metric, logger)
-        logger.info("Successfully trained classification model")
-    except Exception as e:
-        logger.error("Failed to train_anomaly_classifier: %s"%e)
-        logger.error("traceback: %s"%(traceback.format_exc()))
-        return
-
-    if not os.path.isdir(output_dir):
-        os.makedirs(output_dir)
-    joblib.dump(
-        result['model'],
-        model_file,
-    )
-    model_info = { 
-        'model_type': model_type,
-        'find_best_model_in_this_config': model_config,
-        'score_metric': score_metric,
-    }
-    model_info.update(result['model_info']),
-    json.dump(
-        model_info,
-        open(os.path.join(output_dir, 'classifier_model_info'), 'w'),
-        indent=4,
-    )
-
-def gen_dmp_model(logger, demonstration_folder, output_dir):
-    model_file = os.path.join(output_dir, 'dmp_model')
-    if os.path.isfile(model_file):
-        logger.info("Model already exists. Gonna skip.")    
-        return 
-
-    try:
-        demonstration_trial = next(glob.iglob(os.path.join(demonstration_folder, "*")))
-    except StopIteration:
-        logger.error("No demonstration data in %s"%demonstration_folder) 
-        return
-
-    df = pd.read_csv(os.path.join(
-        demonstration_trial,
-        "dmp_cmd_timeseries.csv",
-    ), sep=',')
-
-    # Exclude 1st column which is time index
-    df = df.drop(axis=1, columns=df.columns[0])
-
-    cmd_matrix = df.values
-
-    dem_goal = cmd_matrix[-1]
-    with open(os.path.join(demonstration_trial, "original_goal.json"), 'r') as f:
-        ori_goal = np.array(json.load(f))
-
-
-    goal_info = {}
-    goal_info['original_goal'] = ori_goal
-    goal_info['demonstration_goal'] = dem_goal
-
-    goal_modification_info = {}
-    pxyz_idx = util.get_position_xyz_index(df.columns)
-    if None not in pxyz_idx:
-        goal_modification_info['translation'] = {
-            'index': pxyz_idx,
-            'value': dem_goal[pxyz_idx]-ori_goal[pxyz_idx],
-        }
-
-    qxyzw_idx = util.get_quaternion_xyzw_index(df.columns)
-    if None not in qxyzw_idx:
-        from tf.transformations import (
-            quaternion_inverse,
-            quaternion_multiply,
-        )
-        ori_q = ori_goal[qxyzw_idx]
-        dem_q = dem_goal[qxyzw_idx]
-        rot_q = quaternion_multiply(dem_q, quaternion_inverse(ori_q))
-        goal_modification_info['quaternion_rotation'] = {
-            'index': qxyzw_idx,
-            'value': rot_q,
-        }
-
-    one_shot_mat = cmd_matrix
-    result = train_dmp_model.run(one_shot_mat)
-
-    model_info = { 
-        'dmp_cmd_fields': df.columns.tolist(),
-        'model_info': result['model_info']
-    }
-    if not os.path.isdir(output_dir):
-        os.makedirs(output_dir)
-    dill.dump(
-        goal_modification_info,
-        open(os.path.join(output_dir, 'goal_modification_info'), 'w')
-    )
-    json.dump(
-        model_info,
-        open(os.path.join(output_dir, 'dmp_model_info'), 'w'),
-        indent=4,
-    )
-    dill.dump(
-        result['model'],
-        open(model_file, 'w')
-    )
 
 def run():
     if not os.path.isdir(latest_dataset_folder):
@@ -214,7 +38,7 @@ def run():
             get_latest_model_folder(), 
             'skill_%s'%skill_id,
         )
-        gen_introspection_model(logger, skill_folder, output_dir)
+        gen_introspection_model.run(logger, skill_folder, output_dir)
 
     anomaly_folders = glob.glob(os.path.join(
         latest_dataset_folder,
@@ -231,7 +55,7 @@ def run():
             get_latest_model_folder(), 
             'anomaly_%s'%anomaly_label,
         )
-        gen_classification_model(logger, anomaly_folder, output_dir)
+        gen_classification_model.run(logger, anomaly_folder, output_dir)
 
     demonstration_folders = glob.glob(os.path.join(
         latest_dataset_folder,
@@ -251,4 +75,4 @@ def run():
             get_latest_model_folder(), 
             'skill_%s'%demonstration_skill_id,
         )
-        gen_dmp_model(logger, demonstration_folder, output_dir)
+        gen_dmp_model.run(logger, demonstration_folder, output_dir)
