@@ -1,5 +1,6 @@
 from Skill import Skill
 from Anomaly import Anomaly
+from smach_based_introspection_framework.msg import GoalVector
 
 class Demonstration(Skill):
     def __init__(self):
@@ -16,6 +17,19 @@ class Demonstration(Skill):
         else:
             raise Exception("Invalid targeted_anomaly, expected %s got %s"%(Anomaly, type(targeted_anomaly)))
 
+    @property
+    def original_goal(self):
+        return getattr(self, '_original_goal', None)
+
+    @original_goal.setter
+    def original_goal(self, goal):
+        if isinstance(goal, tuple):
+            self._original_goal = goal
+        else:
+            raise Exception("Invalid original_goal, expected %s got %s"%(list, type(goal)))
+
+
+
     def __str__(self):
         sb = []
         for key in self.__dict__:
@@ -25,3 +39,4 @@ class Demonstration(Skill):
  
     def __repr__(self):
         return self.__str__() 
+

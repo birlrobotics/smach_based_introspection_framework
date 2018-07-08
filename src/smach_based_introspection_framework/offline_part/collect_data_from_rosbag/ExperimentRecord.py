@@ -11,6 +11,7 @@ import itertools
 from Anomaly import Anomaly
 from Skill import Skill
 from Demonstration import Demonstration
+import ipdb
 
 class ExperimentRecord(object):
     def __init__(self, folder_path):
@@ -214,6 +215,9 @@ class ExperimentRecord(object):
                 else:
                     break
 
+            for topic, msg, record_time in self.rosbag.read_messages('/observation/goal_vector', end_time=end_time):
+                demonstration.original_goal = msg.goal_vector
+
             list_of_demonstrations.append(demonstration)
 
         self._list_of_demonstrations = list_of_demonstrations
@@ -224,7 +228,7 @@ if __name__ == '__main__':
     pp = pprint.PrettyPrinter(indent=4)
 
     base_path = os.path.dirname(os.path.realpath(__file__))
-    er = ExperimentRecord('./test_data/experiment_at_2018y04m10d20H40M57S')
+    er = ExperimentRecord('./test_data/experiment_at_2018y05m09d21H36M14S')
 
 
     print '\ntag_ranges', '-'*20
