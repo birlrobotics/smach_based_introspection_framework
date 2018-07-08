@@ -34,7 +34,7 @@ def get_latest_model_folder():
         os.makedirs(latest_model_folder)
     return latest_model_folder
 
-def gen_introspection_modle(logger, skill_folder, output_dir):
+def gen_introspection_model(logger, skill_folder, output_dir):
     model_file = os.path.join(output_dir, 'introspection_model')
     if os.path.isfile(model_file):
         logger.info("Model already exists. Gonna skip.")    
@@ -74,6 +74,46 @@ def gen_introspection_modle(logger, skill_folder, output_dir):
         indent=4,
     )
 
+def gen_classification_model(logger, anomaly_folder, output_dir):
+    model_file = os.path.join(output_dir, 'classifier_model')
+    if os.path.isfile(model_file):
+        logger.info("Model already exists. Gonna skip.")    
+        return 
+    csvs = glob.glob(os.path.join(
+        anomaly_folder,
+        '*',
+    ))
+    list_of_mat = []
+    for j in csvs:
+        df = pd.read_csv(j, sep=',')
+        # Exclude 1st column which is time index
+        list_of_mat.append(df.values[:, 1:])
+    try:
+        result = train_anomaly_classifier.run(list_of_mat, model_type, model_config, score_metric, logger)
+        logger.info("Successfully trained classification model")
+    except Exception as e:
+        logger.error("Failed to train_anomaly_classifier: %s"%e)
+        logger.error("traceback: %s"%(traceback.format_exc()))
+        return
+
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir)
+    joblib.dump(
+        result['model'],
+        model_file,
+    )
+    model_info = { 
+        'model_type': model_type,
+        'find_best_model_in_this_config': model_config,
+        'score_metric': score_metric,
+    }
+    model_info.update(result['model_info']),
+    json.dump(
+        model_info,
+        open(os.path.join(output_dir, 'classifier_model_info'), 'w'),
+        indent=4,
+    )
+
 def run():
     if not os.path.isdir(latest_dataset_folder):
         raise Exception("Not found %s"%latest_dataset_folder)
@@ -98,20 +138,24 @@ def run():
             get_latest_model_folder(), 
             'skill_%s'%skill_id,
         )
-        gen_introspection_modle(logger, skill_folder, output_dir)
+        gen_introspection_model(logger, skill_folder, output_dir)
 
     anomaly_folders = glob.glob(os.path.join(
         latest_dataset_folder,
         'anomaly_data',
-        "nominal_skill_*_anomaly_type_*",
+        "anomaly_type_*",
     ))
-    prog = re.compile(r'nominal_skill_(.*)_anomaly_type_(.*)')
+    prog = re.compile(r'anomaly_type_(.*)')
     for anomaly_folder in anomaly_folders:
-        m = prog.match(os.path.basename(anomaly_folder))
-        skill_id = m.group(1)
-        anomaly_label = m.group(2)
-        logger.debug("Processing skill %s's anomaly %s"%(skill_id, anomaly_label))
-        # TODO: train AC models 
+        m = prog.search(os.path.basename(anomaly_folder))
+        anomaly_label = m.group(1)
+        logger.debug("Processing anomaly %s"%(anomaly_label, ))
+
+        output_dir = os.path.join(
+            get_latest_model_folder(), 
+            'anomaly_%s'%anomaly_label,
+        )
+        gen_classification_model(logger, anomaly_folder, output_dir)
 
     demonstration_folders = glob.glob(os.path.join(
         latest_dataset_folder,
