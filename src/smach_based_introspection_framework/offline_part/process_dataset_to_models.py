@@ -114,6 +114,82 @@ def gen_classification_model(logger, anomaly_folder, output_dir):
         indent=4,
     )
 
+def gen_dmp_model(logger, demonstration_folder, output_dir):
+    model_file = os.path.join(output_dir, 'dmp_model')
+    if os.path.isfile(model_file):
+        logger.info("Model already exists. Gonna skip.")    
+        return 
+
+    try:
+        demonstration_trial = next(glob.iglob(os.path.join(demonstration_folder, "*")))
+    except StopIteration:
+        logger.error("No demonstration data in %s"%demonstration_folder) 
+        return
+
+    df = pd.read_csv(os.path.join(
+        demonstration_trial,
+        "dmp_cmd_timeseries.csv",
+    ), sep=',')
+
+    # Exclude 1st column which is time index
+    df = df.drop(axis=1, columns=df.columns[0])
+
+    cmd_matrix = df.values
+
+    dem_goal = cmd_matrix[-1]
+    with open(os.path.join(demonstration_trial, "original_goal.json"), 'r') as f:
+        ori_goal = np.array(json.load(f))
+
+
+    goal_info = {}
+    goal_info['original_goal'] = ori_goal
+    goal_info['demonstration_goal'] = dem_goal
+
+    goal_modification_info = {}
+    pxyz_idx = util.get_position_xyz_index(df.columns)
+    if None not in pxyz_idx:
+        goal_modification_info['translation'] = {
+            'index': pxyz_idx,
+            'value': dem_goal[pxyz_idx]-ori_goal[pxyz_idx],
+        }
+
+    qxyzw_idx = util.get_quaternion_xyzw_index(df.columns)
+    if None not in qxyzw_idx:
+        from tf.transformations import (
+            quaternion_inverse,
+            quaternion_multiply,
+        )
+        ori_q = ori_goal[qxyzw_idx]
+        dem_q = dem_goal[qxyzw_idx]
+        rot_q = quaternion_multiply(dem_q, quaternion_inverse(ori_q))
+        goal_modification_info['quaternion_rotation'] = {
+            'index': qxyzw_idx,
+            'value': rot_q,
+        }
+
+    one_shot_mat = cmd_matrix
+    result = train_dmp_model.run(one_shot_mat)
+
+    model_info = { 
+        'dmp_cmd_fields': df.columns.tolist(),
+        'model_info': result['model_info']
+    }
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir)
+    dill.dump(
+        goal_modification_info,
+        open(os.path.join(output_dir, 'goal_modification_info'), 'w')
+    )
+    json.dump(
+        model_info,
+        open(os.path.join(output_dir, 'dmp_model_info'), 'w'),
+        indent=4,
+    )
+    dill.dump(
+        result['model'],
+        open(model_file, 'w')
+    )
+
 def run():
     if not os.path.isdir(latest_dataset_folder):
         raise Exception("Not found %s"%latest_dataset_folder)
@@ -171,72 +247,8 @@ def run():
         logger.debug("Processing skill %s's anomaly %s's demonstration skill %s"%(skill_id, anomaly_label, demonstration_skill_id))
         # TODO: train dmp models
 
-    sys.exit(1)
-
-    logger.info("Collecting skill_data to build dmp")
-    prog = re.compile(r'tag_(\d+)')
-    for i in glob.glob(os.path.join(latest_dataset_folder, "skill_data", '*')):
-        tag = prog.match(os.path.basename(i)).group(1)
-        if int(tag) < RECOVERY_SKILL_BEGINS_AT:
-            logger.info("Skip nominal skill %s without recovery dmp data"%tag)
-            continue
-        logger.info("Gonna build dmp model for skill %s"%tag)
-        one_shot_mat = None
-        goal_info = {}
-        for j in glob.glob(os.path.join(i, "*")):
-            df = pd.read_csv(j, sep=',')
-            cmd_df =  df[dmp_cmd_fields]
-            dem_goal = cmd_df.iloc[-1].values
-            ori_goal = np.array(eval(df['.goal_vector'].iloc[-1]))
-            one_shot_mat = cmd_df.values
-            goal_info['original_goal'] = ori_goal
-            goal_info['demonstration_goal'] = dem_goal
-            break
-
-        goal_modification_info = {}
-        pxyz_idx = util.get_position_xyz_index(dmp_cmd_fields)
-        if None not in pxyz_idx:
-            goal_modification_info['translation'] = {
-                'index': pxyz_idx,
-                'value': dem_goal[pxyz_idx]-ori_goal[pxyz_idx],
-            }
-
-        qxyzw_idx = util.get_quaternion_xyzw_index(dmp_cmd_fields)
-        if None not in qxyzw_idx:
-            from tf.transformations import (
-                quaternion_inverse,
-                quaternion_multiply,
-            )
-            ori_q = ori_goal[qxyzw_idx]
-            dem_q = dem_goal[qxyzw_idx]
-            rot_q = quaternion_multiply(dem_q, quaternion_inverse(ori_q))
-            goal_modification_info['quaternion_rotation'] = {
-                'index': qxyzw_idx,
-                'value': rot_q,
-            }
-
-        result = train_dmp_model.run(one_shot_mat)
-
-        model_info = { 
-            'dmp_cmd_fields': dmp_cmd_fields,
-            'model_info': result['model_info']
-        }
-
-        d = os.path.join(get_latest_model_folder(), os.path.basename(i))
-        if not os.path.isdir(d):
-            os.makedirs(d)
-        dill.dump(
-            goal_modification_info,
-            open(os.path.join(d, 'goal_modification_info'), 'w')
+        output_dir = os.path.join(
+            get_latest_model_folder(), 
+            'skill_%s'%demonstration_skill_id,
         )
-        dill.dump(
-            result['model'],
-            open(os.path.join(d, 'dmp_model'), 'w')
-        )
-        json.dump(
-            model_info,
-            open(os.path.join(d, 'dmp_model_info'), 'w'),
-            indent=4,
-        )
-
-    fileHandler.close()
+        gen_dmp_model(logger, demonstration_folder, output_dir)
