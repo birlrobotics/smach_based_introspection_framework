@@ -205,7 +205,6 @@ class ExperimentRecord(object):
                 continue
 
             demonstration = Demonstration()
-            demonstration.tag = str(RECOVERY_DEMONSTRATED_BY_HUMAN_TAG)
             demonstration.start_time = start_time
             demonstration.end_time = end_time
 

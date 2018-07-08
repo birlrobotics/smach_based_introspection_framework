@@ -2,15 +2,6 @@
 from parameters_combinator import ListOfParams
 
 HUMAN_AS_MODEL_MODE = False
-dmp_cmd_fields = [
-    '.endpoint_state.pose.position.x',
-    '.endpoint_state.pose.position.y',
-    '.endpoint_state.pose.position.z',
-    '.endpoint_state.pose.orientation.x',
-    '.endpoint_state.pose.orientation.y',
-    '.endpoint_state.pose.orientation.z',
-    '.endpoint_state.pose.orientation.w',
-]
 
 score_metric = '_score_metric_sum_of_loglik_'
 
@@ -59,6 +50,11 @@ from smach_based_introspection_framework.config.anomaly_classification_config im
 from smach_based_introspection_framework.config.anomaly_detection_config import (
     anomaly_detection_timeseries_hz,
     anomaly_detection_timeseries_config, 
+)
+
+from smach_based_introspection_framework.config.dmp_config import (
+    dmp_cmd_timeseries_hz,
+    dmp_cmd_timeseries_config, 
 )
 
 topics_to_be_recorded_into_rosbag = [
