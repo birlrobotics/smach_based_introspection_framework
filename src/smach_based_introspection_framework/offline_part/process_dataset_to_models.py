@@ -24,10 +24,8 @@ import ipdb
 import smach_based_introspection_framework.configurables as configurables 
 import logging
 import dill
+import sys
 
-dmp_cmd_fields  = configurables.dmp_cmd_fields  
-data_type_chosen  = configurables.data_type_chosen  
-interested_data_fields  = configurables.interested_data_fields  
 model_type  = configurables.model_type  
 score_metric  = configurables.score_metric  
 model_config  = configurables.model_config  
@@ -49,15 +47,50 @@ def run():
     if not os.path.isdir(latest_dataset_folder):
         raise Exception("Not found %s"%latest_dataset_folder)
 
-    logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger('process_dataset_to_models')
-
     log_file = os.path.join(get_latest_model_folder(), 'run.log')
     fileHandler = logging.FileHandler(os.path.realpath(log_file))
     logger.addHandler(fileHandler)
 
-    consoleHandler = logging.StreamHandler()
-    logger.addHandler(consoleHandler)
+    skill_folders = glob.glob(os.path.join(
+        latest_dataset_folder,
+        'skill_data',
+        "tag_*",
+    ))
+    prog = re.compile(r'tag_(.*)')
+    for skill_folder in skill_folders:
+        skill_id = prog.match(os.path.basename(skill_folder)).group(1)
+        logger.debug("Processing skill %s"%skill_id)
+        # TODO: train AD models 
+
+    anomaly_folders = glob.glob(os.path.join(
+        latest_dataset_folder,
+        'anomaly_data',
+        "nominal_skill_*_anomaly_type_*",
+    ))
+    prog = re.compile(r'nominal_skill_(.*)_anomaly_type_(.*)')
+    for anomaly_folder in anomaly_folders:
+        m = prog.match(os.path.basename(anomaly_folder))
+        skill_id = m.group(1)
+        anomaly_label = m.group(2)
+        logger.debug("Processing skill %s's anomaly %s"%(skill_id, anomaly_label))
+        # TODO: train AC models 
+
+    demonstration_folders = glob.glob(os.path.join(
+        latest_dataset_folder,
+        'demonstration_data',
+        "nominal_skill_*_anomaly_type_*_tag_*",
+    ))
+    prog = re.compile(r'nominal_skill_(.*)_anomaly_type_(.*)_tag_(.*)')
+    for demonstration_folder in demonstration_folders:
+        m = prog.match(os.path.basename(demonstration_folder))
+        skill_id = m.group(1)
+        anomaly_label = m.group(2)
+        demonstration_skill_id = m.group(3)
+        logger.debug("Processing skill %s's anomaly %s's demonstration skill %s"%(skill_id, anomaly_label, demonstration_skill_id))
+        # TODO: train dmp models
+
+    sys.exit(1)
 
     logger.info("Collecting skill_data to build dmp")
     prog = re.compile(r'tag_(\d+)')
