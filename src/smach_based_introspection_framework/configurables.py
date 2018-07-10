@@ -56,6 +56,7 @@ from smach_based_introspection_framework.config.dmp_config import (
     dmp_cmd_timeseries_hz,
     dmp_cmd_timeseries_config, 
 )
+dmp_cmd_fields = dmp_cmd_timeseries_config.timeseries_header
 
 topics_to_be_recorded_into_rosbag = [
     '/tag_multimodal',
