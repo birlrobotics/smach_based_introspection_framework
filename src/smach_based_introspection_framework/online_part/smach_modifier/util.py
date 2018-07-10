@@ -11,16 +11,20 @@ from smach_based_introspection_framework._constant import (
 )
 import threading
 
-def introspect_moveit_exec(group, plan, timeout=1000):
+def introspect_moveit_exec(group, plan):
     if plan is None or len(plan.joint_trajectory.points) == 0:
         return False
 
-    t = threading.Thread(target=lambda : group.execute(plan, wait=True))
-    t.run()
-    s_t = time.time()
-    while t.is_alive() and not rospy.is_shutdown() and time.time()-s_t<timeout: 
+
+    timeout = plan.joint_trajectory.points[-1].time_from_start+rospy.Duration(1)
+
+    group.execute(plan, wait=False)
+
+    s_t = rospy.Time.now()
+    while not rospy.is_shutdown() and rospy.Time.now()-s_t<timeout: 
         if get_event_flag() == ANOMALY_DETECTED:
-            if time.time()-s_t < 1.0:
+            time_diff = rospy.Time.now()-s_t
+            if time_diff.to_sec() < 1.0:
                 set_event_flag(ANOMALY_NOT_DETECTED)
             else:
                 rospy.logerr("hmm signaled an anomaly")
