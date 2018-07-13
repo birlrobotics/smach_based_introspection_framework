@@ -10,9 +10,11 @@ import matplotlib.pyplot as plt
 import pickle
 import re
 import ipdb
+coloredlogs.install()
 
 def run():
-    logger = logging.getLogger('GetAnomalyTpyes')
+    logger = logging.getLogger()
+    logger.warning(os.path.basename(__file__))
     folders = glob.glob(os.path.join(
         anomaly_classification_feature_selection_folder,'..',
         'experiment_record_folder','*'))
