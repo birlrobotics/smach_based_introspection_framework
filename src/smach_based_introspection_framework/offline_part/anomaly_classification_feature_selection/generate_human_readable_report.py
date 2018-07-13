@@ -11,8 +11,8 @@ from ac_feature_schemes import feature_schemes
 
 pd.set_option("display.max_rows", None)
 pd.set_option("display.max_columns", None)
-pd.set_option("display.width", 1000)
-pd.set_option("display.height", 1000)
+#pd.set_option("display.width", 1000)
+#pd.set_option("display.height", 1000)
 pd.set_option("display.precision", 3)
 
 def append_metrics(df_):
