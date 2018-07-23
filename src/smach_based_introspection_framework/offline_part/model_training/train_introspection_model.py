@@ -3,7 +3,7 @@ from birl_hmm.hmm_training import train_model, hmm_util
 import numpy as np
 import ipdb
 
-def run(list_of_mat, model_type, model_config, score_metric, logger=None):
+def run(list_of_mat, model_type, model_config, score_metric):
     list_of_train_mat, list_of_test_mat = train_test_split(list_of_mat, test_size=0.25)
     
     if len(list_of_train_mat) == 0:
@@ -22,7 +22,6 @@ def run(list_of_mat, model_type, model_config, score_metric, logger=None):
         model_type=model_type,
         model_config=model_config,
         score_metric=score_metric,
-        logger=logger,
     )
 
 
