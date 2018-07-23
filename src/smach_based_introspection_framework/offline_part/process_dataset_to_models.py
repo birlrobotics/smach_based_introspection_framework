@@ -1,128 +1,78 @@
-import process_experiment_record_to_dataset as e2d
 import glob
 import os
 from smach_based_introspection_framework._constant import (
-    folder_time_fmt,
     latest_dataset_folder,
     latest_model_folder,
-    anomaly_label_file,
-    model_folder,
-    RECOVERY_SKILL_BEGINS_AT
 )
 import re
-import pandas as pd
-from sklearn.externals import joblib
-import shutil
-import datetime
-import json
-import numpy as np
-from model_training import train_introspection_model
-from model_training import train_anomaly_classifier
-from smach_based_introspection_framework.offline_part.model_training import train_dmp_model
-from smach_based_introspection_framework.offline_part import util 
-import ipdb
-import smach_based_introspection_framework.configurables as configurables 
 import logging
-import dill
+import gen_introspection_model, gen_classification_model, gen_dmp_model
 
-dmp_cmd_fields  = configurables.dmp_cmd_fields  
-data_type_chosen  = configurables.data_type_chosen  
-interested_data_fields  = configurables.interested_data_fields  
-model_type  = configurables.model_type  
-score_metric  = configurables.score_metric  
-model_config  = configurables.model_config  
 
 def get_latest_model_folder():
-    if hasattr(get_latest_model_folder, "latest_model_folder"):
-        return get_latest_model_folder.latest_model_folder
-    if os.path.isdir(latest_model_folder):
-       shutil.move(
-            latest_model_folder,  
-            os.path.join(model_folder, "model_folder.old.%s"%datetime.datetime.now().strftime(folder_time_fmt))
-        )
-        
-    os.makedirs(latest_model_folder)
-    get_latest_model_folder.latest_model_folder = latest_model_folder
+    if not os.path.isdir(latest_model_folder):
+        os.makedirs(latest_model_folder)
     return latest_model_folder
 
 def run():
     if not os.path.isdir(latest_dataset_folder):
         raise Exception("Not found %s"%latest_dataset_folder)
 
-    logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger('process_dataset_to_models')
-
+    logger.setLevel(logging.DEBUG)
     log_file = os.path.join(get_latest_model_folder(), 'run.log')
     fileHandler = logging.FileHandler(os.path.realpath(log_file))
+    fileHandler.setLevel(logging.DEBUG)
     logger.addHandler(fileHandler)
 
-    consoleHandler = logging.StreamHandler()
-    logger.addHandler(consoleHandler)
-
-    logger.info("Collecting skill_data to build dmp")
-    prog = re.compile(r'tag_(\d+)')
-    for i in glob.glob(os.path.join(latest_dataset_folder, "skill_data", '*')):
-        tag = prog.match(os.path.basename(i)).group(1)
-        if int(tag) < RECOVERY_SKILL_BEGINS_AT:
-            logger.info("Skip nominal skill %s without recovery dmp data"%tag)
-            continue
-        logger.info("Gonna build dmp model for skill %s"%tag)
-        one_shot_mat = None
-        goal_info = {}
-        for j in glob.glob(os.path.join(i, "*")):
-            df = pd.read_csv(j, sep=',')
-            cmd_df =  df[dmp_cmd_fields]
-            dem_goal = cmd_df.iloc[-1].values
-            ori_goal = np.array(eval(df['.goal_vector'].iloc[-1]))
-            one_shot_mat = cmd_df.values
-            goal_info['original_goal'] = ori_goal
-            goal_info['demonstration_goal'] = dem_goal
-            break
-
-        goal_modification_info = {}
-        pxyz_idx = util.get_position_xyz_index(dmp_cmd_fields)
-        if None not in pxyz_idx:
-            goal_modification_info['translation'] = {
-                'index': pxyz_idx,
-                'value': dem_goal[pxyz_idx]-ori_goal[pxyz_idx],
-            }
-
-        qxyzw_idx = util.get_quaternion_xyzw_index(dmp_cmd_fields)
-        if None not in qxyzw_idx:
-            from tf.transformations import (
-                quaternion_inverse,
-                quaternion_multiply,
-            )
-            ori_q = ori_goal[qxyzw_idx]
-            dem_q = dem_goal[qxyzw_idx]
-            rot_q = quaternion_multiply(dem_q, quaternion_inverse(ori_q))
-            goal_modification_info['quaternion_rotation'] = {
-                'index': qxyzw_idx,
-                'value': rot_q,
-            }
-
-        result = train_dmp_model.run(one_shot_mat)
-
-        model_info = { 
-            'dmp_cmd_fields': dmp_cmd_fields,
-            'model_info': result['model_info']
-        }
-
-        d = os.path.join(get_latest_model_folder(), os.path.basename(i))
-        if not os.path.isdir(d):
-            os.makedirs(d)
-        dill.dump(
-            goal_modification_info,
-            open(os.path.join(d, 'goal_modification_info'), 'w')
+    skill_folders = glob.glob(os.path.join(
+        latest_dataset_folder,
+        'skill_data',
+        "tag_*",
+    ))
+    prog = re.compile(r'tag_(.*)')
+    for skill_folder in skill_folders:
+        skill_id = prog.match(os.path.basename(skill_folder)).group(1)
+        logger.debug("Processing skill %s"%skill_id)
+        output_dir = os.path.join(
+            get_latest_model_folder(), 
+            'skill_%s'%skill_id,
         )
-        dill.dump(
-            result['model'],
-            open(os.path.join(d, 'dmp_model'), 'w')
-        )
-        json.dump(
-            model_info,
-            open(os.path.join(d, 'dmp_model_info'), 'w'),
-            indent=4,
-        )
+        gen_introspection_model.run(logger, skill_folder, output_dir)
 
-    fileHandler.close()
+    anomaly_folders = glob.glob(os.path.join(
+        latest_dataset_folder,
+        'anomaly_data',
+        "anomaly_type_*",
+    ))
+    prog = re.compile(r'anomaly_type_(.*)')
+    for anomaly_folder in anomaly_folders:
+        m = prog.search(os.path.basename(anomaly_folder))
+        anomaly_label = m.group(1)
+        logger.debug("Processing anomaly %s"%(anomaly_label, ))
+
+        output_dir = os.path.join(
+            get_latest_model_folder(), 
+            'anomaly_%s'%anomaly_label,
+        )
+        gen_classification_model.run(logger, anomaly_folder, output_dir)
+
+    demonstration_folders = glob.glob(os.path.join(
+        latest_dataset_folder,
+        'demonstration_data',
+        "nominal_skill_*_anomaly_type_*_tag_*",
+    ))
+    prog = re.compile(r'nominal_skill_(.*)_anomaly_type_(.*)_tag_(.*)')
+    for demonstration_folder in demonstration_folders:
+        m = prog.match(os.path.basename(demonstration_folder))
+        skill_id = m.group(1)
+        anomaly_label = m.group(2)
+        demonstration_skill_id = m.group(3)
+        logger.debug("Processing skill %s's anomaly %s's demonstration skill %s"%(skill_id, anomaly_label, demonstration_skill_id))
+        # TODO: train dmp models
+
+        output_dir = os.path.join(
+            get_latest_model_folder(), 
+            'skill_%s'%demonstration_skill_id,
+        )
+        gen_dmp_model.run(logger, demonstration_folder, output_dir)

@@ -131,8 +131,19 @@ def toggle_introspection(start, sm=None):
             rospy.loginfo("Tring to tear down goal_proc")
             goal_proc.stop()
             
+def baxter_get_moveit_vars():
+    robot = moveit_commander.RobotCommander()
+    group = moveit_commander.MoveGroupCommander("right_arm")
+    group.set_max_velocity_scaling_factor(1)
+    group.set_max_acceleration_scaling_factor(1)
+    return robot, group
 
-def run(sm, reverting_statistics=None):
+def run(sm, reverting_statistics=None, get_moveit_vars=None):
+    if get_moveit_vars is None:
+        get_moveit_vars = baxter_get_moveit_vars
+    import smach_modifier.introspection_execute
+    smach_modifier.introspection_execute.get_moveit_vars = get_moveit_vars
+
     try: 
         set_reverting_statistics(reverting_statistics)
         moveit_commander.roscpp_initialize(sys.argv)

@@ -1,4 +1,6 @@
 tool_collision
+object_slip
+tool_collision
 human_collision
 tool_collision
 tool_collision

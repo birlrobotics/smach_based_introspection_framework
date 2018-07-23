@@ -1,7 +1,10 @@
 import os
 import sys
+import rospy
 import pickle
 import glob
+import traceback
+
 from birl_offline_data_handler.rosbag_handler import (
     RosbagHandler,
     InvalidRosbagPath,
@@ -27,36 +30,34 @@ pp = pprint.PrettyPrinter(indent=4)
 import shutil
 import datetime
 import json
-from smach_based_introspection_framework.configurables import (
-    anomaly_window_size_in_sec, 
-    anomaly_resample_hz, 
-)
 import ipdb
-import coloredlogs, logging
-coloredlogs.install()
+import logging
+import sys
+from smach_based_introspection_framework import ExperimentRecord
+from rostopics_to_timeseries import OfflineRostopicsToTimeseries
+import pandas as pd
 
-def get_anomaly_labels(exp_dir):
-    txt_path = os.path.join(exp_dir, anomaly_label_file)
-    lines = open(txt_path, 'r').readlines()
-    labels = [i.strip() for i in lines]
-    return [i for i in labels if i != ""]
-
-def get_tag_range(df):
-    ret = [] 
-    last_tag = None
-    last_tag_at = 0
-    for index, tu in enumerate(df['.tag'].iteritems()):
-        tag = tu[1]
-        if tag != last_tag:
-            if last_tag is not None:
-                new_range = (last_tag, (last_tag_at, index-1))
-                ret.append(new_range)     
-            last_tag = tag
-            last_tag_at = index
-    new_range = (last_tag, (last_tag_at, len(df['.tag'])-1))
-    ret.append(new_range)     
-
-    return ret
+def generate_and_save_csv(output_csv, er, st, et, filtering_scheme, ortt, logger):
+    if not os.path.isfile(output_csv):
+        try:
+            t, mat = ortt.get_timeseries_mat(
+                er.rosbag,
+                st,
+                et,
+            )
+        except Exception as e:
+            traceback.print_exc()
+            logger.error("Fail to get timeseries_mat: %s"%e)
+            raise e
+        
+        df = pd.DataFrame(mat, columns=filtering_scheme.timeseries_header, index=t)
+        output_dir = os.path.dirname(output_csv)
+        if not os.path.isdir(output_dir):
+            os.makedirs(output_dir)
+        df.to_csv(output_csv)
+        logger.debug("Done.")
+    else:
+        logger.debug("Already done, gonna skip.")
 
 def setup_latest_dataset_folder():
     if not os.path.isdir(latest_dataset_folder):
@@ -86,89 +87,9 @@ def get_recovery_skill_tag(nominal_skill_tag, anomaly_type, add_if_not_exist=Tru
     lookup_dict["count"] += 1
     json.dump(lookup_dict, open(os.path.join(latest_dataset_folder, "recovery_tag_lookup_dict.json"),'w'))
     return lookup_dict[key]
-
-def temporary_solution_to_add_wrench_derivative(df):
-    if u'.wrench_stamped.wrench.force.x' not in df.columns:
-        return df
-    df['.delta_wrench.force.x'] = df['.wrench_stamped.wrench.force.x']
-    df['.delta_wrench.force.y'] = df['.wrench_stamped.wrench.force.y']
-    df['.delta_wrench.force.z'] = df['.wrench_stamped.wrench.force.z']
-
-    df['.delta_wrench.force.x'].iloc[1:] = df['.delta_wrench.force.x'].iloc[1:].values-df['.delta_wrench.force.x'].iloc[:-1].values
-    df['.delta_wrench.force.x'].iloc[0] = 0
-    df['.delta_wrench.force.y'].iloc[1:] = df['.delta_wrench.force.y'].iloc[1:].values-df['.delta_wrench.force.y'].iloc[:-1].values
-    df['.delta_wrench.force.y'].iloc[0] = 0
-    df['.delta_wrench.force.z'].iloc[1:] = df['.delta_wrench.force.z'].iloc[1:].values-df['.delta_wrench.force.z'].iloc[:-1].values
-    df['.delta_wrench.force.z'].iloc[0] = 0
-
-    df['.delta_wrench.torque.x'] = df['.wrench_stamped.wrench.torque.x']
-    df['.delta_wrench.torque.y'] = df['.wrench_stamped.wrench.torque.y']
-    df['.delta_wrench.torque.z'] = df['.wrench_stamped.wrench.torque.z']
-
-    df['.delta_wrench.torque.x'].iloc[1:] = df['.delta_wrench.torque.x'].iloc[1:].values-df['.delta_wrench.torque.x'].iloc[:-1].values
-    df['.delta_wrench.torque.x'].iloc[0] = 0
-    df['.delta_wrench.torque.y'].iloc[1:] = df['.delta_wrench.torque.y'].iloc[1:].values-df['.delta_wrench.torque.y'].iloc[:-1].values
-    df['.delta_wrench.torque.y'].iloc[0] = 0
-    df['.delta_wrench.torque.z'].iloc[1:] = df['.delta_wrench.torque.z'].iloc[1:].values-df['.delta_wrench.torque.z'].iloc[:-1].values
-    df['.delta_wrench.torque.z'].iloc[0] = 0
-
-    return df
-
-def add_skill_introspection_data(tag, df, name):
-    tag_dir = os.path.join(
-        latest_dataset_folder,
-        'skill_data',
-        "tag_%s"%tag,
-    )
-    if not os.path.isdir(tag_dir):
-        os.makedirs(tag_dir)
-    df = temporary_solution_to_add_wrench_derivative(df)
-    df.to_csv(os.path.join(tag_dir, name), sep=',')
-
-def add_anomaly_data(nominal_skill_tag, anomaly_type, df, name):
-    key = "%s_%s"%(nominal_skill_tag, anomaly_type)
-    anomaly_dir = os.path.join(
-        latest_dataset_folder,
-        'anomaly_data',
-        "nominal_skill_%s_anomaly_type_%s"%(nominal_skill_tag, anomaly_type)
-    )
-    if not os.path.isdir(anomaly_dir):
-        os.makedirs(anomaly_dir)
-    df = temporary_solution_to_add_wrench_derivative(df)
-    df.to_csv(os.path.join(anomaly_dir, name), sep=',')
-    pass
-
-def process_time_and_set_as_index(df):
-    from dateutil import parser
-    import numpy as np
-    import datetime
-    df['time'] = df['time'].apply(lambda x: parser.parse(x))
-    start_datetime = df['time'][0]
-    df['time'] -= datetime.datetime(1970, 1, 1, 0, 0, 0, 0)
-    df['time'] = df['time'].apply(lambda x: x.total_seconds())
-    df = df.drop_duplicates(subset='time').set_index('time')
-    return df
-
-def get_log_dict():
-    log_file_path = os.path.join(latest_dataset_folder, "log_dict.pkl")
-    if os.path.isfile(log_file_path):
-        log_dict = pickle.load(open(log_file_path, 'r'))
-    else:
-        log_dict = {}
-    return log_dict
-
-def save_log_dict(log_dict):
-    log_file_path = os.path.join(latest_dataset_folder, "log_dict.pkl")
-    pickle.dump(log_dict, open(log_file_path, 'w'))
-        
                 
 def run():        
     logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-    consoleHandler = logging.StreamHandler()
-    consoleHandler.setLevel(logging.INFO)
-    logger.addHandler(consoleHandler)
-
 
     if not os.path.isdir(experiment_record_folder):
         print experiment_record_folder, "not found."
@@ -183,111 +104,60 @@ def run():
     # otherwise recovery tag assignments will crash
     exp_dirs.sort() 
 
-    log_dict = get_log_dict()
     for exp_dir in exp_dirs: 
-        if exp_dir in log_dict:
-            continue
         try:
-            print exp_dir
-            try:
-                rh = RosbagHandler(os.path.join(exp_dir, "record.bag"))
-            except InvalidRosbagPath as e:
-                raise Exception("Can't find record.bag in %s"%exp_dir) 
-            ret = rh.get_csv_of_a_topic("/tag_multimodal") 
-            if len(ret) != 1:
-                raise Exception("Failed to get /tag_multimodal from record.bag in %s"%exp_dir)
-            bag_path, tag_df = ret[0]
-            tag_df = process_time_and_set_as_index(tag_df)
+            logger.debug("Processing "+exp_dir)
 
-            try:
-                ret = rh.get_csv_of_a_topic("/observation/goal_vector") 
-                if len(ret) != 1:
-                    raise Exception("Failed to get /observation/goal_vector from record.bag in %s"%exp_dir)
-                bag_path, goal_df = ret[0]
-                goal_df = process_time_and_set_as_index(goal_df)
+            er = ExperimentRecord(exp_dir)
 
-                goal_df = goal_df.reindex(goal_df.index.union(tag_df.index), method='nearest')
-                goal_df = goal_df.loc[tag_df.index]
-                tag_df['.goal_vector'] =  goal_df['.goal_vector']
-            except TopicNotFoundInRosbag:
-                pass
-
-            list_of_tag_range = [i for i in get_tag_range(tag_df) if i[0] != 0]
-
-            stat = {
-                SUCCESSULLY_EXECUTED_SKILL: [],
-                UNSUCCESSFULLY_EXECUTED_SKILL: [],
-            }
-           
-            for idx, tr_tuple in enumerate(list_of_tag_range):
-                tag, ran = tr_tuple
-                if idx == len(list_of_tag_range)-1:
-                    next_tag = None
-                else:
-                    next_tag = list_of_tag_range[idx+1][0]
-
-                # Nominal skill
-                if tag > 0:
-                    if next_tag is None or next_tag > 0:
-                        stat[SUCCESSULLY_EXECUTED_SKILL].append(tr_tuple)  
-                    else:
-                        stat[UNSUCCESSFULLY_EXECUTED_SKILL].append({
-                            "failed_nominal_skill": list_of_tag_range[idx],
-                            "human_dem_recovery_tr_tuple": None,
-                            "extracted_anomaly": None,
-                            "anomaly_label": None
-                        })
-                elif tag == RECOVERY_DEMONSTRATED_BY_HUMAN_TAG:
-                    stat[UNSUCCESSFULLY_EXECUTED_SKILL][-1]['human_dem_recovery_tr_tuple'] = tr_tuple
-
-
-            for count, i in enumerate(stat[SUCCESSULLY_EXECUTED_SKILL]):
-                tag = i[0]
-                ran = i[1]
-                df = tag_df.iloc[ran[0]:ran[1]]
-                add_skill_introspection_data(i[0], df, "no_%s_successful_skill_from_%s"%(count, os.path.basename(exp_dir)))
-
-            if len(stat[UNSUCCESSFULLY_EXECUTED_SKILL]) == 0:
-                pass
-            else:
-                rae = RosbagAnomalyExtractor(os.path.join(exp_dir, "record.bag"))
-                ret = rae.get_anomaly_csv(
-                    "/tag_multimodal",
-                    "/anomaly_detection_signal",
-                    anomaly_window_size_in_sec,
-                    anomaly_resample_hz,
+            from smach_based_introspection_framework.configurables import anomaly_detection_timeseries_config
+            ortt = OfflineRostopicsToTimeseries(anomaly_detection_timeseries_config) 
+            for count, (tag, (st, et)) in enumerate(er.successful_tag_ranges):
+                logger.debug("No.%s successful skill"%count)
+                output_csv = os.path.join(
+                    latest_dataset_folder,
+                    'skill_data',
+                    "tag_%s"%tag,
+                    "no_%s_successful_skill_from_%s"%(count, os.path.basename(exp_dir)),
                 )
-                if len(ret) != 1:
-                    raise Exception("Failed to extract anomalies from record.bag in %s"%exp_dir)
-                bag_path, list_of_anomaly = ret[0]
+                generate_and_save_csv(output_csv, er, st, et, anomaly_detection_timeseries_config, ortt, logger)
 
-                if len(list_of_anomaly) != len(stat[UNSUCCESSFULLY_EXECUTED_SKILL]):
-                    raise Exception("Anomalies amount does NOT match UNSUCCESSFULLY_EXECUTED_SKILL amount.")
 
-                list_of_anomaly_label = get_anomaly_labels(exp_dir)
-                if len(list_of_anomaly) != len(list_of_anomaly_label):
-                    raise Exception("Anomalies amount does NOT match anomaly label amount.")
-                
-            
-                for idx, anomaly_tuple in enumerate(list_of_anomaly):
-                    stat[UNSUCCESSFULLY_EXECUTED_SKILL][idx]["extracted_anomaly"] = anomaly_tuple
-                    stat[UNSUCCESSFULLY_EXECUTED_SKILL][idx]["anomaly_label"] = list_of_anomaly_label[idx]
-                       
-                for count, i in enumerate(stat[UNSUCCESSFULLY_EXECUTED_SKILL]):
-                    nominal_skill_tag = i['failed_nominal_skill'][0]
-                    anomaly_type = i['anomaly_label']
-                    recovery_demonstration = i['human_dem_recovery_tr_tuple']
-                    if recovery_demonstration is not None:
-                        tag = get_recovery_skill_tag(nominal_skill_tag, anomaly_type) 
-                        ran = recovery_demonstration[1]
-                        df = tag_df.iloc[ran[0]:ran[1]]
-                        add_skill_introspection_data(tag, df, "recovery_demonstration_for_no_%s_anomaly_in_%s"%(count, os.path.basename(exp_dir)))
-                        # TODO save old and new goals
+            from smach_based_introspection_framework.configurables import anomaly_window_size, anomaly_classification_timeseries_config
+            secs_before, secs_after = anomaly_window_size
+            ortt = OfflineRostopicsToTimeseries(anomaly_classification_timeseries_config) 
 
-                    df = i['extracted_anomaly'][1]
-                    add_anomaly_data(nominal_skill_tag, anomaly_type, df, "no_%s_anomaly_in_%s"%(count, os.path.basename(exp_dir)))
+            for count, anomaly in enumerate(er.list_of_anomalies):
+                logger.debug("anomaly_type: %s, anomaly_time: %s"%(anomaly.label, anomaly.time)) 
+                output_csv = os.path.join(
+                    latest_dataset_folder,
+                    'anomaly_data',
+                    "anomaly_type_%s"%(anomaly.label,),
+                    "no_%s_anomaly_in_%s"%(count, os.path.basename(exp_dir)),
+                )
+                generate_and_save_csv(output_csv, er, anomaly.time-rospy.Duration(secs_before), anomaly.time+rospy.Duration(secs_after), anomaly_classification_timeseries_config, ortt, logger)
+
+
+            from smach_based_introspection_framework.configurables import dmp_cmd_timeseries_config
+            ortt = OfflineRostopicsToTimeseries(dmp_cmd_timeseries_config) 
+            for count, demonstration in enumerate(er.list_of_demonstrations):
+                logger.debug("No.%s demonstration: %s"%(count, demonstration))
+                demonstration.tag = str(get_recovery_skill_tag(demonstration.targeted_anomaly.skill_belonged_to.tag, demonstration.targeted_anomaly.label))
+
+                output_csv = os.path.join(
+                    latest_dataset_folder,
+                    'demonstration_data',
+                    "nominal_skill_%s_anomaly_type_%s_tag_%s"%(demonstration.targeted_anomaly.skill_belonged_to.tag, demonstration.targeted_anomaly.label, demonstration.tag),
+                    "No.%s_demonstration_in_%s"%(count, os.path.basename(exp_dir)),
+                    "dmp_cmd_timeseries.csv",
+                )
+                generate_and_save_csv(output_csv, er, demonstration.start_time, demonstration.end_time, dmp_cmd_timeseries_config, ortt, logger)
+
+                output_json = os.path.join(
+                    os.path.dirname(output_csv),
+                    "original_goal.json",
+                )
+                with open(output_json, 'w') as f:
+                    json.dump(demonstration.original_goal, f)
         except Exception as e:
             logger.error("process exp_dir \"%s\"failed: %s"%(exp_dir,e ))
-        else:
-            log_dict[exp_dir] = True
-        save_log_dict(log_dict)

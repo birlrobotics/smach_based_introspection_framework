@@ -1,12 +1,6 @@
 
 # Package: smach_based_introspection_framework
 
-# Install the requirements
-```
-sudo pip install -r requirments.txt
-sudo apt-get install redis-server
-```
-
 # Why This Package Exists
 
 We want a finite-state-machine-based control framework for Rethink Robotics Baxter which satisfies the following needs:
@@ -145,8 +139,13 @@ A minimal tutorial on this framework can be:
     ```
 
 # Installation
-## Dependencies
+## Install Python Dependencies
+```
+sudo pip install -r requirments.txt
+sudo apt-get install redis-server
+```
 
+## Catkin Dependencies
 Since this is a catkin package, you can find out full dependencies by running catkin_make. 
 Important dependencies are listed below, they are all catkin packages so you can just git clone them into your catkin workspace:
 
@@ -174,11 +173,3 @@ Important dependencies are listed below, they are all catkin packages so you can
 	```
 
 3. Now, you're all set. Run the experiment and when it's finished, you will have a mp4 file on ___RecordPC___. It's saved at ```introspection_data_folder/experiment_video_folder/*```
-
-## step-by-step
-1. run those basic operations refer to the 'birl_kitting_experiment' README.MD file;
-2. ...
-
-
-
-
