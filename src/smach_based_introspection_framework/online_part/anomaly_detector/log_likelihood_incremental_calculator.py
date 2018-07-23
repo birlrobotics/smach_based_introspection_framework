@@ -67,22 +67,6 @@ class BNPYModelIncrementalLoglikCalculator(object):
         length = 1
         doc_range = [0, length]
         dataset = bnpy.data.GroupXData(X, doc_range, length, Xprev)
-
-        '''
-        LP = self.model.calc_local_params(dataset)
-        framelogprob = LP['E_log_soft_ev'] 
-        if self.fwdlattice is None:
-            self.fwdlattice = np.zeros((1, self.n_components))
-            for i in range(self.n_components):
-                self.fwdlattice[0,i] = self.log_startprob[i] + framelogprob[0,i]
-        else:
-            self.fwdlattice = np.append(self.fwdlattice, np.zeros((1, self.n_components)), axis=0)
-            for j in range(self.n_components):
-                for i in range(self.n_components):
-                    self.work_buffer[i] = self.fwdlattice[-2,i] + self.log_transmat[i,j]
-                self.fwdlattice[-1,j] = logsumexp(self.work_buffer) + framelogprob[0,j]
-        curr_log = logsumexp(self.fwdlattice[-1])
-        '''
         
         logSoftEv = self.model.obsModel.calcLogSoftEvMatrix_FromPost(dataset)
         SoftEv, lognormC = bnpy.allocmodel.hmm.HMMUtil.expLogLik(logSoftEv)
