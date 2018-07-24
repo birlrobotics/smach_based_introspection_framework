@@ -52,7 +52,7 @@ def run():
             list_of_mat.append(df.values[:, 1:])
 
         try:
-            result = train_introspection_model.run(list_of_mat, model_type, model_config, score_metric)
+            result = train_introspection_model.run(list_of_mat, model_type, model_config, score_metric, logger=logger)
             logger.info("Successfully trained introspection model")
         except Exception as e:
             traceback.print_exc(file=sys.stdout)

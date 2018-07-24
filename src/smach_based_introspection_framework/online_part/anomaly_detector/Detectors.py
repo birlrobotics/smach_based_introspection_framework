@@ -116,3 +116,63 @@ class DetectorBasedOnGradientOfLoglikCurve(BaseDetector):
         self.metric_threshold.append(now_threshold)
         return now_skill, anomaly_detected, now_gradient, now_threshold
 
+
+class DetectorBasedOnLogLikByHiddenState(BaseDetector):
+    def __init__(self, model_group_by_state, threshold_constant_group_by_state):
+        BaseDetector.__init__(self, model_group_by_state)
+        self.threshold_constant_group_by_state = threshold_constant_group_by_state
+        self.prev_skill = None
+        self.prev_loglik = None
+        self.calculator = None
+
+    def reset(self):
+        self.prev_skill = None
+
+    def add_one_smaple_and_identify_skill_and_detect_anomaly(self, sample, now_skill=None):
+        if now_skill is None:
+            now_skill = BaseDetector.identify_skill(self, sample)
+        prev_skill = self.prev_skill
+        self.prev_skill = now_skill
+
+        now_gradient = None
+        now_threshold = None
+
+        if now_skill is None:
+            logger.debug('now_skill is None so we can\'t perform anomaly detection.')
+            self.metric_observation.append(now_gradient)
+            self.metric_threshold.append(now_threshold)
+            return now_skill, None, now_gradient, now_threshold
+    
+        if now_skill != prev_skill:
+            logger.debug("now_skill != prev_skill, gonna switch model and restart anomaly detection.")
+            self.calculator = get_calculator(self.model_group_by_state[now_skill])
+            self.prev_loglik = None
+
+        now_loglik = self.calculator.add_one_sample_and_get_loglik(sample)
+        prev_loglik = self.prev_loglik
+        self.prev_loglik = now_loglik
+
+        threshold_constant = self.threshold_constant_group_by_state[now_skill]
+
+        if prev_loglik is None:
+            logger.debug('we don\' have prev_loglik for now_skill, gonna wait one more run.')
+            self.metric_observation.append(now_gradient)
+            self.metric_threshold.append(now_threshold)
+            return now_skill, None, now_gradient, now_threshold
+
+        now_gradient = now_loglik-prev_loglik
+        now_threshold = threshold_constant
+
+        now_zhat = self.calculator.add_one_sample_and_get_hidden_state(sample)
+        
+        anomaly_detected = False
+        if now_gradient < now_threshold:
+            anomaly_detected = True
+
+        if anomaly_detected:
+            self.anomaly_point.append([len(self.metric_observation), now_gradient])
+
+        self.metric_observation.append(now_gradient)
+        self.metric_threshold.append(now_threshold)
+        return now_skill, anomaly_detected, now_gradient, now_threshold
+

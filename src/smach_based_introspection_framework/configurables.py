@@ -5,19 +5,19 @@ HUMAN_AS_MODEL_MODE = False
 
 score_metric = '_score_metric_sum_of_loglik_'
 
-'''
 model_type = 'hmmlearn\'s HMM'
 model_config = {
-  'n_components': ListOfParams([1,3,5,7, 9]),
+  'n_components': ListOfParams([3]),
   'covariance_type': ListOfParams(['full']),
   'n_iter': 1000,
 }
-'''
 
 # bnpy_info
 # Supported Allocation model:   ['FiniteHMM',' HDPHMM']
 # Supported Observation models: ['Gauss','DiagGauss','ZeroMeanGauss','AutoRegGauss']
 # Supported Variational methods:['memoVB']
+
+'''
 model_type = 'BNPY\'s HMM'
 model_config = {
     'n_iteration': 1000,
@@ -27,7 +27,6 @@ model_config = {
     'varMethod' : ListOfParams(['memoVB']),
     'ECovMat'   : ListOfParams(['covdata']), #diagcovdata
 }
-'''
 model_type = 'BNPY\'s HMM'
 model_config = {
     'n_iteration': 1000,
