@@ -3,6 +3,10 @@ from log_likelihood_incremental_calculator import (
 )
 import numpy as np
 import ipdb
+import warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings('ignore', category=DeprecationWarning)
+
 import logging
 logger = logging.getLogger('anomaly_detector')
 logger.setLevel(logging.INFO)
@@ -124,7 +128,7 @@ class DetectorBasedOnLogLikByHiddenState(BaseDetector):
         self.prev_skill = None
         self.prev_loglik = None
         self.calculator = None
-
+        self.observations = []
     def reset(self):
         self.prev_skill = None
 
@@ -147,13 +151,15 @@ class DetectorBasedOnLogLikByHiddenState(BaseDetector):
             logger.debug("now_skill != prev_skill, gonna switch model and restart anomaly detection.")
             self.calculator = get_calculator(self.model_group_by_state[now_skill])
             self.prev_loglik = None
+            self.observations = []
 
         now_loglik = self.calculator.add_one_sample_and_get_loglik(sample)
         prev_loglik = self.prev_loglik
         self.prev_loglik = now_loglik
 
         threshold_constant = self.threshold_constant_group_by_state[now_skill]
-
+        self.observations.append(sample)
+        
         if prev_loglik is None:
             logger.debug('we don\' have prev_loglik for now_skill, gonna wait one more run.')
             self.metric_observation.append(now_gradient)
@@ -163,10 +169,9 @@ class DetectorBasedOnLogLikByHiddenState(BaseDetector):
         now_gradient = now_loglik-prev_loglik
         now_threshold = threshold_constant
 
-        now_zhat = self.calculator.add_one_sample_and_get_hidden_state(sample)
-        
+        now_zhat = self.calculator.add_one_sample_and_get_hidden_state_and_loglik(np.concatenate(self.observations))
         anomaly_detected = False
-        if now_gradient < now_threshold:
+        if now_gradient < now_threshold[now_zhat[0]]:
             anomaly_detected = True
 
         if anomaly_detected:

@@ -55,10 +55,10 @@ def run():
 
         df['scheme_no'] = scheme_no
         df['skill_no'] = skill_no
-        df = df.fillna({"anomaly type": "success"}).fillna(0)
+        df = df.fillna({"anomaly_type": "success"}).fillna(0)
     
         big_df = big_df.append(df)
-    big_df = big_df.drop(['sample name', big_df.columns[0]], axis=1).set_index(['scheme_no', 'skill_no', 'anomaly type'])
+    big_df = big_df.drop(['sample_name', big_df.columns[0]], axis=1).set_index(['scheme_no', 'skill_no', 'anomaly_type'])
     big_df = big_df.astype(int)
 
     report = open(os.path.join(datasets_of_filtering_schemes_folder, 'report.txt'), 'w') 

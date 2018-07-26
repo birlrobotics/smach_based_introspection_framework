@@ -7,7 +7,7 @@ score_metric = '_score_metric_sum_of_loglik_'
 
 model_type = 'hmmlearn\'s HMM'
 model_config = {
-  'n_components': ListOfParams([3]),
+  'n_components': ListOfParams([5]),
   'covariance_type': ListOfParams(['full']),
   'n_iter': 1000,
 }

@@ -43,6 +43,10 @@ class HmmlearnModelIncrementalLoglikCalculator(object):
         
         return logsumexp(self.fwdlattice[-1])
 
+    def add_one_sample_and_get_hidden_state_and_loglik(self, observations):
+        zhat   = self.model.predict(observations)
+        return np.array([zhat[-1]])
+
 class BNPYModelIncrementalLoglikCalculator(object):
     def __init__(self, model):
         model = model.model

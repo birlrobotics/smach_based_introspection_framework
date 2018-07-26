@@ -11,6 +11,9 @@ import coloredlogs, logging
 import sys, traceback
 from sklearn.externals import joblib
 import json
+import warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings('ignore', category=DeprecationWarning)
 
 coloredlogs.install()
 pp = pprint.PrettyPrinter(indent=4)

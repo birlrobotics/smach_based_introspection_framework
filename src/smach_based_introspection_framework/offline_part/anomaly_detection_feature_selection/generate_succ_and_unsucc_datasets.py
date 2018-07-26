@@ -69,8 +69,8 @@ def run():
                     setup_and_get_scheme_folder(scheme_count, filtering_scheme, exp_dir),
                     'successful_skills',
                     'skill %s'%tag,
-                    'No.%s successful skill from %s'%(skill_count, os.path.basename(exp_dir)),
-                    'No.%s successful skill from %s.csv'%(skill_count, os.path.basename(exp_dir))
+                    'No.%s_successful_skill_from_%s'%(skill_count, os.path.basename(exp_dir)),
+                    'No.%s_successful_skill_from_%s.csv'%(skill_count, os.path.basename(exp_dir))
                 )
                 generate_and_save_csv(output_csv, er, st, et, filtering_scheme, ortt, logger)
 
@@ -80,8 +80,8 @@ def run():
                     setup_and_get_scheme_folder(scheme_count, filtering_scheme, exp_dir),
                     'unsuccessful_skills',
                     'skill %s'%tag,
-                    'No.%s unsuccessful skill from %s'%(skill_count, os.path.basename(exp_dir)),
-                    'No.%s unsuccessful skill from %s.csv'%(skill_count, os.path.basename(exp_dir))
+                    'No.%s_unsuccessful_skill_from_%s'%(skill_count, os.path.basename(exp_dir)),
+                    'No.%s_unsuccessful_skill_from_%s.csv'%(skill_count, os.path.basename(exp_dir))
                 )
                 try:
                     generate_and_save_csv(output_csv, er, st, et+rospy.Duration(2), filtering_scheme, ortt, logger)
