@@ -79,6 +79,7 @@ def run():
                 stat['TN'] = 1
             stat.update({"sample_name": os.path.basename(csv)})
             stat_df = stat_df.append(stat, ignore_index=True)
+            logger.warning("Finish testing:%s"%csv)            
 
         for csv in glob.glob(os.path.join(unsucc_folder, '*', '*.csv')):
             logger.info(csv)
@@ -106,6 +107,7 @@ def run():
                         
             stat.update({"sample_name": os.path.basename(csv), 'anomaly_type': anomaly_type})
             stat_df = stat_df.append(stat, ignore_index=True)
+            logger.warning("Finish testing:%s"%csv)                        
 
         if not os.path.isdir(output_dir):
             os.makedirs(output_dir)

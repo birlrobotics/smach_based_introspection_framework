@@ -129,6 +129,7 @@ class DetectorBasedOnLogLikByHiddenState(BaseDetector):
         self.prev_loglik = None
         self.calculator = None
         self.observations = []
+        
     def reset(self):
         self.prev_skill = None
 
@@ -165,13 +166,14 @@ class DetectorBasedOnLogLikByHiddenState(BaseDetector):
             self.metric_observation.append(now_gradient)
             self.metric_threshold.append(now_threshold)
             return now_skill, None, now_gradient, now_threshold
-
-        now_gradient = now_loglik-prev_loglik
-        now_threshold = threshold_constant
-
+        
         now_zhat = self.calculator.add_one_sample_and_get_hidden_state_and_loglik(np.concatenate(self.observations))
+        
+        now_gradient = now_loglik-prev_loglik
+        now_threshold = threshold_constant[now_zhat[0]]
+        
         anomaly_detected = False
-        if now_gradient < now_threshold[now_zhat[0]]:
+        if now_gradient < now_threshold:
             anomaly_detected = True
 
         if anomaly_detected:
