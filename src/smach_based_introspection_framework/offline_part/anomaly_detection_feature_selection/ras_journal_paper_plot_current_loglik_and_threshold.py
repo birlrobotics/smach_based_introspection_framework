@@ -1,4 +1,3 @@
-
 from smach_based_introspection_framework._constant import (
     datasets_of_filtering_schemes_folder, folder_time_fmt
 )
@@ -12,60 +11,45 @@ import numpy as np
 import pickle
 import datetime
 import ipdb
-coloredlogs.install()
-
 import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.rcParams['font.size'] = 12
-fig, axarr = plt.subplots(nrows=5, sharex=True)
-global itest
-itest = -1
-def plot_current_loglik_and_threshold(loglik_and_threshold=None):
-    global itest
-    itest = itest + 1
-    loglik_and_threshold = np.array(loglik_and_threshold)
-    axarr[itest].plot(range(loglik_and_threshold.shape[0]), loglik_and_threshold[:,0], 'o-', color='b', label='current log-likehood')
-    axarr[itest].plot(range(loglik_and_threshold.shape[0]), loglik_and_threshold[:,1], '-', color='r', label='threshold')
-    axarr[itest].legend(loc=1, fancybox=True, framealpha=0.5, prop={'size':8})
-    axarr[itest].set_title('Verification of anomalous execution #%s'%(itest+1))
-    fig.subplots_adjust(hspace=0.5)
-    if itest == 4:
-        axarr[0].set_yticks(np.arange(-2500, 500, 1000))
-        axarr[1].set_yticks(np.arange(-4000, 0, 1000))
-        axarr[2].set_yticks(np.arange(-45000, 0, 15000))
-        axarr[3].set_yticks(np.arange(-50000, 5000, 15000))
-        axarr[4].set_yticks(np.arange(-5000, 0, 1500))    
-        fig.savefig('anomalous_current_loglik_and_threshold.png', format='png', dpi=300, bbox_inches='tight')
-        plt.show()
-    
-def get_first_anomaly_signal_time(model, timeseries_mat, ts):
-    '''
-    detector = Detectors.DetectorBasedOnGradientOfLoglikCurve(
-        {1: model['hmm_model']}, 
-        {1: model['threshold_for_introspection']},
-    )
-    '''
-    detector = Detectors.DetectorBasedOnLogLikByHiddenState(
-        {1: model['hmm_model']}, 
-        {1: model['loglik_threshold_by_zhat_dict']},
-    )
+matplotlib.rcParams['font.size'] = 8
 
+coloredlogs.install()
+def plot_current_loglik_and_threshold(first_anomaly_t=None, anomaly_t_by_human=None, itest=None, ax=None, loglik_and_threshold=None, xaxis=None):
+    first_timestamp = xaxis[0]
+    xaxis = xaxis - first_timestamp
+    loglik_and_threshold = np.array(loglik_and_threshold)
+    ax.plot(xaxis, loglik_and_threshold[:,0], 'o-', color='b', label='current log-likehood')
+    ax.plot(xaxis, loglik_and_threshold[:,1], '-', color='r', label='threshold')
+    if first_anomaly_t is not None:
+        ax.axvline(first_anomaly_t - first_timestamp, c='y', label='anomaly_t_by_detector')
+    if anomaly_t_by_human is not None:
+        ax.axvline(anomaly_t_by_human - first_timestamp, ls ='--', c='green', label='anomaly_t_by_human')        
+        ax.set_title('Verification of anomalous execution #%s'%(itest+1))
+    else:
+        ax.set_title('Verification of non-anomalous execution #%s'%(itest+1))        
+    ax.set_xlim(xaxis[0], xaxis[-1])
+    ax.legend(loc=1, fancybox=True, framealpha=0.5, prop={'size':5})
+    
+def get_first_anomaly_signal_time(detector, model, timeseries_mat, ts):
     loglik_and_threshold = []
+    first_t = None
     for idx, t in enumerate(ts):
-        now_skill, anomaly_detected, metric, threshold = detector.add_one_smaple_and_identify_skill_and_detect_anomaly(np.array(timeseries_mat[idx]).reshape(1,-1), now_skill=1)
+        now_skill, anomaly_detected, metric, threshold = detector.add_one_smaple_and_identify_skill_and_detect_anomaly(
+                            np.array(timeseries_mat[idx]).reshape(1,-1), now_skill=1)
         loglik_and_threshold.append([metric, threshold])
-#        if anomaly_detected:
-#            return t
-    plot_current_loglik_and_threshold(loglik_and_threshold=loglik_and_threshold)
-    return None
+        if anomaly_detected and first_t is None:
+            first_t = t
+    return first_t, loglik_and_threshold
 
 def run():
-    logger = logging.getLogger('CollDetectStat')
+    logger = logging.getLogger()
     logger.setLevel(logging.INFO)
     consoleHandler = logging.StreamHandler()
     consoleHandler.setLevel(logging.INFO)
     logger.addHandler(consoleHandler)
-
+    
     model_folders = glob.glob(os.path.join(
         datasets_of_filtering_schemes_folder,
         'introspection_models',
@@ -74,71 +58,93 @@ def run():
     ))
     if len(model_folders) == 0:
         logger.error('Without any introspection model')
+        
     for model_folder in model_folders:
         logger.info(os.path.realpath(model_folder))
         model = joblib.load(os.path.join(model_folder, 'introspection_model'))
-        path_postfix = os.path.relpath(model_folder, os.path.join(datasets_of_filtering_schemes_folder, 'introspection_models'))
 
+        avaliable_anomaly_detectors=[
+                Detectors.DetectorBasedOnLogLikByHiddenState(
+                {1: model['hmm_model']}, 
+                {1: model['zhat_loglik_threshold_by_mean_std_dict']},)
+                ,
+                Detectors.DetectorBasedOnGradientOfLoglikCurve(
+                    {1: model['hmm_model']}, 
+                    {1: model['threshold_for_introspection']},)
+            ]
+            
+        path_postfix = os.path.relpath(model_folder,
+                                   os.path.join(datasets_of_filtering_schemes_folder, 'introspection_models'))
+        succ_folder = os.path.join(datasets_of_filtering_schemes_folder,
+                                   path_postfix).replace(os.sep+"skill", os.sep+"successful_skills"+os.sep+"skill")
+        unsucc_folder = os.path.join(datasets_of_filtering_schemes_folder,
+                                   path_postfix).replace(os.sep+"skill", os.sep+"unsuccessful_skills"+os.sep+"skill")
+        
         output_dir = os.path.join(
             datasets_of_filtering_schemes_folder,
-            'introspection_statistics',
-            path_postfix,
-        )
-        stat_file = os.path.join(output_dir, os.path.basename(output_dir)+' stat.csv')
-        if os.path.isfile(stat_file):
-            logger.warning("Stat file already exists, rename the existing file")
-            postfix = '_at_%s'%datetime.datetime.now().strftime(folder_time_fmt)
-            os.rename(stat_file, os.path.join(output_dir, os.path.basename(output_dir)+ ' stat.csv.%s'%postfix))
+            'ras_journal_paper_plots',
+            path_postfix,)
+        if not os.path.isdir(output_dir):
+            os.makedirs(output_dir)
 
-        succ_folder = os.path.join(datasets_of_filtering_schemes_folder, path_postfix).replace(os.sep+"skill", os.sep+"successful_skills"+os.sep+"skill")
-        unsucc_folder = os.path.join(datasets_of_filtering_schemes_folder, path_postfix).replace(os.sep+"skill", os.sep+"unsuccessful_skills"+os.sep+"skill")
-        stat_df = pd.DataFrame(columns=['sample_name', 'anomaly_type', 'TP', 'TN', 'FP', 'FN'])
-
-        for csv in glob.glob(os.path.join(succ_folder, '*', '*.csv')):
+        succ_csvs   = glob.glob(os.path.join(succ_folder, '*', '*.csv'))
+        if len(succ_csvs) == 0:
+            logger.error('without the successful recordings of %s for testing'%path_postfix)
+            continue
+        fig, axarr = plt.subplots(nrows=len(succ_csvs), ncols=len(avaliable_anomaly_detectors), sharex=True)
+        fig.suptitle('The performance of different anomaly detectors', fontsize=14)
+        axarr=axarr.reshape(-1,1)
+        axarr_iterator = iter(axarr)
+        fig.subplots_adjust(hspace=0.5)
+        for i, csv in enumerate(succ_csvs):
             logger.info(csv)
             df = pd.read_csv(csv, sep=',')
-            anomaly_t = get_first_anomaly_signal_time(model, df.values[:, 1:], df.values[:, 0].reshape(-1))
-            
-            stat = {}
-            if anomaly_t is not None:
-                stat['FP'] = 1
-            else:
-                stat['TN'] = 1
-            stat.update({"sample_name": os.path.basename(csv)})
-            stat_df = stat_df.append(stat, ignore_index=True)
-            logger.warning("Finish testing:%s"%csv)            
+            for detector in avaliable_anomaly_detectors:
+                first_anomaly_t, loglik_and_threshold = get_first_anomaly_signal_time(detector, model,
+                                                                                      df.values[:, 1:], df.values[:, 0].reshape(-1))
+                plot_current_loglik_and_threshold(first_anomaly_t=first_anomaly_t,
+                                                  anomaly_t_by_human = None,
+                                                  itest=i, ax = axarr_iterator.next()[0],
+                                                  loglik_and_threshold=loglik_and_threshold,
+                                                  xaxis = df.values[:, 0].reshape(-1))
+            logger.warning("Finish testing:%s"%csv)
+        axarr[-1][0].set_xlabel('time(sec)',fontsize=10)
+        axarr[-2][0].set_xlabel('time(sec)',fontsize=10)        
+        fig.savefig(os.path.join(output_dir,
+                                 'succ_current_loglik_and_threshold_%s.png'%path_postfix.replace(' ','').replace('/','')),
+                                  format='png', dpi=300, bbox_inches='tight')
 
-        for csv in glob.glob(os.path.join(unsucc_folder, '*', '*.csv')):
+
+        unsucc_csvs = glob.glob(os.path.join(unsucc_folder, '*', '*.csv'))
+        if len(unsucc_csvs) == 0:
+            logger.error('without the unsuccessful recordings of %s for testing'%path_postfix)
+            continue
+        fig, axarr = plt.subplots(nrows=len(unsucc_csvs), ncols=len(avaliable_anomaly_detectors), sharex=True)
+        fig.suptitle('The performance of different anomaly detectors', fontsize=14)        
+        axarr=axarr.reshape(-1,1)
+        axarr_iterator = iter(axarr)
+        fig.subplots_adjust(hspace=0.5)
+        for i, csv in enumerate(unsucc_csvs):
             logger.info(csv)
             df = pd.read_csv(csv, sep=',')
             anomaly_label_and_signal_time = pickle.load(open(os.path.join(
-                os.path.dirname(csv),
-                'anomaly_label_and_signal_time.pkl'
-            ), 'r'))
+                os.path.dirname(csv), 'anomaly_label_and_signal_time.pkl'), 'r'))
             anomaly_type = anomaly_label_and_signal_time[0]
             anomaly_t_by_human = anomaly_label_and_signal_time[1].to_sec()
-            anomaly_t = get_first_anomaly_signal_time(model, df.values[:, 1:], df.values[:, 0].reshape(-1))
-
-            stat = {}
-            if anomaly_t is None:
-                stat['FN'] = 1
-            else:
-                if anomaly_type != 'no_object':
-                    t_diff = abs(anomaly_t_by_human-anomaly_t)
-                    if t_diff > 1:
-                        stat['FP'] = 1
-                    else:
-                        stat['TP'] = 1
-                else:
-                    stat['TP'] = 1
-                        
-            stat.update({"sample_name": os.path.basename(csv), 'anomaly_type': anomaly_type})
-            stat_df = stat_df.append(stat, ignore_index=True)
-            logger.warning("Finish testing:%s"%csv)                        
-
-        if not os.path.isdir(output_dir):
-            os.makedirs(output_dir)
-        stat_df.to_csv(stat_file)
+            for detector in avaliable_anomaly_detectors:
+                first_anomaly_t, loglik_and_threshold = get_first_anomaly_signal_time(detector, model,
+                                                                                      df.values[:, 1:], df.values[:, 0].reshape(-1))
+                plot_current_loglik_and_threshold(first_anomaly_t=first_anomaly_t,
+                                                  anomaly_t_by_human = anomaly_t_by_human,
+                                                  itest=i, ax = axarr_iterator.next()[0],
+                                                  loglik_and_threshold=loglik_and_threshold,
+                                                  xaxis = df.values[:, 0].reshape(-1))
+            logger.warning("Finish testing:%s"%csv)
+        axarr[-1][0].set_xlabel('time(sec)',fontsize=10)
+        axarr[-2][0].set_xlabel('time(sec)',fontsize=10)        
+        fig.savefig(os.path.join(output_dir,
+                                 'unsucc_current_loglik_and_threshold_%s.png'%path_postfix.replace(' ','').replace('/','')),     
+                                 format='png', dpi=300, bbox_inches='tight')
 
 if __name__ == '__main__':
     run()
