@@ -23,6 +23,7 @@ def run(list_of_mat, model_type, model_config, score_metric, logger=None):
         model_type=model_type,
         model_config=model_config,
         score_metric=score_metric,
+        logger=logger
     )
 
 
@@ -61,23 +62,19 @@ def run(list_of_mat, model_type, model_config, score_metric, logger=None):
     }
 
 def get_loglik_threshold_with_the_same_zhat(model, list_of_mat, logger=None):
-    import hmmlearn
     zhat_log = pd.DataFrame()
     state_sequences = []
-    if issubclass(type(model), hmmlearn.hmm._BaseHMM):
-        list_of_log_curves = [hmm_util.fast_log_curve_calculation(i, model) for i in list_of_mat]
-        curve_diff = []
-        zhat = []
-        for i, curve in enumerate(list_of_log_curves):
-            curve_diff += [curve[0]] + np.diff(curve).tolist()
-            _, state_sequence = model.decode(list_of_mat[i])
-            zhat += state_sequence.tolist()
-            state_sequences.append(state_sequence)
-        zhat_log['zhat'] = zhat
-        zhat_log['log'] = curve_diff
-    else:
-        logger.error('Only for the hmmlean models')
-        return None
+    list_of_log_curves = [hmm_util.fast_log_curve_calculation(i, model) for i in list_of_mat]
+    curve_diff = []
+    zhat = []
+    for i, curve in enumerate(list_of_log_curves):
+        curve_diff += [curve[0]] + np.diff(curve).tolist()
+        state_sequence = model.predict(list_of_mat[i])
+        zhat += state_sequence.tolist()
+        state_sequences.append(state_sequence)
+    zhat_log['zhat'] = zhat
+    zhat_log['log'] = curve_diff
+
     zhat_loglik_threshold_by_max_min_dict = {}
     zhat_loglik_threshold_by_mean_std_dict = {}            
     for iz in sorted(zhat_log['zhat'].unique().tolist()):

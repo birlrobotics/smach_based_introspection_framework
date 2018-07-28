@@ -5,6 +5,7 @@ HUMAN_AS_MODEL_MODE = False
 
 score_metric = '_score_metric_sum_of_loglik_'
 
+'''
 # covariance_type = ['spherical', 'diag', 'full', 'tied']
 model_type = 'hmmlearn\'s HMM'
 model_config = {
@@ -12,33 +13,21 @@ model_config = {
   'covariance_type': ListOfParams(['diag']),
   'n_iter': 1000,
 }
-
+'''
 # bnpy_info
 # Supported Allocation model:   ['FiniteHMM',' HDPHMM']
 # Supported Observation models: ['Gauss','DiagGauss','ZeroMeanGauss','AutoRegGauss']
-# Supported Variational methods:['memoVB']
+# Supported Variational methods:['memoVB', 'soVB','VB']
 
-'''
 model_type = 'BNPY\'s HMM'
 model_config = {
     'n_iteration': 1000,
-    'K': ListOfParams([5,10]),
-    'alloModel' : 'FiniteHMM',
-    'obsModel'  : ListOfParams(['AutoRegGauss', 'Gauss']),
-    'varMethod' : ListOfParams(['memoVB']),
-    'ECovMat'   : ListOfParams(['covdata']), #diagcovdata
-}
-model_type = 'BNPY\'s HMM'
-model_config = {
-    'n_iteration': 1000,
-    'K': ListOfParams([2, 3, 5, 7]),
+    'K': ListOfParams([5]),
     'alloModel' : 'HDPHMM',
-    'obsModel'  : ListOfParams(['AutoRegGauss']),
+    'obsModel'  : ListOfParams(['DiagGauss']),
     'varMethod' : ListOfParams(['memoVB']),
-    'ECovMat'   : ListOfParams(['covdata']), #diagcovdata
+    'ECovMat'   : ListOfParams(['diagcovdata']), #diagcovdata
 }
-'''
-
 
 from smach_based_introspection_framework.config.anomaly_classification_config import (
     anomaly_classification_timeseries_hz, 

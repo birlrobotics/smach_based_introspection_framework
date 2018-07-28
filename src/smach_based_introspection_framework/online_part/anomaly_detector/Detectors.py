@@ -167,7 +167,7 @@ class DetectorBasedOnLogLikByHiddenState(BaseDetector):
             self.metric_threshold.append(now_threshold)
             return now_skill, None, now_gradient, now_threshold
         
-        now_zhat = self.calculator.add_one_sample_and_get_hidden_state_and_loglik(np.concatenate(self.observations))
+        now_zhat = self.calculator.add_cumulative_observations_get_latest_hidden_state(np.concatenate(self.observations))
         
         now_gradient = now_loglik-prev_loglik
         now_threshold = threshold_constant[now_zhat[0]]

@@ -43,12 +43,13 @@ class HmmlearnModelIncrementalLoglikCalculator(object):
         
         return logsumexp(self.fwdlattice[-1])
 
-    def add_one_sample_and_get_hidden_state_and_loglik(self, observations):
+    def add_cumulative_observations_get_latest_hidden_state(self, observations):
         zhat   = self.model.predict(observations)
         return np.array([zhat[-1]])
 
 class BNPYModelIncrementalLoglikCalculator(object):
     def __init__(self, model):
+        self.bnpy_wrapper = model
         model = model.model
         self.model = model
         self.n_components = model.allocModel.K
@@ -57,7 +58,7 @@ class BNPYModelIncrementalLoglikCalculator(object):
         self.fwdlattice = None
         self.preSample = None
         self.work_buffer = np.zeros(self.n_components)
-
+        
     def add_one_sample_and_get_loglik(self, sample):
         import bnpy
         if self.preSample is None:
@@ -71,7 +72,7 @@ class BNPYModelIncrementalLoglikCalculator(object):
         length = 1
         doc_range = [0, length]
         dataset = bnpy.data.GroupXData(X, doc_range, length, Xprev)
-        
+        '''
         logSoftEv = self.model.obsModel.calcLogSoftEvMatrix_FromPost(dataset)
         SoftEv, lognormC = bnpy.allocmodel.hmm.HMMUtil.expLogLik(logSoftEv)
         PiMat = np.exp(self.log_transmat)
@@ -81,9 +82,28 @@ class BNPYModelIncrementalLoglikCalculator(object):
             self.fwdlattice = np.dot(PiMat.T, self.fwdlattice[0]) * SoftEv
         margPrObs = np.sum(self.fwdlattice)
         self.fwdlattice /= margPrObs
-        curr_log = np.log(margPrObs) + lognormC        
+        curr_log = np.log(margPrObs) + lognormC
+        '''
+        LP = self.model.calc_local_params(dataset)
+        framelogprob = LP['E_log_soft_ev'] 
+        if self.fwdlattice is None:
+            self.fwdlattice = np.zeros((1, self.n_components))
+            for i in range(self.n_components):
+                self.fwdlattice[0,i] = self.log_startprob[i] + framelogprob[0,i]
+        else:
+            self.fwdlattice = np.append(self.fwdlattice, np.zeros((1, self.n_components)), axis=0)
+            for j in range(self.n_components):
+                for i in range(self.n_components):
+                    self.work_buffer[i] = self.fwdlattice[-2,i] + self.log_transmat[i,j]
+                self.fwdlattice[-1,j] = logsumexp(self.work_buffer) + framelogprob[0,j]
+        curr_log = logsumexp(self.fwdlattice[-1])
         return curr_log
 
+    def add_cumulative_observations_get_latest_hidden_state(self, observations):
+        zhat   = self.bnpy_wrapper.predict(observations, lengths=len(observations))
+        return np.array([zhat[-1]])
+
+    
 class BasicCalculator(object):
     def __init__(self, model):
         self.model = model

@@ -15,15 +15,9 @@ import ipdb
 coloredlogs.install()
 
 def get_first_anomaly_signal_time(model, timeseries_mat, ts):
-    '''
     detector = Detectors.DetectorBasedOnGradientOfLoglikCurve(
         {1: model['hmm_model']}, 
         {1: model['threshold_for_introspection']},
-    )
-    '''
-    detector = Detectors.DetectorBasedOnLogLikByHiddenState(
-        {1: model['hmm_model']}, 
-        {1: model['loglik_threshold_by_zhat_dict']},
     )
 
     for idx, t in enumerate(ts):

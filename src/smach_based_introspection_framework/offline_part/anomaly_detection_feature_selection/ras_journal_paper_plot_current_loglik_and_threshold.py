@@ -66,6 +66,10 @@ def run():
         avaliable_anomaly_detectors=[
                 Detectors.DetectorBasedOnLogLikByHiddenState(
                 {1: model['hmm_model']}, 
+                {1: model['zhat_loglik_threshold_by_max_min_dict']},)
+                ,
+                Detectors.DetectorBasedOnLogLikByHiddenState(
+                {1: model['hmm_model']}, 
                 {1: model['zhat_loglik_threshold_by_mean_std_dict']},)
                 ,
                 Detectors.DetectorBasedOnGradientOfLoglikCurve(
@@ -111,7 +115,7 @@ def run():
         axarr[-1][0].set_xlabel('time(sec)',fontsize=10)
         axarr[-2][0].set_xlabel('time(sec)',fontsize=10)        
         fig.savefig(os.path.join(output_dir,
-                                 'succ_current_loglik_and_threshold_%s.png'%path_postfix.replace(' ','').replace('/','')),
+                                 'succ_current_loglik_and_threshold_%s_bnpy.png'%path_postfix.replace(' ','').replace('/','')),
                                   format='png', dpi=300, bbox_inches='tight')
 
 
@@ -143,7 +147,7 @@ def run():
         axarr[-1][0].set_xlabel('time(sec)',fontsize=10)
         axarr[-2][0].set_xlabel('time(sec)',fontsize=10)        
         fig.savefig(os.path.join(output_dir,
-                                 'unsucc_current_loglik_and_threshold_%s.png'%path_postfix.replace(' ','').replace('/','')),     
+                                 'unsucc_current_loglik_and_threshold_%s_bnpy.png'%path_postfix.replace(' ','').replace('/','')),     
                                  format='png', dpi=300, bbox_inches='tight')
 
 if __name__ == '__main__':
