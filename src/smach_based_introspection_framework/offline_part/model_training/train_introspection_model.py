@@ -39,17 +39,21 @@ def run(list_of_mat, model_type, model_config, score_metric, logger=None):
     max_gradient = max(max_candidate)
     gradient_range = max_gradient-min_gradient
     threshold = min_gradient-gradient_range/2
-    loglik_threshold_by_zhat_dict = get_loglik_threshold_with_the_same_zhat(best_model, list_of_mat, logger=logger)
+    
+    zhat_loglik_threshold_by_max_min_dict,zhat_loglik_threshold_by_mean_std_dict = get_loglik_threshold_with_the_same_zhat(best_model,list_of_mat, logger=logger)
+    
     return {
         'model': {
             'hmm_model':best_model,
             'threshold_for_introspection':threshold,
-            'loglik_threshold_by_zhat_dict':loglik_threshold_by_zhat_dict,
+            'zhat_loglik_threshold_by_max_min_dict':zhat_loglik_threshold_by_max_min_dict,
+            'zhat_loglik_threshold_by_mean_std_dict':zhat_loglik_threshold_by_mean_std_dict,
         },
         'model_info': {
             'test_score': test_score,
             'threshold_for_introspection':threshold,
-            'loglik_threshold_by_zhat_dict':loglik_threshold_by_zhat_dict,            
+            'zhat_loglik_threshold_by_max_min_dict':zhat_loglik_threshold_by_max_min_dict,
+            'zhat_loglik_threshold_by_mean_std_dict':zhat_loglik_threshold_by_mean_std_dict,
             'training_report': tried_models,
             'size_of_train_set': len(list_of_train_mat),
             'size_of_test_set': len(list_of_test_mat),
@@ -74,20 +78,20 @@ def get_loglik_threshold_with_the_same_zhat(model, list_of_mat, logger=None):
     else:
         logger.error('Only for the hmmlean models')
         return None
-    loglik_threshold_by_zhat_dict = {}        
+    zhat_loglik_threshold_by_max_min_dict = {}
+    zhat_loglik_threshold_by_mean_std_dict = {}            
     for iz in sorted(zhat_log['zhat'].unique().tolist()):
         zlog = zhat_log['log'].loc[zhat_log['zhat'] == iz].values
-        zlog = filter_the_outliers(zlog,logger=logger)
+        #zlog = filter_the_outliers(zlog,logger=logger)
         zlog_min = zlog.min()
         zlog_max = zlog.max()
         zlog_mean = np.mean(zlog)
         zlog_var  = np.var(zlog)
-        #threshold = zlog_min - (zlog_max - zlog_min)/2
-        threshold = zlog_mean - 2.0 * zlog_var        
-        loglik_threshold_by_zhat_dict[iz] = threshold
-    show_logliks_with_the_same_hidden_state(zhat_log,list_of_mat,logger=logger)
-    show_hidden_state_sequences(zhat_log, state_sequences)
-    return loglik_threshold_by_zhat_dict
+        threshold_0 = zlog_min - (zlog_max - zlog_min)/2
+        threshold_1 = zlog_mean - 4.0 * zlog_var        
+        zhat_loglik_threshold_by_max_min_dict[iz] = threshold_0        
+        zhat_loglik_threshold_by_mean_std_dict[iz] = threshold_1
+    return zhat_loglik_threshold_by_max_min_dict, zhat_loglik_threshold_by_mean_std_dict
 
 def filter_the_outliers(zlog, logger=None):
     z = zlog.copy()
