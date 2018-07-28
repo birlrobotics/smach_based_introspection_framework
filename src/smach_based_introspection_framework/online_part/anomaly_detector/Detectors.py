@@ -71,6 +71,7 @@ class DetectorBasedOnGradientOfLoglikCurve(BaseDetector):
         self.prev_skill = None
         self.prev_loglik = None
         self.calculator = None
+        self.__name__ = 'DetectorBasedOnGradientOfLoglikCurve'
 
     def reset(self):
         self.prev_skill = None
@@ -129,6 +130,7 @@ class DetectorBasedOnLogLikByHiddenState(BaseDetector):
         self.prev_loglik = None
         self.calculator = None
         self.observations = []
+        self.__name__ = 'DetectorBasedOnLogLikByHiddenState'
         
     def reset(self):
         self.prev_skill = None
