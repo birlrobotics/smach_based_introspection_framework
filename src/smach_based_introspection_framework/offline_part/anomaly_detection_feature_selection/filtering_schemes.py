@@ -18,7 +18,8 @@ fixed_filters = [
     [
         "/TactileSensor4/StaticData", 
         tactilesensors4.msg.StaticData,
-        msg_filters_with_scaling_and_clip.TactileStaticStdScaleClipMaxFilter,
+        #msg_filters_with_scaling_and_clip.TactileStaticStdScaleClipMaxFilter,
+        msg_filters_with_scaling.TactileStaticStdFilter,
     ],
     [
         "/robotiq_force_torque_wrench", 
