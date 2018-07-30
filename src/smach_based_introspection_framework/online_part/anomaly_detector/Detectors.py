@@ -168,11 +168,12 @@ class DetectorBasedOnLogLikByHiddenState(BaseDetector):
             self.metric_observation.append(now_gradient)
             self.metric_threshold.append(now_threshold)
             return now_skill, None, now_gradient, now_threshold
-        
-        now_zhat = self.calculator.add_cumulative_observations_get_latest_hidden_state(np.concatenate(self.observations))
-        
-        now_gradient = now_loglik-prev_loglik
-        now_threshold = threshold_constant[now_zhat[0]]
+        try:
+            now_zhat = self.calculator.add_cumulative_observations_get_latest_hidden_state(np.concatenate(self.observations))
+            now_gradient = now_loglik-prev_loglik
+            now_threshold = threshold_constant[now_zhat[0]]
+        except:
+            ipdb.set_trace()
         
         anomaly_detected = False
         if now_gradient < now_threshold:
