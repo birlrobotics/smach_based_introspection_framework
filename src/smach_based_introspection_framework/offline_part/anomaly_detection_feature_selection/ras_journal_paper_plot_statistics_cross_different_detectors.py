@@ -23,12 +23,6 @@ pd.set_option("display.max_columns", None)
 pd.set_option("display.width", 1000)
 pd.set_option("display.precision", 3)
 
-coloredlogs.install()
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-consoleHandler = logging.StreamHandler()
-consoleHandler.setLevel(logging.INFO)
-logger.addHandler(consoleHandler)
 
 def get_first_anomaly_signal_time(detector, model, timeseries_mat, ts):
     loglik_and_threshold = []
@@ -42,6 +36,12 @@ def get_first_anomaly_signal_time(detector, model, timeseries_mat, ts):
     return first_t, loglik_and_threshold
 
 def run():
+    coloredlogs.install()
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    consoleHandler = logging.StreamHandler()
+    consoleHandler.setLevel(logging.INFO)
+    logger.addHandler(consoleHandler)
     
     model_folders = glob.glob(os.path.join(
         datasets_of_filtering_schemes_folder,
@@ -139,9 +139,9 @@ def run():
             df_detector.to_csv(detector_file)
 
     for detector in avaliable_anomaly_detectors:
-        generate_human_readable_report(detector)
+        generate_human_readable_report(detector=detector, logger=logger)
 
-def generate_human_readable_report(detector=None):
+def generate_human_readable_report(detector=None, logger=None):
     stat_files = glob.glob(os.path.join(
         datasets_of_filtering_schemes_folder,
         'ras_journal_paper_plots',
