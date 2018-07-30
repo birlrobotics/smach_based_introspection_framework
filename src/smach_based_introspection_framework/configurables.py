@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from parameters_combinator import ListOfParams
 
-HUMAN_AS_MODEL_MODE = False
+HUMAN_AS_MODEL_MODE = True
 
 score_metric = '_score_metric_sum_of_loglik_'
 
@@ -17,27 +17,17 @@ model_config = {
 # bnpy_info
 # Supported Allocation model:   ['FiniteHMM',' HDPHMM']
 # Supported Observation models: ['Gauss','DiagGauss','ZeroMeanGauss','AutoRegGauss']
-# Supported Variational methods:['memoVB']
+# Supported Variational methods:['EM','VB','soVB', 'memoVB']
 model_type = 'BNPY\'s HMM'
 model_config = {
-    'n_iteration': 1000,
-    'K': ListOfParams([5,10]),
-    'alloModel' : 'FiniteHMM',
-    'obsModel'  : ListOfParams(['AutoRegGauss', 'Gauss']),
-    'varMethod' : ListOfParams(['memoVB']),
-    'ECovMat'   : ListOfParams(['covdata']), #diagcovdata
+    'n_iteration': ListOfParams([1000]),
+    'K'          : ListOfParams([5]),
+    'alloModel'  : ListOfParams(['HDPHMM']),
+    'obsModel'   : ListOfParams(['AutoRegGauss']),
+    'varMethod'  : ListOfParams(['memoVB']),
+    'ECovMat'    : ListOfParams(['covdata']),
 }
-'''
-model_type = 'BNPY\'s HMM'
-model_config = {
-    'n_iteration': 1000,
-    'K': ListOfParams([2, 3, 5, 7]),
-    'alloModel' : 'HDPHMM',
-    'obsModel'  : ListOfParams(['AutoRegGauss']),
-    'varMethod' : ListOfParams(['memoVB']),
-    'ECovMat'   : ListOfParams(['covdata']), #diagcovdata
-}
-'''
+train_size = 0.3
 
 
 from smach_based_introspection_framework.config.anomaly_classification_config import (

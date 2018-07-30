@@ -1,12 +1,13 @@
+from smach_based_introspection_framework.configurables import (train_size, )
 from sklearn.model_selection import train_test_split
 from birl_hmm.hmm_training import train_model, hmm_util
 import numpy as np
 from scipy.stats import norm
 import ipdb
 
-def run(list_of_mat, model_type, model_config, score_metric, logger=None):
-    list_of_train_mat, list_of_test_mat = train_test_split(list_of_mat, test_size=0.25)
-    
+def run(list_of_mat, model_type, model_config, score_metric):
+    list_of_train_mat, list_of_test_mat = train_test_split(list_of_mat, train_size = train_size) #default:test_size=0.25
+
     if len(list_of_train_mat) == 0:
         raise Exception('Contains 0 train samples, failed to train introspection model')
     else:
@@ -23,7 +24,6 @@ def run(list_of_mat, model_type, model_config, score_metric, logger=None):
         model_type=model_type,
         model_config=model_config,
         score_metric=score_metric,
-        logger=logger,
     )
     list_of_loklik = [best_model.score(i) for i in list_of_mat]
     mean_and_std_of_the_norm_distribution = norm.fit(list_of_loklik)

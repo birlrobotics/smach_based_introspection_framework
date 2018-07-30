@@ -1,6 +1,9 @@
 from smach_based_introspection_framework._constant import (
     anomaly_classification_feature_selection_folder,
 )
+from smach_based_introspection_framework.configurables import (
+    model_config, train_size
+)
 import glob
 import os
 import coloredlogs, logging
@@ -64,7 +67,9 @@ def run():
     big_df = big_df.fillna(0).astype(int)
 
 
-    report = open(os.path.join(anomaly_classification_feature_selection_folder, 'report.txt'), 'w') 
+    config = ''.join('{}{}'.format(key, val) for key, val in sorted(model_config.items()))
+    config = config + ('[{}]'.format(train_size))
+    report = open(os.path.join(anomaly_classification_feature_selection_folder, config+'-report.txt'), 'w') 
     report.write("scheme info\n")
     report.write("="*30+"\n")
     for scheme_count, feature_scheme in enumerate(feature_schemes):
@@ -83,7 +88,8 @@ def run():
     report.write("-"*30+"\n")
     report.write(str(append_metrics(big_df.groupby(level=[0, 1]).sum())))
     report.write("\n\n")
-
+    logger.info('Finish running: ' + os.path.basename(__file__))
+    logger.info('report.txt Done')
     return big_df
 
 if __name__ == '__main__':

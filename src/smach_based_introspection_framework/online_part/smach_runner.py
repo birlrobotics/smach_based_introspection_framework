@@ -82,8 +82,8 @@ def toggle_introspection(start, sm=None):
             topics_to_be_recorded_into_rosbag
         )
         rosbag_proc.start()
-        # tmt_proc = TagMultimodalTopicProc()
-        # tmt_proc.start()
+        tmt_proc = TagMultimodalTopicProc()
+        tmt_proc.start()
         sis = smach_ros.IntrospectionServer('MY_SERVER', sm, '/SM_ROOT')
         sis.start()
 
