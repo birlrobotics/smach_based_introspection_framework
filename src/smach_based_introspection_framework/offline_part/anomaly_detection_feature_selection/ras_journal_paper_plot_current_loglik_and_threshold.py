@@ -68,10 +68,6 @@ def run():
                 {1: model['hmm_model']}, 
                 {1: model['zhat_loglik_threshold_by_max_min_dict']},)
                 ,
-                Detectors.DetectorBasedOnLogLikByHiddenState(
-                {1: model['hmm_model']}, 
-                {1: model['zhat_loglik_threshold_by_mean_std_dict']},)
-                ,
                 Detectors.DetectorBasedOnGradientOfLoglikCurve(
                     {1: model['hmm_model']}, 
                     {1: model['threshold_for_introspection']},)
@@ -91,16 +87,17 @@ def run():
         if not os.path.isdir(output_dir):
             os.makedirs(output_dir)
 
+        number_of_plots = 5
         succ_csvs   = glob.glob(os.path.join(succ_folder, '*', '*.csv'))
-        if len(succ_csvs) == 0:
+        if len(succ_csvs) == 0 or len(succ_csvs) < number_of_plots:
             logger.error('without the successful recordings of %s for testing'%path_postfix)
             continue
-        fig, axarr = plt.subplots(nrows=len(succ_csvs), ncols=len(avaliable_anomaly_detectors), sharex=True)
+        fig, axarr = plt.subplots(nrows=number_of_plots, ncols=len(avaliable_anomaly_detectors), sharex=True)
         fig.suptitle('The performance of different anomaly detectors', fontsize=14)
         axarr=axarr.reshape(-1,1)
         axarr_iterator = iter(axarr)
         fig.subplots_adjust(hspace=0.5)
-        for i, csv in enumerate(succ_csvs):
+        for i, csv in enumerate(succ_csvs[:number_of_plots]):
             logger.info(csv)
             df = pd.read_csv(csv, sep=',')
             for detector in avaliable_anomaly_detectors:
@@ -120,15 +117,15 @@ def run():
 
 
         unsucc_csvs = glob.glob(os.path.join(unsucc_folder, '*', '*.csv'))
-        if len(unsucc_csvs) == 0:
+        if len(unsucc_csvs) == 0 or len(unsucc_csvs)<number_of_plots:
             logger.error('without the unsuccessful recordings of %s for testing'%path_postfix)
             continue
-        fig, axarr = plt.subplots(nrows=len(unsucc_csvs), ncols=len(avaliable_anomaly_detectors), sharex=True)
+        fig, axarr = plt.subplots(nrows=number_of_plots, ncols=len(avaliable_anomaly_detectors), sharex=True)
         fig.suptitle('The performance of different anomaly detectors', fontsize=14)        
         axarr=axarr.reshape(-1,1)
         axarr_iterator = iter(axarr)
         fig.subplots_adjust(hspace=0.5)
-        for i, csv in enumerate(unsucc_csvs):
+        for i, csv in enumerate(unsucc_csvs[:number_of_plots]):
             logger.info(csv)
             df = pd.read_csv(csv, sep=',')
             anomaly_label_and_signal_time = pickle.load(open(os.path.join(
