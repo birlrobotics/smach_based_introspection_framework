@@ -1,0 +1,7 @@
+import generate_introspection_models
+import ras_journal_paper_plot_hidden_state_and_threshold
+import ras_journal_paper_plot_anomaly_detectors_results
+
+generate_introspection_models.run()
+ras_journal_paper_plot_hidden_state_and_threshold.run()
+ras_journal_paper_plot_anomaly_detectors_results.run()

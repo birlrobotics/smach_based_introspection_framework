@@ -24,9 +24,9 @@ model_config = {
     'n_iteration': 1000,
     'K': ListOfParams([5]),
     'alloModel' : 'HDPHMM',
-    'obsModel'  : ListOfParams(['DiagGauss']),
+    'obsModel'  : ListOfParams(['Gauss']),#DiagGauss
     'varMethod' : ListOfParams(['memoVB']),
-    'ECovMat'   : ListOfParams(['diagcovdata']), #diagcovdata
+    'ECovMat'   : ListOfParams(['covdata']), #diagcovdata
 }
 
 from smach_based_introspection_framework.config.anomaly_classification_config import (

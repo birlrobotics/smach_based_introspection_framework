@@ -14,35 +14,6 @@ from rostopics_to_timeseries.Smoother import WindowBasedSmoother_factory
 from scipy import signal
 
 filtering_schemes = []
-'''
-fixed_filters = [
-    [
-        "/TactileSensor4/StaticData", 
-        tactilesensors4.msg.StaticData,
-        msg_filters.TactileStaticStdFilter,
-    ],
-    [
-        "/robotiq_force_torque_wrench", 
-        WrenchStamped, 
-        msg_filters.WrenchStampedNormFilter,
-    ],
-    [
-        "/robotiq_force_torque_wrench", 
-        WrenchStamped, 
-        msg_filters.WrenchStampedFilter,
-    ],
-    [
-        "/robot/limb/right/endpoint_state", 
-        EndpointState,
-        msg_filters.BaxterEndpointTwistNormFilter,
-    ],
-    [
-        "/robot/limb/right/endpoint_state", 
-        EndpointState,
-        msg_filters.BaxterEndpointTwistFilter,
-    ],
-]
-'''
 fixed_filters = [
     [
         "/TactileSensor4/StaticData", 

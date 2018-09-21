@@ -10,16 +10,17 @@ import numpy as np
 import coloredlogs, logging
 from sklearn.externals import joblib
 from birl_hmm.hmm_training import train_model, hmm_util
-from smach_based_introspection_framework.online_part.anomaly_detector import Detectors 
+from smach_based_introspection_framework.online_part.anomaly_detector import Detectors
+import birl_hmm
 import hmmlearn
 import matplotlib.pyplot as plt
 import matplotlib
-#matplotlib.rcParams.update({'font.size': 12})
 import ipdb
+matplotlib.rcParams.update({'font.size': 12})
 
 coloredlogs.install()
 
-THRESHOLDING_BY_MEAN_AND_STD = True
+THRESHOLDING_BY_MEAN_AND_STD = False
 
 def run():
     logger = logging.getLogger('ras_paper_plots')
@@ -65,14 +66,28 @@ def run():
         if not os.path.isdir(output_dir):
             os.makedirs(output_dir)
         show_logliks_with_the_same_hidden_state(model['hmm_model'], list_of_mat, logger=logger, output_dir=output_dir)
-            
+
 def show_logliks_with_the_same_hidden_state(model, list_of_mat, logger=None, output_dir=None):
     colors  = ['r', 'g', 'b', 'g', 'c', 'm', 'y', 'k']
     markers = ['o', '+', '*', 's', 'x', '>', '<', '.']
-
+    
     zhat_log = pd.DataFrame()
     state_sequences = []
-    if issubclass(type(model), hmmlearn.hmm._BaseHMM):
+    if issubclass(type(model), birl_hmm.bnpy_hmm_wrapper.hmm.HongminHMM):
+        list_of_log_curves = [model.calc_log(i) for i in list_of_mat]
+        curve_diff = []
+        zhat = []
+        for i, curve in enumerate(list_of_log_curves):
+            curve_diff += [curve[0]] + np.diff(curve).tolist()
+            state_sequence = model.predict(list_of_mat[i])
+            zhat += state_sequence.tolist()
+            state_sequences.append(state_sequence)
+        zhat_log['zhat'] = zhat
+        zhat_log['log'] = curve_diff
+        model.n_components = model.model.obsModel.K
+        
+    else:
+        logger.info('Only for the hmmlean models')
         list_of_log_curves = [hmm_util.fast_log_curve_calculation(i, model) for i in list_of_mat]
         curve_diff = []
         zhat = []
@@ -83,9 +98,6 @@ def show_logliks_with_the_same_hidden_state(model, list_of_mat, logger=None, out
             state_sequences.append(state_sequence)
         zhat_log['zhat'] = zhat
         zhat_log['log'] = curve_diff
-    else:
-        logger.error('Only for the hmmlean models')
-        return None
     
     fig, axarr = plt.subplots(nrows=len(zhat_log['zhat'].unique().tolist()), ncols=1, sharex=True)
     plt.subplots_adjust(hspace=0.4)
@@ -105,16 +117,17 @@ def show_logliks_with_the_same_hidden_state(model, list_of_mat, logger=None, out
         axarr[i].axhline(threshold, color = 'r', linewidth=2, label='Threshold') 
         axarr[i].axhline(zlog_mean, linestyle='--', color = 'black', linewidth=2, label='Mean')       
         axarr[i].set_title('All the correspounding log-likelihood values of zhat={0}'.format(iz))
-        axarr[0].legend(loc=1,fancybox=True, framealpha=0.5, prop={'size':8})
-    axarr[-1].set_xlabel('time(s)')    
+        axarr[i].legend(loc=1,fancybox=True, framealpha=0.5, prop={'size':8})
+    axarr[-1].set_xlabel('Index')    
     plt.savefig(os.path.join(output_dir, 'logliks_with_the_same_hidden_state.png'), format='png',dpi=300)
+    plt.savefig(os.path.join(output_dir, 'logliks_with_the_same_hidden_state.eps'), format='eps',dpi=300)
     
     show_hidden_state_sequences(K=model.n_components, zseqs=state_sequences, logger=logger, output_dir=output_dir)
     
 def show_hidden_state_sequences(K=None, zseqs=None, logger=None, output_dir=None):
     logger.warning('plotting the hidden state sequences')
     nseqs = len(zseqs)
-    fig, axarr = plt.subplots(nrows=nseqs,ncols=1, sharex=True)
+    fig, axarr = plt.subplots(nrows=nseqs,ncols=1, sharex=True, )
     axarr = np.atleast_1d(axarr).flatten().tolist()
     z_img_height = 2
     top=0.95
@@ -142,9 +155,10 @@ def show_hidden_state_sequences(K=None, zseqs=None, logger=None, output_dir=None
     cbbox_h.set_ticks(np.arange(K))
     cbbox_h.set_ticklabels(np.arange(K))
     cbbox_h.ax.tick_params()
-    axarr[-1].set_xlabel('time(s)')
+    axarr[-1].set_xlabel('time(0.1s)')
     plt.savefig(os.path.join(output_dir, 'hidden_state_sequences.png'), format='png',dpi=300)    
-
+    plt.savefig(os.path.join(output_dir, 'hidden_state_sequences.eps'), format='eps',dpi=300)
+    
 def filter_the_outliers(i, zlog, logger=None):
     z = zlog.copy()
     threshold = 100

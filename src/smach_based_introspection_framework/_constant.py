@@ -9,7 +9,9 @@ introspection_data_folder = os.path.join(
     dir_of_this_script, 
     '..',
     '..',
-    "introspection_data_folder")
+    "introspection_data_folder",
+#    'ICRA2019_glove_gesture_data_folder',
+    )
 
 experiment_record_folder = os.path.join(
     introspection_data_folder,
