@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import Queue
 import multiprocessing 
-from smach_based_introspection_framework.configurables import (
-    interested_data_fields,
-)
+# from smach_based_introspection_framework.configurables import (
+#     interested_data_fields,
+# )
 from smach_based_introspection_framework._constant import (
     latest_model_folder,
 )

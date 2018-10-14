@@ -45,6 +45,7 @@ from smach_based_introspection_framework.srv import (
     ExperimentRecordingResponse,
 )
 import time
+import ipdb
 
 def shutdown():
     rospy.loginfo("Shuting down, PID: %s"%os.getpid())

@@ -10,8 +10,10 @@ from smach_based_introspection_framework._constant import (
     ANOMALY_NOT_DETECTED,
 )
 import threading
+import ipdb
 
 def introspect_moveit_exec(group, plan):
+    
     if plan is None or len(plan.joint_trajectory.points) == 0:
         return False
 
@@ -23,6 +25,7 @@ def introspect_moveit_exec(group, plan):
     s_t = rospy.Time.now()
     while not rospy.is_shutdown() and rospy.Time.now()-s_t<timeout: 
         if get_event_flag() == ANOMALY_DETECTED:
+            # ipdb.set_trace()
             time_diff = rospy.Time.now()-s_t
             if time_diff.to_sec() < 1.0:
                 set_event_flag(ANOMALY_NOT_DETECTED)

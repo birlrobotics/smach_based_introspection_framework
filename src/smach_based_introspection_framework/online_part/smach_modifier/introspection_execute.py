@@ -53,7 +53,7 @@ def execute(self, userdata):
             group.set_start_state_to_current_state()
             plan = dmp_execute.get_dmp_plan(robot, group, dmp_model, goal_pose)
     pet = rospy.Time.now().to_sec()
-
+    
     goal_achieved = True
     if plan is not None:
         rospy.logdebug("Took %s seconds to figure out a moveit plan"%(pet-pst))

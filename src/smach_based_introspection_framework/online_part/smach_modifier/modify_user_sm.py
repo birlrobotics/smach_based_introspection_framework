@@ -8,9 +8,11 @@ from smach_based_introspection_framework.online_part.robot_screen_visualization.
     show_anomaly_detected,
     show_everyhing_is_good,
 )
+import ipdb
 
 def run(sm):
     import smach
+    # ipdb.set_trace()
     with sm:
         raw_user_states = copy.deepcopy(sm._states)
 
