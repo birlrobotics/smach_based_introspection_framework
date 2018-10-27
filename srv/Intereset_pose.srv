@@ -1,0 +1,5 @@
+int32[]  request_id
+---
+geometry_msgs/Pose[]  pose_list
+int32[]  missing_id
+int32[]  found_id

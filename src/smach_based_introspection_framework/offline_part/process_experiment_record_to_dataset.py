@@ -88,7 +88,9 @@ def get_recovery_skill_tag(nominal_skill_tag, anomaly_type, add_if_not_exist=Tru
     json.dump(lookup_dict, open(os.path.join(latest_dataset_folder, "recovery_tag_lookup_dict.json"),'w'))
     return lookup_dict[key]
                 
-def run():        
+def run():     
+    import ipdb   
+    ipdb.set_trace()
     logger = logging.getLogger()
 
     if not os.path.isdir(experiment_record_folder):
