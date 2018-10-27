@@ -28,8 +28,8 @@ def cb(msg):
 
 def call_back(req):
     global shared_msg
-    # ipdb.set_trace()
-    id_request = copy.deepcopy(req.request_id)
+
+    request = copy.deepcopy(req.request_id)
     rsp = Intereset_poseResponse()
     env_id = []
     found_id = []
@@ -54,8 +54,6 @@ def call_back(req):
     # ipdb.set_trace()
     rsp.pose_list = pose_list
     return rsp
-
-
 
 def main():
     rospy.init_node("get_request_obj_id")
