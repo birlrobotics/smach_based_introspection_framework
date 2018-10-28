@@ -1,5 +1,0 @@
-int32[]  request_id
----
-geometry_msgs/PoseStamped[]  pose_list
-int32[]  missing_id
-

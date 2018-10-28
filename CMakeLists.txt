@@ -73,7 +73,6 @@ add_service_files(
   AnomalyClassificationService.srv
   UpdateGoalVector.srv
   ExperimentRecording.srv
-  Intereset_pose.srv
 )
 
 ## Generate actions in the 'action' folder
