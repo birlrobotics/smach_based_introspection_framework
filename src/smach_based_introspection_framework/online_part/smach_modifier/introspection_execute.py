@@ -44,14 +44,17 @@ def execute(self, userdata):
         plan = group.plan()
     elif hasattr(self, "get_pose_goal"):
         goal_pose = self.get_pose_goal()
-        if not hasattr(self, 'get_dmp_model'):
-            group.set_start_state_to_current_state()
-            group.set_pose_target(goal_pose)
-            plan = group.plan()
-        else:
-            dmp_model = self.get_dmp_model()
-            group.set_start_state_to_current_state()
-            plan = dmp_execute.get_dmp_plan(robot, group, dmp_model, goal_pose)
+        group.set_start_state_to_current_state()
+        group.set_pose_target(goal_pose)
+        plan = group.plan()
+        # if not hasattr(self, 'get_dmp_model'):
+        #     group.set_start_state_to_current_state()
+        #     group.set_pose_target(goal_pose)
+        #     plan = group.plan()
+        # else:
+        #     dmp_model = self.get_dmp_model()
+        #     group.set_start_state_to_current_state()
+        #     plan = dmp_execute.get_dmp_plan(robot, group, dmp_model, goal_pose)
     pet = rospy.Time.now().to_sec()
 
     goal_achieved = True
