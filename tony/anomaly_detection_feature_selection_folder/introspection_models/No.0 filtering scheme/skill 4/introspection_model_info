@@ -1,0 +1,28 @@
+{
+    "size_of_test_set": 2, 
+    "size_of_train_set": 5, 
+    "find_best_model_in_this_config": {
+        "alloModel": [
+            "HDPHMM"
+        ], 
+        "varMethod": [
+            "memoVB"
+        ], 
+        "K": [
+            5
+        ], 
+        "n_iteration": [
+            1000
+        ], 
+        "ECovMat": [
+            "covdata"
+        ], 
+        "obsModel": [
+            "AutoRegGauss"
+        ]
+    }, 
+    "score_metric": "_score_metric_sum_of_loglik_", 
+    "model_type": "BNPY's HMM", 
+    "test_score": -3506.250019633613, 
+    "threshold_for_introspection": -37.59347393038223
+}

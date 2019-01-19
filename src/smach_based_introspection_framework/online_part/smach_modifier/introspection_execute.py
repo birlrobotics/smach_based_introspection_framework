@@ -28,9 +28,7 @@ def execute(self, userdata):
     if hasattr(self, "before_motion"):
         self.before_motion()
 
-
     hmm_state_switch_client(self.state_no)
-
 
     robot, group = get_moveit_vars()
 
@@ -42,11 +40,17 @@ def execute(self, userdata):
         group.set_joint_value_target(goal_joint)
         group.set_start_state_to_current_state()
         plan = group.plan()
+
     elif hasattr(self, "get_pose_goal"):
         goal_pose = self.get_pose_goal()
         group.set_start_state_to_current_state()
         group.set_pose_target(goal_pose)
         plan = group.plan()
+
+    elif hasattr(self, "cartesian_promp_plan"):
+        pass
+    elif hasattr(self, "cartesian_moveit_plan"):
+        pass
         # if not hasattr(self, 'get_dmp_model'):
         #     group.set_start_state_to_current_state()
         #     group.set_pose_target(goal_pose)

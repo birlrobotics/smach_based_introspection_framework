@@ -1,6 +1,7 @@
 from rostopics_to_timeseries import TopicMsgFilter
 import numpy as np
 from collections import deque
+import ipdb
 
 class WrenchStampedFilter(TopicMsgFilter):
     def __init__(self):
@@ -363,3 +364,70 @@ class TactileStaticStdEdgeDetectorSize5Filter(TopicMsgFilter):
             'tactile_static_data.left.std.EdgeDetectorSize5', \
             'tactile_static_data.right.std.EdgeDetectorSize5', \
         ] 
+
+class URjointFilterForPosition(TopicMsgFilter):
+    def __init__(self):
+        super(URjointFilterForPosition, self).__init__()
+
+    def convert(self, msg):
+        return [\
+            msg.position[0],\
+            msg.position[1],\
+            msg.position[2],\
+            msg.position[3],\
+            msg.position[4],\
+            msg.position[5],\
+        ]
+
+    @staticmethod
+    def vector_size():
+        return 6
+
+    @staticmethod
+    def vector_meaning():
+        return ['joint.position.%s'%i for i in ['1', '2', '3','4', '5', '6']] 
+
+
+class URjointFilterForVelocity(TopicMsgFilter):
+    def __init__(self):
+        super(URjointFilterForVelocity, self).__init__()
+
+    def convert(self, msg):
+        return [\
+            msg.velocity[0],\
+            msg.velocity[1],\
+            msg.velocity[2],\
+            msg.velocity[3],\
+            msg.velocity[4],\
+            msg.velocity[5],\
+        ]
+
+    @staticmethod
+    def vector_size():
+        return 6
+
+    @staticmethod
+    def vector_meaning():
+        return ['joint.velocity.%s'%i for i in ['1', '2', '3','4', '5', '6']] 
+
+class URjointFilterForEffort(TopicMsgFilter):
+    def __init__(self):
+        super(URjointFilterForEffort, self).__init__()
+
+    def convert(self, msg):
+        return [\
+            msg.effort[0],\
+            msg.effort[1],\
+            msg.effort[2],\
+            msg.effort[3],\
+            msg.effort[4],\
+            msg.effort[5],\
+        ]
+
+    @staticmethod
+    def vector_size():
+        return 6
+
+    @staticmethod
+    def vector_meaning():
+        return ['joint.effort.%s'%i for i in ['1', '2', '3','4', '5', '6']] 
