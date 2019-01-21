@@ -1,8 +1,0 @@
-,sample name,anomaly type,TP,TN,FP,FN
-0,No.2 successful skill from experiment_at_2018y05m19d15H53M12S.csv,,,1,,
-1,No.2 successful skill from experiment_at_2018y05m19d15H51M51S.csv,,,1,,
-2,No.2 successful skill from experiment_at_2018y05m19d16H06M45S.csv,,,1,,
-3,No.2 successful skill from experiment_at_2018y05m19d15H54M33S.csv,,,1,,
-4,No.2 successful skill from experiment_at_2018y05m19d16H11M01S.csv,,,1,,
-5,No.0 unsuccessful skill from experiment_at_2018y05m19d15H49M11S.csv,human_collision,1,,,
-6,No.0 unsuccessful skill from experiment_at_2018y05m19d16H01M17S.csv,false_positive,,,,1
