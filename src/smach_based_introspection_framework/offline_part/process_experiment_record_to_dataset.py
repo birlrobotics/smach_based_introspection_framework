@@ -39,6 +39,7 @@ import pandas as pd
 
 def generate_and_save_csv(output_csv, er, st, et, filtering_scheme, ortt, logger):
     if not os.path.isfile(output_csv):
+
         try:
             t, mat = ortt.get_timeseries_mat(
                 er.rosbag,
@@ -94,7 +95,7 @@ def run():
     if not os.path.isdir(experiment_record_folder):
         print experiment_record_folder, "not found."
         sys.exit(0)
-
+    # ipdb.set_trace()
     setup_latest_dataset_folder()
     
     exp_dirs = [i for i in glob.glob(os.path.join(experiment_record_folder, '*')) if os.path.isdir(i)]

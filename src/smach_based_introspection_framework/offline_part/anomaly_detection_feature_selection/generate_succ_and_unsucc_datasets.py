@@ -13,6 +13,7 @@ import pickle
 import shutil
 import rospy
 import coloredlogs, logging
+from sensor_msgs.msg import JointState
 coloredlogs.install()
 
 def setup_and_get_scheme_folder(scheme_count, filtering_scheme, exp_dir):

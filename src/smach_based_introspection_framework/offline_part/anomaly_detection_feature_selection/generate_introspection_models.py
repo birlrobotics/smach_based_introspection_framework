@@ -71,6 +71,8 @@ def run():
             'score_metric': score_metric,
         }
         model_info.update(result['model_info']),
+        # import ipdb
+        # ipdb.set_trace()
         json.dump(
             model_info,
             open(os.path.join(output_dir, 'introspection_model_info'), 'w'),

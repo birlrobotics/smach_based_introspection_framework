@@ -26,7 +26,7 @@ class HmmlearnModelIncrementalLoglikCalculator(object):
         self.log_startprob = log_mask_zero(model.startprob_)
         self.fwdlattice = None
         self.work_buffer = np.zeros(self.n_components)
-
+    
     def add_one_sample_and_get_loglik(self, sample):
         framelogprob = self.model._compute_log_likelihood(sample) 
         if self.fwdlattice is None:

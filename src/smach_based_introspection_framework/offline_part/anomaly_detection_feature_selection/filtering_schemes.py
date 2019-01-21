@@ -2,6 +2,7 @@ from geometry_msgs.msg import WrenchStamped
 from baxter_core_msgs.msg import EndpointState 
 import msg_filters_with_scaling
 import msg_filters_with_scaling_and_clip
+import msg_filters
 from rostopics_to_timeseries import RosTopicFilteringScheme
 from smach_based_introspection_framework.msg import tactile_static
 import tactilesensors4.msg
@@ -11,34 +12,35 @@ from smach_based_introspection_framework.configurables import (
 )
 from rostopics_to_timeseries.Smoother import WindowBasedSmoother_factory
 from scipy import signal
+from sensor_msgs.msg import JointState
 
 filtering_schemes = []
 
 fixed_filters = [
     [
-        "/TactileSensor4/StaticData", 
-        tactilesensors4.msg.StaticData,
-        msg_filters_with_scaling_and_clip.TactileStaticStdScaleClipMaxFilter,
+        "/robotiq_force_torque_wrench", 
+        WrenchStamped, 
+        msg_filters.WrenchStampedNormFilter,
     ],
     [
         "/robotiq_force_torque_wrench", 
         WrenchStamped, 
-        msg_filters_with_scaling.WrenchStampedNormFilter,
+        msg_filters.WrenchStampedFilter,
     ],
+    # [
+    #     "/joint_states", 
+    #     JointState,
+    #     msg_filters.URjointFilterForPosition,
+    # ],
+    # [
+    #     "/joint_states", 
+    #     JointState,
+    #     msg_filters.URjointFilterForVelocity,
+    # ],
     [
-        "/robotiq_force_torque_wrench", 
-        WrenchStamped, 
-        msg_filters_with_scaling.WrenchStampedFilter,
-    ],
-    [
-        "/robot/limb/right/endpoint_state", 
-        EndpointState,
-        msg_filters_with_scaling.BaxterEndpointTwistNormFilter,
-    ],
-    [
-        "/robot/limb/right/endpoint_state", 
-        EndpointState,
-        msg_filters_with_scaling.BaxterEndpointTwistFilter,
+        "/joint_states", 
+        JointState,
+        msg_filters.URjointFilterForEffort,
     ],
 ]
 

@@ -5,11 +5,11 @@ HUMAN_AS_MODEL_MODE = True
 
 score_metric = '_score_metric_sum_of_loglik_'
 
-'''
+
 model_type = 'hmmlearn\'s HMM'
 model_config = {
   'n_components': ListOfParams([1,3,5,7, 9]),
-  'covariance_type': ListOfParams(['full']),
+  'covariance_type': ListOfParams(['diag']),
   'n_iter': 1000,
 }
 '''
@@ -18,6 +18,7 @@ model_config = {
 # Supported Allocation model:   ['FiniteHMM',' HDPHMM']
 # Supported Observation models: ['Gauss','DiagGauss','ZeroMeanGauss','AutoRegGauss']
 # Supported Variational methods:['EM','VB','soVB', 'memoVB']
+
 model_type = 'BNPY\'s HMM'
 model_config = {
     'n_iteration': ListOfParams([1000]),
@@ -27,6 +28,7 @@ model_config = {
     'varMethod'  : ListOfParams(['memoVB']),
     'ECovMat'    : ListOfParams(['covdata']),
 }
+'''
 train_size = 0.3
 
 
@@ -66,4 +68,7 @@ topics_to_be_recorded_into_rosbag = [
     '/TactileSensor4/Accelerometer',
     'timeseries_topic_for_anomaly_detection',
     'timeseries_topic_for_anomaly_classification',
+    "/wrench",
+    "/joint_states",
+
 ]
