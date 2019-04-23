@@ -64,9 +64,10 @@ def human_help(nominal_tag):
         elif s == 'yes':
             break
         else:
+
             rospy.loginfo("input no or yes.")
 
-    rospy.loginfo("type in the label")
+    rospy.loginfo("type in the label for adaptation")
     while True:
         raw_label_str = raw_input()
         rospy.loginfo("confirm \"%s\"? yes/no"%raw_label_str)
