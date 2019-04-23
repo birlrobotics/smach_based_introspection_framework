@@ -12,8 +12,8 @@ model_config = {
   'covariance_type': ListOfParams(['diag']),
   'n_iter': 1000,
 }
-'''
 
+'''
 # bnpy_info
 # Supported Allocation model:   ['FiniteHMM',' HDPHMM']
 # Supported Observation models: ['Gauss','DiagGauss','ZeroMeanGauss','AutoRegGauss']

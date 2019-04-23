@@ -22,19 +22,20 @@ anomaly_classification_timeseries_config.add_filter(
     WrenchStamped, 
     cl_msg_filters_with_scaling.WrenchStampedFilter,
 )
-anomaly_classification_timeseries_config.add_filter(
-    "/joint_states", 
-    JointState,
-    cl_msg_filters_with_scaling.URjointFilterForPosition,
-)
-anomaly_classification_timeseries_config.add_filter(
-    "/joint_states", 
-    JointState,
-    cl_msg_filters_with_scaling.URjointFilterForVelocity,
-)
-anomaly_classification_timeseries_config.add_filter(
-    "/joint_states", 
-    JointState,
-    cl_msg_filters_with_scaling.URjointFilterForEffort,
-)
+
+# anomaly_classification_timeseries_config.add_filter(
+#     "/joint_states", 
+#     JointState,
+#     cl_msg_filters_with_scaling.URjointFilterForPosition,
+# )
+# anomaly_classification_timeseries_config.add_filter(
+#     "/joint_states", 
+#     JointState,
+#     cl_msg_filters_with_scaling.URjointFilterForVelocity,
+# )
+# anomaly_classification_timeseries_config.add_filter(
+#     "/joint_states", 
+#     JointState,
+#     cl_msg_filters_with_scaling.URjointFilterForEffort,
+# )
 anomaly_classification_timeseries_config.smoother_class = WindowBasedSmoother_factory(signal.boxcar(5))

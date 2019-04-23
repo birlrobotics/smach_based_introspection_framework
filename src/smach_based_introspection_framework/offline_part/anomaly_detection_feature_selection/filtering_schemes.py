@@ -17,31 +17,64 @@ from sensor_msgs.msg import JointState
 filtering_schemes = []
 
 fixed_filters = [
-    [
-        "/robotiq_force_torque_wrench", 
-        WrenchStamped, 
-        msg_filters.WrenchStampedNormFilter,
-    ],
+    # 6
     [
         "/robotiq_force_torque_wrench", 
         WrenchStamped, 
         msg_filters.WrenchStampedFilter,
     ],
+    
+    # 2 
+    [
+        "/robotiq_force_torque_wrench", 
+        WrenchStamped, 
+        msg_filters.WrenchStampedNormFilter,
+    ],
+
+    # 2     
+    [
+        "/robot/limb/right/endpoint_state",
+        EndpointState,
+        msg_filters.BaxterEndpointTwistNormFilter,
+    ],
+
+    # 6    
+    [
+        "/robot/limb/right/endpoint_state",
+        EndpointState,
+        msg_filters.BaxterEndpointTwistFilter,
+    ],
+
+    # 7     
+    [
+        "/robot/limb/right/endpoint_state", # topic
+        EndpointState, # msg type of topic
+        msg_filters.BaxterEndpointPoseFilter, # customize info
+    ],
+
+    # # 2     
+    # [
+    #     "/TactileSensor4/StaticData",
+    #     tactilesensors4.msg.StaticData,
+    #     msg_filters.TactileStaticStdFilter,
+    # ],
+    
     # [
     #     "/joint_states", 
     #     JointState,
     #     msg_filters.URjointFilterForPosition,
     # ],
+    
     # [
     #     "/joint_states", 
     #     JointState,
     #     msg_filters.URjointFilterForVelocity,
     # ],
-    [
-        "/joint_states", 
-        JointState,
-        msg_filters.URjointFilterForEffort,
-    ],
+    # [
+    #     "/joint_states", 
+    #     JointState,
+    #     msg_filters.URjointFilterForEffort,
+    # ],
 ]
 
 filters_args = []

@@ -148,8 +148,32 @@ class BaxterEndpointTwistFilter(TopicMsgFilter):
     @staticmethod
     def vector_meaning():
         return ['baxter_enpoint_pose.twist.linear.%s'%i for i in ['x', 'y', 'z']]+\
-            ['baxter_enpoint_pose.twist.angular.%s'%i for i in ['x', 'y', 'z']]
+                ['baxter_enpoint_pose.twist.angular.%s'%i for i in ['x', 'y', 'z']]          
+          
+class BaxterEndpointPoseFilter(TopicMsgFilter):
+    def __init__(self):
+        super(BaxterEndpointPoseFilter, self).__init__()
 
+    def convert(self, msg):
+        return [
+            msg.pose.position.x,\
+            msg.pose.position.y,\
+            msg.pose.position.z,\
+            msg.pose.orientation.x,\
+            msg.pose.orientation.y,\
+            msg.pose.orientation.z,\
+            msg.pose.orientation.w,\
+            ]
+
+    @staticmethod
+    def vector_size():
+        return 7
+
+    @staticmethod
+    def vector_meaning():
+        return ['baxter_enpoint_pose.pose.position.%s'%i for i in ['x', 'y', 'z']]+\
+            ['baxter_enpoint_pose.pose.orientation.%s'%i for i in ['x', 'y', 'z','w']]
+           
 class HongminTactileFeatureMaxFilter(TopicMsgFilter):
     def __init__(self):
         super(HongminTactileFeatureMaxFilter, self).__init__()

@@ -24,7 +24,7 @@ def run():
     fileHandler = logging.FileHandler(os.path.realpath(log_file))
     fileHandler.setLevel(logging.DEBUG)
     logger.addHandler(fileHandler)
-
+    '''
     skill_folders = glob.glob(os.path.join(
         latest_dataset_folder,
         'skill_data',
@@ -56,7 +56,7 @@ def run():
             'anomaly_%s'%anomaly_label,
         )
         gen_classification_model.run(logger, anomaly_folder, output_dir)
-
+    '''
     demonstration_folders = glob.glob(os.path.join(
         latest_dataset_folder,
         'demonstration_data',
@@ -76,3 +76,7 @@ def run():
             'skill_%s'%demonstration_skill_id,
         )
         gen_dmp_model.run(logger, demonstration_folder, output_dir)
+
+if __name__=="__main__":
+    run()
+

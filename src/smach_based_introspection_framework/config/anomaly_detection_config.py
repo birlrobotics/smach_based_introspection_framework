@@ -7,7 +7,7 @@ from sensor_msgs.msg import JointState
 from geometry_msgs.msg import WrenchStamped
 from scipy import signal
 
-anomaly_detection_timeseries_hz = 10
+anomaly_detection_timeseries_hz = 20
 anomaly_detection_timeseries_config = RosTopicFilteringScheme(anomaly_detection_timeseries_hz)
 
 anomaly_detection_timeseries_config.add_filter(
@@ -20,6 +20,7 @@ anomaly_detection_timeseries_config.add_filter(
     WrenchStamped, 
     msg_filters.WrenchStampedFilter,
 )
+
 '''
 anomaly_detection_timeseries_config.add_filter(
     "/joint_states", 
@@ -31,11 +32,11 @@ anomaly_detection_timeseries_config.add_filter(
     JointState,
     msg_filters.URjointFilterForVelocity,
 )
-'''
-anomaly_detection_timeseries_config.add_filter(
-    "/joint_states", 
-    JointState,
-    msg_filters.URjointFilterForEffort,
-)
 
+# anomaly_detection_timeseries_config.add_filter(
+#     "/joint_states", 
+#     JointState,
+#     msg_filters.URjointFilterForEffort,
+# )
+'''
 anomaly_detection_timeseries_config.smoother_class = WindowBasedSmoother_factory(signal.boxcar(5))

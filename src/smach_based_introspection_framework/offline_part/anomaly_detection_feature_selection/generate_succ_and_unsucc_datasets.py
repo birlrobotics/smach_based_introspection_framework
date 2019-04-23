@@ -4,7 +4,7 @@ from smach_based_introspection_framework._constant import (
     experiment_record_folder, 
     datasets_of_filtering_schemes_folder,
 )
-import os
+import os, ipdb
 from rostopics_to_timeseries import OfflineRostopicsToTimeseries
 from filtering_schemes import filtering_schemes
 import itertools
@@ -44,9 +44,17 @@ def generate_and_save_csv(output_csv, er, st, et, filtering_scheme, ortt, logger
             )
         except Exception as e:
             logger.error("Fail to get timeseries_mat: %s"%e)
-            raise e
-        
-        df = pd.DataFrame(mat, columns=filtering_scheme.timeseries_header, index=t)
+            logger.error("Skip to next")            
+            return 
+            #raise e
+
+        try:
+            df = pd.DataFrame(mat, columns=filtering_scheme.timeseries_header, index=t)
+        except Exception as e:
+            logger.error("ValueError: Empty data passed with indices specified.")
+            logger.error("Skip to next")            
+            return 
+            
         output_dir = os.path.dirname(output_csv)
         if not os.path.isdir(output_dir):
             os.makedirs(output_dir)
