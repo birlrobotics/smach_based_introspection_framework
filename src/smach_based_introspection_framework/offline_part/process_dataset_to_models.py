@@ -73,10 +73,14 @@ def run():
 
         output_dir = os.path.join(
             get_latest_model_folder(), 
-            'skill_%s'%demonstration_skill_id,
+            'tag_%s'%demonstration_skill_id,
         )
         gen_dmp_model.run(logger, demonstration_folder, output_dir)
 
 if __name__=="__main__":
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    consoleHandler = logging.StreamHandler()
+    consoleHandler.setLevel(logging.DEBUG)
+    logger.addHandler(consoleHandler)
     run()
-
