@@ -115,3 +115,6 @@ doc/html/
 
 # folder
 introspection_data_folder*
+temp_folder*
+experiment_record_folder*
+*data_folder
