@@ -20,17 +20,17 @@ def plot_current_loglik_and_threshold(first_anomaly_t=None, anomaly_t_by_human=N
     first_timestamp = xaxis[0]
     xaxis = xaxis - first_timestamp
     loglik_and_threshold = np.array(loglik_and_threshold)
-    ax.plot(xaxis, loglik_and_threshold[:,0], 'o-', color='b', label='current log-likehood')
-    ax.plot(xaxis, loglik_and_threshold[:,1], '-', color='r', label='threshold')
+    ax.plot(xaxis, loglik_and_threshold[:,0], 'o-', color='b', label = 'Current log-likehood')
+    ax.plot(xaxis, loglik_and_threshold[:,1], '-', color='r', label = 'Threshold')
     if first_anomaly_t is not None:
-        ax.axvline(first_anomaly_t - first_timestamp, c='y', label='anomaly_t_by_detector')
+        ax.axvline(first_anomaly_t - first_timestamp, c='y', label = 'Anomaly_t_by_detector')
     if anomaly_t_by_human is not None:
-        ax.axvline(anomaly_t_by_human - first_timestamp, ls ='--', c='green', label='anomaly_t_by_human')        
+        ax.axvline(anomaly_t_by_human - first_timestamp, ls ='--', c='green', label = 'Anomaly_t_by_human')        
         ax.set_title('Anomalous execution #%s'%(itest+1))
     else:
         ax.set_title('Nominal execution #%s'%(itest+1))        
     ax.set_xlim(xaxis[0], xaxis[-1])
-    ax.legend(loc=1, fancybox=True, framealpha=0.5, prop={'size':5})
+    ax.legend(loc=1, fancybox=True, framealpha=0.5, prop={'size':8})
     
 def get_first_anomaly_signal_time(detector, model, timeseries_mat, ts):
     loglik_and_threshold = []
@@ -98,6 +98,7 @@ def run():
         else:
             fig, axarr = plt.subplots(nrows=len(succ_csvs), ncols=len(avaliable_anomaly_detectors), sharex=True,figsize=(12,1.0*len(succ_csvs)))
             fig.suptitle('The performance of different anomaly detectors', fontsize=14)
+            
             axarr=axarr.reshape(-1,1)
             axarr_iterator = iter(axarr)
             fig.subplots_adjust(hspace=0.5)
@@ -112,6 +113,7 @@ def run():
                                                       itest=i, ax = axarr_iterator.next()[0],
                                                       loglik_and_threshold=loglik_and_threshold,
                                                       xaxis = df.values[:, 0].reshape(-1))
+                    
                     print ("#%s:"%str(i))
                 logger.warning("Finish testing:%s"%csv)
             axarr[-1][0].set_xlabel('time(sec)',fontsize=10)
@@ -119,6 +121,9 @@ def run():
             fig.savefig(os.path.join(output_dir,
                                      'succ_current_loglik_and_threshold_%s_bnpy.png'%path_postfix.replace(' ','').replace('/','')),
                                       format='png', dpi=300, bbox_inches='tight')
+            fig.savefig(os.path.join(output_dir,
+                                     'succ_current_loglik_and_threshold_%s_bnpy.eps'%path_postfix.replace(' ','').replace('/','')),
+                                      format='eps', dpi=300, bbox_inches='tight')
 
 
         unsucc_csvs = glob.glob(os.path.join(unsucc_folder, '*', '*.csv'))
@@ -126,11 +131,11 @@ def run():
             logger.error('without the unsuccessful recordings of %s for testing'%path_postfix)
             pass
         else:
-            fig, axarr = plt.subplots(nrows=len(unsucc_csvs), ncols=len(avaliable_anomaly_detectors), sharex=True, )#figsize=(8,1.0*len(unsucc_csvs))
+            fig, axarr = plt.subplots(nrows=len(unsucc_csvs), ncols=len(avaliable_anomaly_detectors), sharex=True, figsize=(8, 1.5*len(unsucc_csvs)))
             fig.suptitle('The performance of different anomaly detectors', fontsize=14)        
             axarr=axarr.reshape(-1,1)
             axarr_iterator = iter(axarr)
-            fig.subplots_adjust(hspace=0.5)
+            fig.subplots_adjust(hspace=0.3)
             for i, csv in enumerate(unsucc_csvs):
                 logger.info(csv)
                 df = pd.read_csv(csv, sep=',')
@@ -159,6 +164,9 @@ def run():
             fig.savefig(os.path.join(output_dir,
                                      'unsucc_current_loglik_and_threshold_%s_bnpy.png'%path_postfix.replace(' ','').replace('/','')),     
                                      format='png', dpi=300, bbox_inches='tight')
-
+            fig.savefig(os.path.join(output_dir,
+                                     'unsucc_current_loglik_and_threshold_%s_bnpy.eps'%path_postfix.replace(' ','').replace('/','')),     
+                                     format='eps', dpi=300, bbox_inches='tight')
+        plt.show()
 if __name__ == '__main__':
     run()

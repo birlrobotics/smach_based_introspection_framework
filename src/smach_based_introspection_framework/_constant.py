@@ -9,13 +9,14 @@ introspection_data_folder = os.path.join(
     dir_of_this_script, 
     '..',
     '..',
-    "introspection_data_folder",
-#    'ICRA2019_glove_gesture_data_folder',
+    "temp_folder_prediction_for_error_prevention_wrench_norm",
     )
 
 experiment_record_folder = os.path.join(
     introspection_data_folder,
+    '..',
     "experiment_record_folder")
+
 latest_experiment_record_folder = os.path.join(
     experiment_record_folder,
     'latest',

@@ -158,6 +158,7 @@ def show_hidden_state_sequences(K=None, zseqs=None, logger=None, output_dir=None
     axarr[-1].set_xlabel('time(0.1s)')
     plt.savefig(os.path.join(output_dir, 'hidden_state_sequences.png'), format='png',dpi=300)    
     plt.savefig(os.path.join(output_dir, 'hidden_state_sequences.eps'), format='eps',dpi=300)
+    plt.show()
     
 def filter_the_outliers(i, zlog, logger=None):
     z = zlog.copy()

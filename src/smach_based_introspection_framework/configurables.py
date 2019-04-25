@@ -5,20 +5,19 @@ HUMAN_AS_MODEL_MODE = False
 
 score_metric = '_score_metric_sum_of_loglik_'
 
-'''
 # covariance_type = ['spherical', 'diag', 'full', 'tied']
 model_type = 'hmmlearn\'s HMM'
 model_config = {
   'n_components': ListOfParams([5]),
-  'covariance_type': ListOfParams(['diag']),
+  'covariance_type': ListOfParams(['diag', 'full', 'spherical']),
   'n_iter': 1000,
 }
+    
 '''
 # bnpy_info
 # Supported Allocation model:   ['FiniteHMM',' HDPHMM']
 # Supported Observation models: ['Gauss','DiagGauss','ZeroMeanGauss','AutoRegGauss']
 # Supported Variational methods:['memoVB', 'soVB','VB']
-
 model_type = 'BNPY\'s HMM'
 model_config = {
     'n_iteration': 1000,
@@ -28,6 +27,7 @@ model_config = {
     'varMethod' : ListOfParams(['memoVB']),
     'ECovMat'   : ListOfParams(['covdata']), #diagcovdata
 }
+'''
 
 from smach_based_introspection_framework.config.anomaly_classification_config import (
     anomaly_classification_timeseries_hz, 

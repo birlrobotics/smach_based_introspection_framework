@@ -6,7 +6,7 @@ from baxter_core_msgs.msg import EndpointState
 from geometry_msgs.msg import WrenchStamped
 from scipy import signal
 
-anomaly_detection_timeseries_hz = 10
+anomaly_detection_timeseries_hz = 20
 anomaly_detection_timeseries_config = RosTopicFilteringScheme(anomaly_detection_timeseries_hz)
 anomaly_detection_timeseries_config.add_filter(
     "/TactileSensor4/StaticData", 

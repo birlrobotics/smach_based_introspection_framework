@@ -161,3 +161,6 @@ def run():
                     json.dump(demonstration.original_goal, f)
         except Exception as e:
             logger.error("process exp_dir \"%s\"failed: %s"%(exp_dir,e ))
+
+if __name__=="__main__":
+    run()

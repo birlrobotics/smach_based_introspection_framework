@@ -23,13 +23,12 @@ coloredlogs.install()
 THRESHOLDING_BY_MEAN_AND_STD = False
 
 def run():
-    logger = logging.getLogger('ieee_access_paper_plots')
+    logger = logging.getLogger('ras_paper_plots')
     logger.setLevel(logging.INFO)
     consoleHandler = logging.StreamHandler()
     consoleHandler.setLevel(logging.INFO)
     logger.addHandler(consoleHandler)
 
-    # we should have the introspection models of the whole experiment
     model_folders = glob.glob(os.path.join(
         datasets_of_filtering_schemes_folder,
         'introspection_models',
@@ -43,24 +42,23 @@ def run():
         logger.info(os.path.realpath(model_folder))
         model = joblib.load(os.path.join(model_folder, 'introspection_model'))
         path_postfix = os.path.relpath(model_folder, os.path.join(datasets_of_filtering_schemes_folder, 'introspection_models'))
-        whole_exp_folder = os.path.join(datasets_of_filtering_schemes_folder,
-                                   path_postfix).replace(os.sep+"skill", os.sep+"whole_experiment_for_testing"+os.sep+"skill")
-        whole_exp_folder = os.path.dirname(whole_exp_folder)
-        logger.info(whole_exp_folder)
+        succ_folder = os.path.join(datasets_of_filtering_schemes_folder,
+                                   path_postfix).replace(os.sep+"skill", os.sep+"successful_skills"+os.sep+"skill")
+        logger.info(succ_folder)
         csvs = glob.glob(os.path.join(
-            whole_exp_folder,
+            succ_folder,
             '*', '*.csv',
         ))
         if len(csvs) == 0:
-            logger.warning('without the whole experimental recording data! Gonna to skip')
+            logger.warning('without the successful data of %s. gonna to skip' %path_postfix)
             continue
+        
         list_of_mat = []
         for j in csvs:
             df = pd.read_csv(j, sep=',')
             # Exclude 1st column which is time index
             list_of_mat.append(df.values[:, 1:])
 
-        ipdb.set_trace()            
         output_dir = os.path.join(
             datasets_of_filtering_schemes_folder,
             'ras_journal_paper_plots',
@@ -160,6 +158,7 @@ def show_hidden_state_sequences(K=None, zseqs=None, logger=None, output_dir=None
     axarr[-1].set_xlabel('time(0.1s)')
     plt.savefig(os.path.join(output_dir, 'hidden_state_sequences.png'), format='png',dpi=300)    
     plt.savefig(os.path.join(output_dir, 'hidden_state_sequences.eps'), format='eps',dpi=300)
+    plt.show()
     
 def filter_the_outliers(i, zlog, logger=None):
     z = zlog.copy()
