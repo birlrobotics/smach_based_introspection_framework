@@ -10,11 +10,11 @@ anomaly_classification_timeseries_hz = 10
 anomaly_classification_confidence_threshold = 0.7
 anomaly_window_size = [2, 2]
 anomaly_classification_timeseries_config = RosTopicFilteringScheme(anomaly_classification_timeseries_hz)
-anomaly_classification_timeseries_config.add_filter(
-    "/TactileSensor4/StaticData", 
-    tactilesensors4.msg.StaticData,
-    cl_msg_filters_with_scaling.TactileStaticStdFilter,
-)
+# anomaly_classification_timeseries_config.add_filter(
+#     "/TactileSensor4/StaticData", 
+#     tactilesensors4.msg.StaticData,
+#     cl_msg_filters_with_scaling.TactileStaticStdFilter,
+# )
 anomaly_classification_timeseries_config.add_filter(
     "/robotiq_force_torque_wrench", 
     WrenchStamped, 

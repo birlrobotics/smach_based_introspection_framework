@@ -2,6 +2,7 @@ from smach_based_introspection_framework.online_part.framework_core.states impor
     hmm_state_switch_client,
     get_anomaly_t,
     set_event_flag,
+    get_event_flag,
     set_latest_anomaly_type,
 )
 from smach_based_introspection_framework.online_part.robot_screen_visualization.setter import(
@@ -107,6 +108,66 @@ def human_help(nominal_tag):
         else:
             rospy.loginfo("input end please.")
     return label, True
+
+def handle_anomaly2(state_obj, robot, group):
+    alf = open(os.path.join(latest_experiment_record_folder, anomaly_label_file) ,'a')
+    nominal_tag = state_obj.state_no
+    rospy.loginfo("handle_anomaly starts") 
+
+    while True:
+        hmm_state_switch_client(-1)
+        anomaly_t = get_anomaly_t()
+        show_anomaly_detected()
+        rospy.loginfo("An anomaly happened, gonna sleep 0.5 secs so that we can have a static window of the anomaly")
+        rospy.sleep(0.5)
+
+        if not HUMAN_AS_MODEL_MODE:
+            sp = rospy.ServiceProxy('AnomalyClassificationService', AnomalyClassificationService)
+            try:
+                resp = sp(anomaly_t, str(nominal_tag))
+            except rospy.ServiceException as exc:
+                rospy.logerr("calling AnomalyClassificationService failed: %s"%exc)
+                raise Exception("calling AnomalyClassificationService failed: %s"%exc)
+
+            predicted_label = resp.predicted_label
+            predicted_proba = resp.predicted_proba
+
+            if predicted_label == "__ERROR":
+                rospy.logerr("calling AnomalyClassificationService failed: returns -1")
+                raise Exception("calling AnomalyClassificationService failed: returns -1")
+            if predicted_label == '__NO_CLASSIFIER_FOUND' or predicted_label == '__NO_EXEC_RECORD':
+                rospy.logwarn(predicted_label) 
+                need_human = True
+                break
+            rospy.loginfo("anomaly classification resp: %s"%resp) 
+        else:
+            rospy.loginfo("since HUMAN_AS_MODEL_MODE is on, input the label of this anomaly which happened in skill %s:"%nominal_tag)
+            while True:
+                raw_label_str = raw_input()
+                rospy.loginfo("confirm \"%s\"? yes/no"%raw_label_str)
+                s = raw_input()
+                if s == 'no':
+                    rospy.loginfo("try again, type in the label")
+                    continue 
+                elif s == 'yes':
+                    break
+                else:
+                    rospy.loginfo("input no or yes.")
+            predicted_label = raw_label_str
+            predicted_proba = 1
+
+        if predicted_proba > anomaly_classification_confidence_threshold:
+
+            alf.write("%s\n"%predicted_label)
+            set_latest_anomaly_type(predicted_label)
+            show_everyhing_is_good()
+            set_event_flag(ANOMALY_NOT_DETECTED)
+            break
+        else:
+            rospy.loginfo("anomaly classification confidence too low") 
+            
+
+
 
 def handle_anomaly(state_obj, robot, group):
     alf = open(os.path.join(latest_experiment_record_folder, anomaly_label_file) ,'a')

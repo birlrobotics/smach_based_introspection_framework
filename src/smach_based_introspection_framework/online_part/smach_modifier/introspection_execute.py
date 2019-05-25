@@ -36,7 +36,10 @@ def execute(self, userdata):
 
     pst = rospy.Time.now().to_sec()
     plan = None
-    if hasattr(self, "get_joint_state_goal"):
+    if hasattr(self, "get_modified_plan"):
+        plan = self.get_modified_plan(robot,group)
+
+    elif hasattr(self, "get_joint_state_goal"):
         d = self.get_joint_state_goal()
         goal_joint = {k:d[k] for k in group.get_active_joints()}
         group.set_joint_value_target(goal_joint)
@@ -61,16 +64,10 @@ def execute(self, userdata):
         goal_achieved = introspect_moveit_exec(group, plan)
         met = rospy.Time.now().to_sec()
         rospy.logdebug("Took %s seconds to exec moveit plan"%(met-mst))
-
     hmm_state_switch_client(0)
     if not goal_achieved:
-        robot, group = get_moveit_vars()
-        no_need_to_revert = sos.handle_anomaly(self, robot, group)
-        rospy.loginfo('no_need_to_revert : %s'%no_need_to_revert)
-        if no_need_to_revert:
-            pass
-        else:
-            return "Revert"
+        sos.handle_anomaly2(self, robot, group)
+        return "Recovery"
 
     if hasattr(self, "after_motion"):
         self.after_motion()

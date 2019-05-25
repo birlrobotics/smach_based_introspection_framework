@@ -8,11 +8,11 @@ from scipy import signal
 
 anomaly_detection_timeseries_hz = 10
 anomaly_detection_timeseries_config = RosTopicFilteringScheme(anomaly_detection_timeseries_hz)
-anomaly_detection_timeseries_config.add_filter(
-    "/TactileSensor4/StaticData", 
-    tactilesensors4.msg.StaticData,
-    msg_filters_with_scaling_and_clip.TactileStaticStdScaleClipMaxFilter,
-)
+# anomaly_detection_timeseries_config.add_filter(
+#     "/TactileSensor4/StaticData", 
+#     tactilesensors4.msg.StaticData,
+#     msg_filters_with_scaling_and_clip.TactileStaticStdScaleClipMaxFilter,
+# )
 anomaly_detection_timeseries_config.add_filter(
     "/robotiq_force_torque_wrench", 
     WrenchStamped, 

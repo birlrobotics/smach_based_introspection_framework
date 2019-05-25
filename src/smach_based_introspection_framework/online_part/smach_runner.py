@@ -45,6 +45,7 @@ from smach_based_introspection_framework.srv import (
     ExperimentRecordingResponse,
 )
 import time
+import ipdb
 
 def shutdown():
     rospy.loginfo("Shuting down, PID: %s"%os.getpid())
@@ -82,8 +83,8 @@ def toggle_introspection(start, sm=None):
             topics_to_be_recorded_into_rosbag
         )
         rosbag_proc.start()
-        tmt_proc = TagMultimodalTopicProc()
-        tmt_proc.start()
+        # tmt_proc = TagMultimodalTopicProc()
+        # tmt_proc.start()
         sis = smach_ros.IntrospectionServer('MY_SERVER', sm, '/SM_ROOT')
         sis.start()
 
@@ -150,9 +151,8 @@ def run(sm, reverting_statistics=None, get_moveit_vars=None):
         rospy.init_node("smach_based_introspection_framework_node", log_level=rospy.INFO)
         rospy.loginfo("PID: %s"%os.getpid())
         rospy.on_shutdown(shutdown)
-
+        
         sm = modify_user_sm.run(sm)
-
         try:
             toggle_introspection(True, sm)
         except Exception as e:
@@ -161,14 +161,12 @@ def run(sm, reverting_statistics=None, get_moveit_vars=None):
             raise
 
         rospy.loginfo("introspection up.")
-
         try:
             rospy.loginfo("start sm.")
             outcome = sm.execute()
             rospy.loginfo('sm.execute() returns %s'%outcome)
         except Exception as e:
             rospy.logerr(str(e))
-
         toggle_introspection(False)
         rospy.loginfo("introspection down.")
 

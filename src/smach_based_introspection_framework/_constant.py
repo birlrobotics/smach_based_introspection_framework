@@ -9,7 +9,7 @@ introspection_data_folder = os.path.join(
     dir_of_this_script, 
     '..',
     '..',
-    "introspection_data_folder.AC_offline_test")
+    "introspection_data_folder")
 
 experiment_record_folder = os.path.join(
     introspection_data_folder,
@@ -70,6 +70,7 @@ UNSUCCESSFULLY_EXECUTED_SKILL = 1
 
 ROLLBACK_RECOVERY_TAG = -2
 RECOVERY_DEMONSTRATED_BY_HUMAN_TAG = -3
+Q_TABLE_RECOVERY = -4
 
 RECOVERY_SKILL_BEGINS_AT = 1000
 

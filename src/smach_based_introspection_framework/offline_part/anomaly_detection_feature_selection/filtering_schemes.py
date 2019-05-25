@@ -15,11 +15,11 @@ from scipy import signal
 filtering_schemes = []
 
 fixed_filters = [
-    [
-        "/TactileSensor4/StaticData", 
-        tactilesensors4.msg.StaticData,
-        msg_filters_with_scaling_and_clip.TactileStaticStdScaleClipMaxFilter,
-    ],
+    # [
+    #     "/TactileSensor4/StaticData", 
+    #     tactilesensors4.msg.StaticData,
+    #     msg_filters_with_scaling_and_clip.TactileStaticStdScaleClipMaxFilter,
+    # ],
     [
         "/robotiq_force_torque_wrench", 
         WrenchStamped, 

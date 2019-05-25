@@ -2,6 +2,7 @@ from smach_based_introspection_framework._constant import (
     ANOMALY_DETECTED,
     ANOMALY_NOT_DETECTED,
     ROLLBACK_RECOVERY_TAG,
+    Q_TABLE_RECOVERY,
 )
 import smach
 import os
@@ -72,8 +73,33 @@ def hmm_state_switch_client(state):
     req.state = state
     resp = hmm_state_switch_proxy(req)
 
+class CheckQTable(smach.State):
+    def __init__(self, outcomes):
+        # This outcomes is defined in modify_user_sm.py
+        smach.State.__init__(self, outcomes)
+        
+    def execute(self, userdata):
+        global execution_history, reverting_statistics
+        hmm_state_switch_client(Q_TABLE_RECOVERY)
+
+        rospy.loginfo("Enter CheckQTable State...")
+
+        current_node = execution_history[-1]['state_name']
+        try:
+            stat = reverting_statistics[current_node][latest_anomaly_type]
+        except KeyError:
+            stat = None
+        if stat is None:
+            next_state = current_node
+            rospy.loginfo('reverting_statistics contains no statistics about how to recover anomaly \'%s\' in state \'%s\', gonna reenter itself %s'%(latest_anomaly_type, current_node, next_state,))
+        else:
+            next_state = stat
+        ipdb.set_trace()
+        return 'Recovery_with_'+next_state
+
 class RollBackRecovery(smach.State):
     def __init__(self, outcomes):
+        # This outcomes is defined in modify_user_sm.py
         smach.State.__init__(self, outcomes)
         
     def execute(self, userdata):
@@ -95,6 +121,8 @@ class RollBackRecovery(smach.State):
                 next_state = current_node
                 rospy.loginfo('reverting_statistics contains no statistics about how to recover anomaly \'%s\' in state \'%s\', gonna reenter itself %s'%(latest_anomaly_type, current_node, next_state,))
             else:
+                # Compute the next state according to votes
+                # Should be changed into Q table
                 import numpy as np
                 names = [i[0] for i in stat.items()]
                 counts = np.array([i[1] for i in stat.items()], dtype=np.float64)
