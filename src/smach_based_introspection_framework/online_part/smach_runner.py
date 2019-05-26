@@ -134,7 +134,12 @@ def toggle_introspection(start, sm=None):
             
 def baxter_get_moveit_vars():
     robot = moveit_commander.RobotCommander()
-    group = moveit_commander.MoveGroupCommander("right_arm")
+    group = None
+    while group == None:
+        try :
+            group = moveit_commander.MoveGroupCommander("right_arm")
+        except Exception as e:
+            rospy.loginfo(str(e))
     group.set_max_velocity_scaling_factor(1)
     group.set_max_acceleration_scaling_factor(1)
     return robot, group
