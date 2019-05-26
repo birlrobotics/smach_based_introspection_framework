@@ -109,7 +109,7 @@ def human_help(nominal_tag):
             rospy.loginfo("input end please.")
     return label, True
 
-def handle_anomaly2(state_obj, robot, group):
+def handle_anomaly_with_qtable(state_obj):
     alf = open(os.path.join(latest_experiment_record_folder, anomaly_label_file) ,'a')
     nominal_tag = state_obj.state_no
     rospy.loginfo("handle_anomaly starts") 
@@ -141,7 +141,7 @@ def handle_anomaly2(state_obj, robot, group):
                 break
             rospy.loginfo("anomaly classification resp: %s"%resp) 
         else:
-            rospy.loginfo("since HUMAN_AS_MODEL_MODE is on, input the label of this anomaly which happened in skill %s:"%nominal_tag)
+            rospy.loginfo("Since HUMAN_AS_MODEL_MODE is on, input the label of this anomaly which happened in skill %s:"%nominal_tag)
             while True:
                 raw_label_str = raw_input()
                 rospy.loginfo("confirm \"%s\"? yes/no"%raw_label_str)

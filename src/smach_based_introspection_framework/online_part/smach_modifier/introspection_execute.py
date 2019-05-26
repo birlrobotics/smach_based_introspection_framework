@@ -66,7 +66,7 @@ def execute(self, userdata):
         rospy.logdebug("Took %s seconds to exec moveit plan"%(met-mst))
     hmm_state_switch_client(0)
     if not goal_achieved:
-        sos.handle_anomaly2(self, robot, group)
+        sos.handle_anomaly_with_qtable(self)
         return "Recovery"
 
     if hasattr(self, "after_motion"):

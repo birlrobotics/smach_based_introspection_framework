@@ -91,10 +91,9 @@ class CheckQTable(smach.State):
             stat = None
         if stat is None:
             next_state = current_node
-            rospy.loginfo('reverting_statistics contains no statistics about how to recover anomaly \'%s\' in state \'%s\', gonna reenter itself %s'%(latest_anomaly_type, current_node, next_state,))
+            rospy.loginfo('Q table contains no statistics about how to recover anomaly \'%s\' in state \'%s\', gonna reenter itself %s'%(latest_anomaly_type, current_node, next_state,))
         else:
             next_state = stat
-        ipdb.set_trace()
         return 'Recovery_with_'+next_state
 
 class RollBackRecovery(smach.State):
