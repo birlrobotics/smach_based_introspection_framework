@@ -11,6 +11,7 @@ import pandas as pd
 import numpy as np
 import pickle
 import ipdb
+coloredlogs.install()
 
 def get_first_anomaly_signal_time(model, timeseries_mat, ts):
     detector = Detectors.DetectorBasedOnGradientOfLoglikCurve(
@@ -36,7 +37,8 @@ def run():
         'No.* filtering scheme', 
         'skill *',
     ))
-
+    if len(model_folders) == 0:
+        logger.error('Without any introspection model')
     for model_folder in model_folders:
         logger.info(os.path.realpath(model_folder))
         model = joblib.load(os.path.join(model_folder, 'introspection_model'))
