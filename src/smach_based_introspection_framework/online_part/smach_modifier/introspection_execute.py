@@ -64,7 +64,17 @@ def execute(self, userdata):
         goal_achieved = introspect_moveit_exec(group, plan)
         met = rospy.Time.now().to_sec()
         rospy.logdebug("Took %s seconds to exec moveit plan"%(met-mst))
+
     hmm_state_switch_client(0)
+    # if not goal_achieved:
+    #     robot, group = get_moveit_vars()
+    #     no_need_to_revert = sos.handle_anomaly(self, robot, group)
+    #     rospy.loginfo('no_need_to_revert : %s'%no_need_to_revert)
+    #     if no_need_to_revert:
+    #         pass
+    #     else:
+    #         return "Revert"
+
     if not goal_achieved:
         sos.handle_anomaly_with_qtable(self)
         return "Recovery"

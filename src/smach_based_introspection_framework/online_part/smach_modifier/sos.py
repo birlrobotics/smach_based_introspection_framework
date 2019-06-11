@@ -180,7 +180,7 @@ def handle_anomaly(state_obj, robot, group):
         anomaly_t = get_anomaly_t()
         show_anomaly_detected()
         rospy.loginfo("An anomaly happened, gonna sleep 3 secs so that we can have a static window of the anomaly")
-        rospy.sleep(3)
+        rospy.sleep(0.5)
 
         if not HUMAN_AS_MODEL_MODE:
             sp = rospy.ServiceProxy('AnomalyClassificationService', AnomalyClassificationService)

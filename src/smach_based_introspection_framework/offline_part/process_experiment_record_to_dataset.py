@@ -132,7 +132,7 @@ def run():
                 output_csv = os.path.join(
                     latest_dataset_folder,
                     'anomaly_data',
-                    "anomaly_type_%s"%(anomaly.label,),
+                    "nominal_skill_8_anomaly_type_%s"%(anomaly.label,),
                     "no_%s_anomaly_in_%s"%(count, os.path.basename(exp_dir)),
                 )
                 generate_and_save_csv(output_csv, er, anomaly.time-rospy.Duration(secs_before), anomaly.time+rospy.Duration(secs_after), anomaly_classification_timeseries_config, ortt, logger)

@@ -1,3 +1,5 @@
+# SK & bourne
+
 import os
 import glob
 import rosbag
@@ -12,7 +14,11 @@ from Anomaly import Anomaly
 from Skill import Skill
 from Demonstration import Demonstration
 import ipdb
-
+import numpy as np
+import string
+from math import floor
+ADAPTATION_RATIO = 1
+EXEC_TIME_RATIO = 1
 class ExperimentRecord(object):
     def __init__(self, folder_path):
         self.folder_path = folder_path
@@ -42,6 +48,150 @@ class ExperimentRecord(object):
 
         self._tag_ranges = ranges
         return self._tag_ranges
+
+# ================================================================================================
+
+    @property
+    def get_anomaly_label_to_indexes(self):
+        anomaly_labels_indexes_list = []
+        anomaly_labels_path = os.path.join(self.folder_path,'anomaly_labels.txt')
+        if not os.path.exists(anomaly_labels_path):
+            return 'No_anomaly_label'
+
+        with open(anomaly_labels_path,"r") as f:
+            anomaly_labels = f.read()
+        anomaly_labels_list = string.split(anomaly_labels,'\n')
+        for anomaly_label in anomaly_labels_list:
+            if anomaly_label == 'human_collision':
+                anomaly_label = -2000
+            elif anomaly_label == 'tool_collision':
+                anomaly_label = -2001
+            elif anomaly_label == 'object_slip':
+                anomaly_label = -2002
+            elif anomaly_label == 'wall_collision':
+                anomaly_label = -2003
+            elif anomaly_label == 'no_object':
+                anomaly_label = -2004
+            elif anomaly_label == 'human_collision_with_object':
+                anomaly_label = -2000
+            elif anomaly_label == 'false_positive':
+                return 'false_positive'
+            elif anomaly_label == 'Unlabeled':
+                return 'Unlabeled'
+            anomaly_labels_indexes_list.append(anomaly_label)
+        anomaly_labels_indexes_list.remove('')
+        # reverse for pop out
+        anomaly_labels_indexes_list.reverse()
+        return anomaly_labels_indexes_list
+    
+
+
+    @property
+    def extract_episode_tuples_for_q_table(self):
+
+        state = np.array((0,0))
+        next_state = np.array((0,0))
+        tuple_next_phase_recorded = False
+        consider_anomaly_tag = False
+        end_time_on_tag_0 = False
+        norminal = 0
+        last_tag = None
+        exp_tuples_list = []
+        exp_tuples_with_exec_time_list = []
+        anomaly_labels_indexes_list = self.get_anomaly_label_to_indexes
+        if anomaly_labels_indexes_list == 'false_positive' or  anomaly_labels_indexes_list == 'Unlabeled':
+            return anomaly_labels_indexes_list
+
+        for count, (topic, msg, record_time) in enumerate(self.rosbag.read_messages('/tag_multimodal')):
+
+            msgString = str(msg)
+            msgList = string.split(msgString, '\n')
+            rowmsg = {}
+            for nameValuePair in msgList:
+                splitPair = string.split(nameValuePair, ':')
+                if splitPair[0] == 'tag':
+                    splitPair[1] = string.replace(splitPair[1],' ','')
+                    rowmsg[splitPair[0]] = int(splitPair[1])
+                else:
+                    rowmsg[splitPair[0]] = splitPair[1]
+            if rowmsg['tag'] == -4:
+                a = 1
+            if end_time_on_tag_0 == True and rowmsg['tag'] == 0:
+                end_time = record_time.secs
+                end_time_on_tag_0 = False
+                # error
+            if rowmsg['tag'] !=0 and last_tag != rowmsg['tag']:
+                if consider_anomaly_tag==False and rowmsg['tag'] < 0:
+                    continue
+                # record the state.phase
+                if rowmsg['tag'] > 0 and tuple_next_phase_recorded == False:
+                    act = rowmsg['tag']
+                    next_state = np.array((0,0))
+                    next_state[0] = rowmsg['tag']
+                    start_time = record_time.secs
+                    tuple_next_phase_recorded = True
+                    consider_anomaly_tag = True
+                    end_time_on_tag_0 = True
+                    last_tag =  rowmsg['tag']
+                    continue
+                else :
+                    # record the state.anomaly_condition
+                    if rowmsg['tag'] >0:
+                        # no anomaly happened when executing
+                        next_state[1] = norminal
+                    elif rowmsg['tag'] < 0:
+                        # Anomaly happened when executing
+                        if  anomaly_labels_indexes_list =='No_anomaly_label':
+                            # print('There is -1 in /tag_multimodal topic, but no anomaly label according, gonna skip this rosbag.')
+                            return 'No_anomaly_label_with_tag_-1'
+                        try:
+                            next_state[1] =anomaly_labels_indexes_list.pop()
+                        except ValueError :
+                            return "unknown_label"
+                        consider_anomaly_tag = False
+                        last_tag = rowmsg['tag']
+                    exec_time = floor(end_time - start_time)
+                    tuple_s = tuple(state)
+                    tuple_n_s = tuple(next_state)
+                    exp_tuple = (tuple_s,act,tuple_n_s,exec_time)
+                    exp_tuples_list.append(exp_tuple)
+                    state = np.array((0,0))
+                    state = next_state
+                    if np.all(next_state == np.array((9,0))):
+                        # Reset an episode
+                        state = np.array((0,0))
+                    tuple_next_phase_recorded = False
+                    
+
+        tuple_s = tuple(state)
+        tuple_n_s = tuple(next_state)
+        
+        # Do not count the skill 9 exec time
+        exec_time = 2
+        try :
+            exp_tuple = (tuple_s,act,tuple_n_s,exec_time)
+        except UnboundLocalError as err:
+            return 'No_nominal_tag_is_recorded'
+        if next_state[0] != 9:
+            return 'no_tag_9'
+        exp_tuples_list.append(exp_tuple)
+        exp_tuples_with_exec_time_list = self.get_states_with_time(exp_tuples_list)
+        return exp_tuples_with_exec_time_list
+
+    # ================================================================================================
+
+    def get_states_with_time(self, exp_tuples_list):
+        state_action_time = 0
+        exp_tuples_with_exec_time_list = []
+        for e_tuple in exp_tuples_list:
+            state, act, next_state, exec_time = e_tuple
+            state = (state[0],state[1],state_action_time)
+            next_state =  (next_state[0],next_state[1],exec_time)
+            state_action_time = exec_time
+            new_tuple = (state, act, next_state)
+            exp_tuples_with_exec_time_list.append(new_tuple)
+        return exp_tuples_with_exec_time_list
+
 
     @property
     def anomaly_signal_times(self):

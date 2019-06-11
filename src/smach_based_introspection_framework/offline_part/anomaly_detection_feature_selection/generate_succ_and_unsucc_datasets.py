@@ -15,6 +15,7 @@ import rospy
 import coloredlogs, logging
 coloredlogs.install()
 
+
 def setup_and_get_scheme_folder(scheme_count, filtering_scheme, exp_dir):
     scheme_folder = os.path.join(
         datasets_of_filtering_schemes_folder,

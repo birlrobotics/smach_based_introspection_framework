@@ -36,7 +36,7 @@ def run():
         logger.debug("Processing skill %s"%skill_id)
         output_dir = os.path.join(
             get_latest_model_folder(), 
-            'skill_%s'%skill_id,
+            'tag_%s'%skill_id,
         )
         gen_introspection_model.run(logger, skill_folder, output_dir)
 
@@ -73,6 +73,6 @@ def run():
 
         output_dir = os.path.join(
             get_latest_model_folder(), 
-            'skill_%s'%demonstration_skill_id,
+            'tag_%s'%demonstration_skill_id,
         )
         gen_dmp_model.run(logger, demonstration_folder, output_dir)

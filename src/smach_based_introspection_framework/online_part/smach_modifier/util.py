@@ -18,7 +18,6 @@ def introspect_moveit_exec(group, plan):
     timeout = plan.joint_trajectory.points[-1].time_from_start+rospy.Duration(1)
 
     group.execute(plan, wait=False)
-
     s_t = rospy.Time.now()
     while not rospy.is_shutdown() and rospy.Time.now()-s_t<timeout: 
         if get_event_flag() == ANOMALY_DETECTED:
