@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 ANOMALY_DETECTED = 0
 ANOMALY_NOT_DETECTED = 1
+SUCCESSULLY_EXECUTED_SKILL = 0    # useless
+UNSUCCESSFULLY_EXECUTED_SKILL = 1 # useless
+
+ROLLBACK_RECOVERY_TAG = -2
+RECOVERY_DEMONSTRATED_BY_HUMAN_TAG = -3
+
+RECOVERY_SKILL_BEGINS_AT = 1000
 
 folder_time_fmt = "%Yy%mm%dd%HH%MM%SS" 
 import os
@@ -9,11 +16,18 @@ introspection_data_folder = os.path.join(
     dir_of_this_script, 
     '..',
     '..',
+<<<<<<< HEAD
     "jim_folder_have_tag_range")
+=======
+    "temp_folder_prediction_for_error_prevention_wrench_norm",
+    )
+>>>>>>> 8f90450dbad28dbdce4c7215e08cddd514a0a04f
 
 experiment_record_folder = os.path.join(
     introspection_data_folder,
+    '..',
     "experiment_record_folder")
+
 latest_experiment_record_folder = os.path.join(
     experiment_record_folder,
     'latest',
@@ -65,12 +79,5 @@ cache_folder = os.path.join(
     introspection_data_folder,
     "cache_folder")
 
-SUCCESSULLY_EXECUTED_SKILL = 0
-UNSUCCESSFULLY_EXECUTED_SKILL = 1
-
-ROLLBACK_RECOVERY_TAG = -2
-RECOVERY_DEMONSTRATED_BY_HUMAN_TAG = -3
-
-RECOVERY_SKILL_BEGINS_AT = 1000
 
 
