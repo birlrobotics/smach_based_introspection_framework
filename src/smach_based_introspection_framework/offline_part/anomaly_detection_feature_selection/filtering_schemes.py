@@ -52,12 +52,12 @@ fixed_filters = [
         msg_filters.BaxterEndpointPoseFilter, # customize info
     ],
 
-    # # 2     
-    # [
-    #     "/TactileSensor4/StaticData",
-    #     tactilesensors4.msg.StaticData,
-    #     msg_filters.TactileStaticStdFilter,
-    # ],
+    # 2     
+    [
+        "/TactileSensor4/StaticData",
+        tactilesensors4.msg.StaticData,
+        msg_filters.TactileStaticStdFilter,
+    ],
     
     # [
     #     "/joint_states", 

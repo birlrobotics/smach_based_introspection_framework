@@ -9,7 +9,7 @@ introspection_data_folder = os.path.join(
     dir_of_this_script, 
     '..',
     '..',
-    "jim_and_broune_folder")
+    "jim_folder_have_tag_range")
 
 experiment_record_folder = os.path.join(
     introspection_data_folder,
